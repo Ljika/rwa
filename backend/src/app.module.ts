@@ -1,14 +1,17 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { ManufacturersModule } from './modules/manufacturers/manufacturers.module';
+import { DrugsModule } from './modules/drugs/drugs.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Makes ConfigService available everywhere
+      isGlobal: true,
       envFilePath: '.env',
     }),
 
@@ -30,6 +33,9 @@ import { AuthModule } from './auth/auth.module';
     }),
 
     AuthModule,
+    UsersModule,
+    ManufacturersModule,
+    DrugsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
