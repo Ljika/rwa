@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: medisync_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: medisync_db
+      MYSQL_USER: medisync_user
+      MYSQL_PASSWORD: medisync_pass
+    ports:
+      - '3307:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - medisync_network
+
+  # Opciono: phpMyAdmin za lakše pregledanje baze
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: medisync_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: medisync_user
+      PMA_PASSWORD: medisync_pass
+    ports:
+      - '8080:80'
+    depends_on:
+      - mysql
+    networks:
+      - medisync_network
+
+volumes:
+  mysql_data:
+
+networks:
+  medisync_network:
+    driver: bridge
