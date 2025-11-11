@@ -83,4 +83,8 @@ export class User {
   // Kada je User = Patient, ovo su svi doktori dodeljeni njemu
   @OneToMany('DoctorPatient', (doctorPatient: any) => doctorPatient.patient)
   patientDoctors: any[];
+
+  // Smene doktora (samo za role = Doctor)
+  @OneToMany('DoctorSchedule', (schedule: any) => schedule.doctor)
+  doctorSchedules: any[];
 }

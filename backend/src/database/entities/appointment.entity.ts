@@ -7,16 +7,25 @@
   ManyToOne,
   JoinColumn,
   OneToOne,
+  Unique,
 } from 'typeorm';
 import { AppointmentStatus } from '../../common/enums/appointment-status.enum';
+import { TimeSlot } from '../../common/enums/time-slot.enum';
 
 @Entity('appointments')
+@Unique(['doctorId', 'date', 'timeSlot']) // Jedan doktor ne može imati 2 termina u isto vreme
 export class Appointment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'datetime' })
-  scheduledAt: Date;
+  @Column({ type: 'date' })
+  date: Date; // Datum (bez vremena)
+
+  @Column({
+    type: 'enum',
+    enum: TimeSlot,
+  })
+  timeSlot: TimeSlot; // Tačno vreme (08:00, 08:30, itd.)
 
   @Column({
     type: 'enum',

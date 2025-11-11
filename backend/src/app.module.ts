@@ -7,6 +7,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { ManufacturersModule } from './modules/manufacturers/manufacturers.module';
 import { DrugsModule } from './modules/drugs/drugs.module';
+import { DoctorPatientModule } from './modules/doctor-patient/doctor-patient.module';
+import { DoctorSchedulesModule } from './modules/doctor-schedules/doctor-schedules.module';
+import { AppointmentsModule } from './modules/appointments/appointments.module';
 
 @Module({
   imports: [
@@ -36,6 +39,9 @@ import { DrugsModule } from './modules/drugs/drugs.module';
     UsersModule,
     ManufacturersModule,
     DrugsModule,
+    DoctorPatientModule,
+    DoctorSchedulesModule,
+    AppointmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

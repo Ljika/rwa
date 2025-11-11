@@ -16,8 +16,8 @@ export class DrugsController {
   constructor(private readonly drugsService: DrugsService) {}
 
   @Post()
-  @Roles(UserRole.Admin, UserRole.Doctor)
-  @ApiOperation({ summary: 'Kreiranje novog leka (Admin ili Doctor)' })
+  @Roles(UserRole.Admin)
+  @ApiOperation({ summary: 'Kreiranje novog leka (Admin only)' })
   @ApiResponse({ status: 201, description: 'Lek uspešno kreiran' })
   @ApiResponse({ status: 404, description: 'Proizvođač nije pronađen' })
   @ApiResponse({ status: 409, description: 'Lek sa ovim imenom već postoji' })
@@ -46,8 +46,8 @@ export class DrugsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.Admin, UserRole.Doctor)
-  @ApiOperation({ summary: 'Ažuriranje leka (Admin ili Doctor)' })
+  @Roles(UserRole.Admin)
+  @ApiOperation({ summary: 'Ažuriranje leka (Admin only)' })
   @ApiResponse({ status: 200, description: 'Lek uspešno ažuriran' })
   @ApiResponse({ status: 404, description: 'Lek ili proizvođač nije pronađen' })
   @ApiResponse({ status: 409, description: 'Lek sa ovim imenom već postoji' })
