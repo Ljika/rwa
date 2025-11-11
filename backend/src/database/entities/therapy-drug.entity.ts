@@ -11,15 +11,15 @@ export class TherapyDrug {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  dosage: string;
+  @Column({ type: 'int' })
+  timesPerDay: number; 
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  duration: string; 
+  @Column({ type: 'int' })
+  durationDays: number; 
 
   @Column({ type: 'text', nullable: true })
   instructions: string; 
-
+  
   // Relacija: Više TherapyDrugs -> Jedna Therapy
   @ManyToOne('Therapy', (therapy: any) => therapy.therapyDrugs, {
     onDelete: 'CASCADE',

@@ -26,6 +26,12 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document); // Dostupno na http://localhost:3000/api
 
+  // CORS - dozvoli zahteve sa frontend-a
+  app.enableCors({
+    origin: 'http://localhost:4200', 
+    credentials: true,
+  });
+
   await app.listen(process.env.PORT ?? 3000);
   console.log(`🚀 Server running on http://localhost:${process.env.PORT ?? 3000}`);
   console.log(`📚 Swagger docs on http://localhost:${process.env.PORT ?? 3000}/api`);

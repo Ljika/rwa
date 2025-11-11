@@ -10,6 +10,7 @@ import { DrugsModule } from './modules/drugs/drugs.module';
 import { DoctorPatientModule } from './modules/doctor-patient/doctor-patient.module';
 import { DoctorSchedulesModule } from './modules/doctor-schedules/doctor-schedules.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
+import { TherapiesModule } from './modules/therapies/therapies.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AppointmentsModule } from './modules/appointments/appointments.module';
     DoctorPatientModule,
     DoctorSchedulesModule,
     AppointmentsModule,
+    TherapiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

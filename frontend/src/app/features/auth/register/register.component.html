@@ -1,0 +1,150 @@
+<div class="register-container">
+  <div class="register-card">
+    <div class="register-header">
+      <h1>MediSync</h1>
+      <p>Kreirajte novi nalog</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      
+      <!-- First Name -->
+      <div class="form-group">
+        <label for="firstName">Ime *</label>
+        <input 
+          type="text" 
+          id="firstName" 
+          formControlName="firstName"
+          class="form-control"
+          [class.error]="firstName?.invalid && firstName?.touched"
+        />
+        <div class="error-message" *ngIf="firstName?.invalid && firstName?.touched">
+          <span *ngIf="firstName?.errors?.['required']">Ime je obavezno</span>
+          <span *ngIf="firstName?.errors?.['minlength']">Ime mora imati najmanje 2 karaktera</span>
+        </div>
+      </div>
+
+      <!-- Last Name -->
+      <div class="form-group">
+        <label for="lastName">Prezime *</label>
+        <input 
+          type="text" 
+          id="lastName" 
+          formControlName="lastName"
+          class="form-control"
+          [class.error]="lastName?.invalid && lastName?.touched"
+        />
+        <div class="error-message" *ngIf="lastName?.invalid && lastName?.touched">
+          <span *ngIf="lastName?.errors?.['required']">Prezime je obavezno</span>
+          <span *ngIf="lastName?.errors?.['minlength']">Prezime mora imati najmanje 2 karaktera</span>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email adresa *</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email"
+          class="form-control"
+          [class.error]="email?.invalid && email?.touched"
+        />
+        <div class="error-message" *ngIf="email?.invalid && email?.touched">
+          <span *ngIf="email?.errors?.['required']">Email je obavezan</span>
+          <span *ngIf="email?.errors?.['email']">Unesite validnu email adresu</span>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Lozinka *</label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password"
+          class="form-control"
+          [class.error]="password?.invalid && password?.touched"
+        />
+        <div class="error-message" *ngIf="password?.invalid && password?.touched">
+          <span *ngIf="password?.errors?.['required']">Lozinka je obavezna</span>
+          <span *ngIf="password?.errors?.['minlength']">Lozinka mora imati najmanje 6 karaktera</span>
+        </div>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="form-group">
+        <label for="confirmPassword">Potvrda lozinke *</label>
+        <input 
+          type="password" 
+          id="confirmPassword" 
+          formControlName="confirmPassword"
+          class="form-control"
+          [class.error]="confirmPassword?.invalid && confirmPassword?.touched"
+        />
+        <div class="error-message" *ngIf="confirmPassword?.invalid && confirmPassword?.touched">
+          <span *ngIf="confirmPassword?.errors?.['required']">Potvrdite lozinku</span>
+          <span *ngIf="confirmPassword?.errors?.['passwordMismatch']">Lozinke se ne poklapaju</span>
+        </div>
+      </div>
+
+      <!-- Gender -->
+      <div class="form-group">
+        <label for="gender">Pol *</label>
+        <select id="gender" formControlName="gender" class="form-control">
+          <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
+        </select>
+      </div>
+
+      <!-- Date of Birth -->
+      <div class="form-group">
+        <label for="dateOfBirth">Datum rođenja *</label>
+        <input 
+          type="date" 
+          id="dateOfBirth" 
+          formControlName="dateOfBirth"
+          class="form-control"
+          [class.error]="dateOfBirth?.invalid && dateOfBirth?.touched"
+        />
+        <div class="error-message" *ngIf="dateOfBirth?.invalid && dateOfBirth?.touched">
+          <span *ngIf="dateOfBirth?.errors?.['required']">Datum rođenja je obavezan</span>
+        </div>
+      </div>
+
+      <!-- Phone Number -->
+      <div class="form-group">
+        <label for="phoneNumber">Telefon *</label>
+        <input 
+          type="tel" 
+          id="phoneNumber" 
+          formControlName="phoneNumber"
+          class="form-control"
+          [class.error]="phoneNumber?.invalid && phoneNumber?.touched"
+        />
+        <div class="error-message" *ngIf="phoneNumber?.invalid && phoneNumber?.touched">
+          <span *ngIf="phoneNumber?.errors?.['required']">Telefon je obavezan</span>
+          <span *ngIf="phoneNumber?.errors?.['pattern']">Unesite validan broj telefona</span>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div class="alert alert-error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Submit Button -->
+      <button 
+        type="submit" 
+        class="btn btn-primary btn-block"
+        [disabled]="isLoading"
+      >
+        <span *ngIf="!isLoading">Registruj se</span>
+        <span *ngIf="isLoading">Učitavanje...</span>
+      </button>
+
+      <!-- Login Link -->
+      <div class="form-footer">
+        <p>Već imate nalog? <a routerLink="/login">Prijavite se</a></p>
+      </div>
+    </form>
+  </div>
+</div>
