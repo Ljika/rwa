@@ -60,8 +60,18 @@
 
     <!-- Profil Tab -->
     <div *ngIf="activeTab === 'profil'" class="tab-content">
-      <h3>Moj Profil</h3>
-      <div class="profile-info">
+      <div class="profile-header">
+        <h3>Moj Profil</h3>
+        <button 
+          *ngIf="!isEditMode" 
+          class="btn-edit" 
+          (click)="toggleEditMode()">
+          ✏️ Izmeni Profil
+        </button>
+      </div>
+
+      <!-- View Mode -->
+      <div *ngIf="!isEditMode" class="profile-info">
         <div class="info-row">
           <span class="label">Ime:</span>
           <span class="value">{{ currentUser?.firstName }}</span>
@@ -92,6 +102,61 @@
             {{ currentUser?.isActive ? 'Aktivan' : 'Neaktivan' }}
           </span>
         </div>
+      </div>
+
+      <!-- Edit Mode -->
+      <div *ngIf="isEditMode" class="edit-profile-form">
+        <form [formGroup]="editProfileForm" (ngSubmit)="saveProfile()">
+          <div class="form-group">
+            <label>Ime:</label>
+            <input type="text" formControlName="firstName" class="form-control">
+            <div class="error" *ngIf="editProfileForm.get('firstName')?.invalid && editProfileForm.get('firstName')?.touched">
+              Ime je obavezno
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Prezime:</label>
+            <input type="text" formControlName="lastName" class="form-control">
+            <div class="error" *ngIf="editProfileForm.get('lastName')?.invalid && editProfileForm.get('lastName')?.touched">
+              Prezime je obavezno
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Telefon:</label>
+            <input type="text" formControlName="phoneNumber" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Datum rođenja:</label>
+            <input type="date" formControlName="dateOfBirth" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Pol:</label>
+            <select formControlName="gender" class="form-control">
+              <option value="">Izaberi pol</option>
+              <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              class="btn-save" 
+              [disabled]="editProfileForm.invalid || isUpdating">
+              {{ isUpdating ? 'Čuvanje...' : '💾 Sačuvaj' }}
+            </button>
+            <button 
+              type="button" 
+              class="btn-cancel" 
+              (click)="cancelEdit()"
+              [disabled]="isUpdating">
+              ❌ Otkaži
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

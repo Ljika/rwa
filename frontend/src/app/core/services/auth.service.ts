@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthResponse, LoginRequest, RegisterRequest, User } from '../../shared/models/user.model';
+import { AuthResponse, LoginRequest, RegisterRequest, UpdateUserRequest, User } from '../../shared/models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -122,5 +122,39 @@ export class AuthService {
   hasRole(role: string): boolean {
     const user = this.getCurrentUser();
     return user?.role === role;
+  }
+
+  // PROMISE - Update user profile
+  async updateProfileWithFetch(userId: string, userData: UpdateUserRequest): Promise<User> {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await fetch(`${environment.apiUrl}/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(userData)
+    });
+
+    console.log('UPDATE PROFILE: Response status:', response.status);
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('UPDATE PROFILE: Greška pri izmeni profila:', error);
+      throw new Error(error.message || 'Update profile failed');
+    }
+
+    const updatedUser: User = await response.json();
+    console.log('UPDATE PROFILE: Uspešna izmena profila!', updatedUser);
+    
+    // Ažuriraj localStorage i BehaviorSubject
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    this.currentUserSubject.next(updatedUser);
+
+    return updatedUser;
   }
 }

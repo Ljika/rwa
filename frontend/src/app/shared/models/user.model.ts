@@ -46,3 +46,11 @@ export interface AuthResponse {
   accessToken: string;  
   user: User;
 }
+
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+  gender?: Gender;
+}
