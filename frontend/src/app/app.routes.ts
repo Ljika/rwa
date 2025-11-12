@@ -24,8 +24,21 @@ export const routes: Routes = [
     loadComponent: () => import('./features/patient/patient-dashboard/patient-dashboard.component').then(m => m.PatientDashboardComponent)
   },
   
-  // TODO: Admin routes
-  // TODO: Doctor routes
+  // Doctor routes
+  {
+    path: 'doctor/dashboard',
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'Doctor' },
+    loadComponent: () => import('./features/doctor/doctor-dashboard/doctor-dashboard.component').then(m => m.DoctorDashboardComponent)
+  },
+  
+  // Admin routes
+  {
+    path: 'admin/dashboard',
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'Admin' },
+    loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+  },
   
   { 
     path: '**', 

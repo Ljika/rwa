@@ -1,118 +1,69 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { AuthResponse, LoginRequest, RegisterRequest, UpdateUserRequest, User } from '../../shared/models/user.model';
+import { Observable } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { LoginRequest, RegisterRequest, UpdateUserRequest, User } from '../../shared/models/user.model';
+import * as AuthActions from '../../store/auth/auth.actions';
+import * as AuthSelectors from '../../store/auth/auth.selectors';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
+  // Observables iz Store-a umesto BehaviorSubject
+  public currentUser$: Observable<User | null>;
+  public isAuthenticated$: Observable<boolean>;
+  public isLoading$: Observable<boolean>;
+  public error$: Observable<string | null>;
 
-  constructor() {
-    // Učitaj korisnika iz localStorage pri inicijalizaciji
+  constructor(private store: Store) {
+    // Selektori iz Store-a
+    this.currentUser$ = this.store.select(AuthSelectors.selectUser);
+    this.isAuthenticated$ = this.store.select(AuthSelectors.selectIsAuthenticated);
+    this.isLoading$ = this.store.select(AuthSelectors.selectAuthLoading);
+    this.error$ = this.store.select(AuthSelectors.selectAuthError);
+    
+    // Učitaj korisnika iz localStorage pri inicijalizaciji (ako postoji token)
+    const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      this.currentUserSubject.next(JSON.parse(storedUser));
+    if (storedToken && storedUser) {
+      const user = JSON.parse(storedUser);
+      this.store.dispatch(AuthActions.loginSuccess({ user, token: storedToken }));
     }
   }
 
-  // FETCH API + PROMISE 
-  async loginWithFetch(credentials: LoginRequest): Promise<AuthResponse> {
-    
-    const response = await fetch(`${environment.apiUrl}/auth/login`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(credentials)
-    });
-
-    console.log(' LOGIN: Response status:', response.status);
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error(' LOGIN: Greška pri logovanju:', error);
-      throw new Error(error.message || 'Login failed');
-    }
-
-    const data: AuthResponse = await response.json();
-    console.log('LOGIN: Uspešno logovanje!', data);
-    
-    // Sačuvaj token i user podatke
-    localStorage.setItem('token', data.accessToken);
-    localStorage.setItem('currentUser', JSON.stringify(data.user));
-    this.currentUserSubject.next(data.user);
-
-    return data;
+  // Dispatch login action - Effects će se pobrinuti za fetch API
+  login(credentials: LoginRequest): void {
+    this.store.dispatch(AuthActions.login({ credentials }));
   }
 
-  //  FETCH API + PROMISE za registraciju
-  async registerWithFetch(userData: RegisterRequest): Promise<AuthResponse> {
-    
-    const response = await fetch(`${environment.apiUrl}/auth/register`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(userData)
-    });
-
-    console.log('REGISTER: Response status:', response.status);
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error(' REGISTER: Greška pri registraciji:', error);
-      throw new Error(error.message || 'Registration failed');
-    }
-
-    const data: AuthResponse = await response.json();
-    console.log(' REGISTER: Uspešna registracija!', data);
-    
-    localStorage.setItem('token', data.accessToken);
-    localStorage.setItem('currentUser', JSON.stringify(data.user));
-    this.currentUserSubject.next(data.user);
-
-    return data;
+  // Dispatch register action - Effects će se pobrinuti za fetch API
+  register(userData: RegisterRequest): void {
+    this.store.dispatch(AuthActions.register({ userData }));
   }
 
-  // PROMISE - Load user profile
-  async loadUserProfile(): Promise<User> {
-    const token = this.getToken();
-    if (!token) {
-      throw new Error('No token found');
-    }
-
-    const response = await fetch(`${environment.apiUrl}/users/me`, {
-      headers: { 
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to load profile');
-    }
-
-    const user: User = await response.json();
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    this.currentUserSubject.next(user);
-
-    return user;
+  // Dispatch load profile action
+  loadUserProfile(): void {
+    this.store.dispatch(AuthActions.loadUserProfile());
   }
 
+  // Dispatch logout action
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
+    this.store.dispatch(AuthActions.logout());
+  }
+  
+  // Update profile
+  updateProfile(userId: string, userData: UpdateUserRequest): void {
+    this.store.dispatch(AuthActions.updateProfile({ userId, userData }));
   }
 
+  // Helper methods - sada koriste localStorage direktno
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
   getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
+    const storedUser = localStorage.getItem('currentUser');
+    return storedUser ? JSON.parse(storedUser) : null;
   }
 
   isLoggedIn(): boolean {
@@ -122,39 +73,5 @@ export class AuthService {
   hasRole(role: string): boolean {
     const user = this.getCurrentUser();
     return user?.role === role;
-  }
-
-  // PROMISE - Update user profile
-  async updateProfileWithFetch(userId: string, userData: UpdateUserRequest): Promise<User> {
-    const token = this.getToken();
-    if (!token) {
-      throw new Error('No token found');
-    }
-
-    const response = await fetch(`${environment.apiUrl}/users/${userId}`, {
-      method: 'PATCH',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(userData)
-    });
-
-    console.log('UPDATE PROFILE: Response status:', response.status);
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('UPDATE PROFILE: Greška pri izmeni profila:', error);
-      throw new Error(error.message || 'Update profile failed');
-    }
-
-    const updatedUser: User = await response.json();
-    console.log('UPDATE PROFILE: Uspešna izmena profila!', updatedUser);
-    
-    // Ažuriraj localStorage i BehaviorSubject
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    this.currentUserSubject.next(updatedUser);
-
-    return updatedUser;
   }
 }

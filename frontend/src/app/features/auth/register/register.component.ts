@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { Observable } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole, Gender } from '../../../shared/models/user.model';
 
@@ -12,17 +13,16 @@ import { UserRole, Gender } from '../../../shared/models/user.model';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
-  errorMessage: string = '';
-  isLoading: boolean = false;
-
+  isLoading$: Observable<boolean>;
+  error$: Observable<string | null>;
+  
   genders = Object.values(Gender);
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
+    private authService: AuthService
   ) {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -34,6 +34,13 @@ export class RegisterComponent {
       dateOfBirth: ['', [Validators.required]],
       phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]]
     }, { validators: this.passwordMatchValidator });
+    
+    // Observables iz Store-a
+    this.isLoading$ = this.authService.isLoading$;
+    this.error$ = this.authService.error$;
+  }
+
+  ngOnInit() {
   }
 
   passwordMatchValidator(form: FormGroup) {
@@ -48,29 +55,19 @@ export class RegisterComponent {
     return null;
   }
 
-  // ASYNC/AWAIT sa FETCH API
-  async onSubmit() {
+  // Dispatch register action - NGRX Effects će se pobrinuti za fetch API + Promise
+  onSubmit() {
     if (this.registerForm.invalid) {
       this.markFormGroupTouched(this.registerForm);
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
-
-    try {
-      const { confirmPassword, ...userData } = this.registerForm.value;
-      // Automatski postavi role na Patient
-      const registerData = { ...userData, role: UserRole.Patient };
-      const response = await this.authService.registerWithFetch(registerData);
-
-      // Uvek redirect na patient dashboard jer se samo pacijenti registruju
-      this.router.navigate(['/patient/dashboard']);
-    } catch (error: any) {
-      this.errorMessage = error.message || 'Registration failed. Please try again.';
-    } finally {
-      this.isLoading = false;
-    }
+    const { confirmPassword, ...userData } = this.registerForm.value;
+    // Automatski postavi role na Patient
+    const registerData = { ...userData, role: UserRole.Patient };
+    
+    // Dispatch akciju - Effects će pokrenuti fetch API i redirect na patient dashboard
+    this.authService.register(registerData);
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {

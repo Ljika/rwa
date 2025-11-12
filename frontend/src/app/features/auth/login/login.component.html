@@ -41,19 +41,19 @@
         </div>
       </div>
 
-      <!-- Error Message -->
-      <div class="alert alert-error" *ngIf="errorMessage">
-        {{ errorMessage }}
+      <!-- Error Message - koristi async pipe -->
+      <div class="alert alert-error" *ngIf="error$ | async as error">
+        {{ error }}
       </div>
 
-      <!-- Submit Button -->
+      <!-- Submit Button - koristi async pipe -->
       <button 
         type="submit" 
         class="btn btn-primary btn-block"
-        [disabled]="isLoading"
+        [disabled]="isLoading$ | async"
       >
-        <span *ngIf="!isLoading">Prijavi se</span>
-        <span *ngIf="isLoading">Učitavanje...</span>
+        <span *ngIf="!(isLoading$ | async)">Prijavi se</span>
+        <span *ngIf="isLoading$ | async">Učitavanje...</span>
       </button>
 
       <!-- Register Link -->
