@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
-import { Gender, UpdateUserRequest, User } from '../../../shared/models/user.model';
+import { DoctorPatientService } from '../../../core/services/doctor-patient.service';
+import { Gender, User } from '../../../shared/models/user.model';
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -12,29 +13,43 @@ import { Gender, UpdateUserRequest, User } from '../../../shared/models/user.mod
   templateUrl: './patient-dashboard.component.html',
   styleUrl: './patient-dashboard.component.scss'
 })
-export class PatientDashboardComponent {
-  activeTab: string = 'profil'; 
-  currentUser: User | null = null;
+export class PatientDashboardComponent implements OnInit {
+  activeTab: string = 'karton'; 
+  currentUser$: Observable<User | null>;
   isEditMode: boolean = false;
   editProfileForm: FormGroup;
   genders = Object.values(Gender);
-  isUpdating: boolean = false;
+  isUpdating$: Observable<boolean>;
+
+  // Karton tab data
+  myDoctors: any[] = [];
+  isLoadingKarton: boolean = false;
 
   constructor(
     private authService: AuthService,
-    private router: Router,
+    private doctorPatientService: DoctorPatientService,
     private fb: FormBuilder
   ) {
-    this.currentUser = this.authService.getCurrentUser();
+    // Observables iz Store-a
+    this.currentUser$ = this.authService.currentUser$;
+    this.isUpdating$ = this.authService.isLoading$;
+    
+    // Inicijalizuj formu
+    const currentUser = this.authService.getCurrentUser();
     
     // Inicijalizuj formu sa trenutnim podacima
     this.editProfileForm = this.fb.group({
-      firstName: [this.currentUser?.firstName || '', Validators.required],
-      lastName: [this.currentUser?.lastName || '', Validators.required],
-      phoneNumber: [this.currentUser?.phoneNumber || ''],
-      dateOfBirth: [this.currentUser?.dateOfBirth || ''],
-      gender: [this.currentUser?.gender || '']
+      firstName: [currentUser?.firstName || '', Validators.required],
+      lastName: [currentUser?.lastName || '', Validators.required],
+      phoneNumber: [currentUser?.phoneNumber || ''],
+      dateOfBirth: [currentUser?.dateOfBirth || ''],
+      gender: [currentUser?.gender || '']
     });
+  }
+
+  ngOnInit() {
+    // Učitaj medicinski karton i lekare odmah pri inicijalizaciji
+    this.loadKartonData();
   }
 
   selectTab(tab: string) {
@@ -43,20 +58,20 @@ export class PatientDashboardComponent {
 
   logout() {
     this.authService.logout();
-    this.router.navigate(['/login']);
   }
 
   toggleEditMode() {
     this.isEditMode = !this.isEditMode;
     
     if (this.isEditMode) {
+      const currentUser = this.authService.getCurrentUser();
       // Popuni formu sa trenutnim podacima
       this.editProfileForm.patchValue({
-        firstName: this.currentUser?.firstName || '',
-        lastName: this.currentUser?.lastName || '',
-        phoneNumber: this.currentUser?.phoneNumber || '',
-        dateOfBirth: this.currentUser?.dateOfBirth || '',
-        gender: this.currentUser?.gender || ''
+        firstName: currentUser?.firstName || '',
+        lastName: currentUser?.lastName || '',
+        phoneNumber: currentUser?.phoneNumber || '',
+        dateOfBirth: currentUser?.dateOfBirth || '',
+        gender: currentUser?.gender || ''
       });
     }
   }
@@ -66,28 +81,30 @@ export class PatientDashboardComponent {
     this.editProfileForm.reset();
   }
 
-  async saveProfile() {
-    if (this.editProfileForm.invalid || !this.currentUser?.id) {
+  saveProfile() {
+    const currentUser = this.authService.getCurrentUser();
+    if (this.editProfileForm.invalid || !currentUser?.id) {
       return;
     }
 
-    this.isUpdating = true;
+    const updateData = this.editProfileForm.value;
+    // Dispatch update profile action
+    this.authService.updateProfile(currentUser.id, updateData);
+    this.isEditMode = false;
+  }
+
+  // Load Karton data
+  async loadKartonData() {
+    this.isLoadingKarton = true;
     
     try {
-      const updateData: UpdateUserRequest = this.editProfileForm.value;
-      const updatedUser = await this.authService.updateProfileWithFetch(
-        this.currentUser.id, 
-        updateData
-      );
-      
-      this.currentUser = updatedUser;
-      this.isEditMode = false;
-      alert('Profil uspešno ažuriran!');
+      // Učitaj samo lekare
+      this.myDoctors = await this.doctorPatientService.getMyDoctors();
     } catch (error: any) {
-      console.error('Greška pri izmeni profila:', error);
-      alert(error.message || 'Greška pri čuvanju profila');
+      console.error('Greška pri učitavanju lekara:', error);
+      alert(error.message || 'Greška pri učitavanju lekara');
     } finally {
-      this.isUpdating = false;
+      this.isLoadingKarton = false;
     }
   }
 }

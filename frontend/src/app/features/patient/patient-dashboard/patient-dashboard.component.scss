@@ -141,38 +141,67 @@
 
 /* Profile Info */
 .profile-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-}
+  .info-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
 
-.info-row {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  background-color: #f8fafc;
-  border-radius: 8px;
-  border-left: 4px solid #667eea;
-
-  .label {
-    font-weight: 600;
-    color: #475569;
-    min-width: 150px;
+    h5 {
+      margin: 0 0 1rem 0;
+      color: #667eea;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
   }
 
-  .value {
-    color: #1e293b;
-    font-size: 1rem;
-  }
+  .info-row {
+    display: flex;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e2e8f0;
 
-  .active-status {
-    color: #10b981;
-    font-weight: 600;
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .label {
+      font-weight: 600;
+      color: #475569;
+      min-width: 180px;
+    }
+
+    .value {
+      color: #1e293b;
+      flex: 1;
+    }
+
+    .active-status {
+      color: #10b981;
+      font-weight: 600;
+    }
   }
 }
 
 /* Edit Profile Form */
 .edit-profile-form {
+  max-width: 700px;
+
+  .form-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+
+    h5 {
+      margin: 0 0 1.5rem 0;
+      color: #667eea;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+  }
+
   .form-group {
     margin-bottom: 1.5rem;
 
@@ -181,6 +210,7 @@
       font-weight: 600;
       color: #475569;
       margin-bottom: 0.5rem;
+      font-size: 0.95rem;
     }
 
     .form-control {
@@ -209,10 +239,11 @@
     display: flex;
     gap: 1rem;
     margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #e2e8f0;
 
     button {
-      flex: 1;
-      padding: 0.75rem 1.5rem;
+      padding: 0.75rem 2rem;
       border: none;
       border-radius: 8px;
       font-size: 1rem;
@@ -243,6 +274,115 @@
 
       &:hover:not(:disabled) {
         background-color: #e2e8f0;
+      }
+    }
+  }
+}
+
+/* Karton Tab Styles */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+.patient-info-section {
+  margin-bottom: 2rem;
+
+  h4 {
+    color: #1e293b;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #667eea;
+  }
+
+  .patient-details {
+    background-color: #f8fafc;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+
+      .detail-label {
+        font-weight: 600;
+        color: #64748b;
+        font-size: 0.9rem;
+      }
+
+      .detail-value {
+        color: #1e293b;
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+.doctors-section {
+  h4 {
+    color: #1e293b;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #667eea;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #64748b;
+    background-color: #f8fafc;
+    border-radius: 8px;
+  }
+
+  .doctors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+
+    .doctor-card {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border: 2px solid #e2e8f0;
+
+      .doctor-icon {
+        font-size: 3rem;
+        flex-shrink: 0;
+      }
+
+      .doctor-info {
+        flex: 1;
+
+        h5 {
+          margin: 0 0 0.5rem 0;
+          color: #1e293b;
+          font-size: 1.1rem;
+          font-weight: 600;
+        }
+
+        .specialization {
+          color: #667eea;
+          font-weight: 600;
+          margin: 0 0 0.5rem 0;
+          font-size: 0.9rem;
+        }
+
+        .contact {
+          color: #64748b;
+          margin: 0.2rem 0;
+          font-size: 0.85rem;
+        }
       }
     }
   }
@@ -286,5 +426,13 @@
 
   .form-actions {
     flex-direction: column;
+  }
+
+  .patient-details {
+    grid-template-columns: 1fr;
+  }
+
+  .doctors-grid {
+    grid-template-columns: 1fr;
   }
 }
