@@ -40,13 +40,13 @@
       class="tab-button" 
       [class.active]="activeTab === 'povezi'" 
       (click)="selectTab('povezi')">
-      🔗 Poveži Lekara i Pacijenta
+      🔗 Poveži doktora i pacijenta
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'ukloni'" 
       (click)="selectTab('ukloni')">
-      ❌ Ukloni Pacijenta Lekaru
+      ❌ Ukloni pacijenta doktoru
     </button>
   </nav>
 
@@ -166,30 +166,253 @@
     <!-- Pacijenti Tab -->
     <div *ngIf="activeTab === 'pacijenti'" class="tab-content">
       <h3>Upravljanje Pacijentima</h3>
-      <p class="placeholder">Ovde će biti lista svih pacijenata...</p>
+      
+      <!-- Loading state -->
+      <div *ngIf="isLoadingUsers$ | async" class="loading">
+        <p>Učitavanje pacijenata...</p>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!(isLoadingUsers$ | async) && (patients$ | async)?.length === 0" class="empty-state">
+        <p>Nema registrovanih pacijenata.</p>
+      </div>
+
+      <!-- Patients Table -->
+      <div *ngIf="!(isLoadingUsers$ | async) && (patients$ | async)?.length! > 0" class="patients-table-container">
+        <table class="patients-table">
+          <thead>
+            <tr>
+              <th>Ime i Prezime</th>
+              <th>Email</th>
+              <th>Telefon</th>
+              <th>Datum rođenja</th>
+              <th>Pol</th>
+              <th>Akcije</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let patient of patients$ | async">
+              <td>{{ patient.firstName }} {{ patient.lastName }}</td>
+              <td>{{ patient.email }}</td>
+              <td>{{ patient.phoneNumber || 'Nije uneto' }}</td>
+              <td>{{ patient.dateOfBirth || 'Nije uneto' }}</td>
+              <td>{{ patient.gender || 'Nije uneto' }}</td>
+              <td class="actions">
+                <button class="btn-delete" (click)="deletePatient(patient.id)" title="Obriši pacijenta">
+                  🗑️ Obriši
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Doktori Tab -->
     <div *ngIf="activeTab === 'doktori'" class="tab-content">
       <h3>Upravljanje Doktorima</h3>
-      <p class="placeholder">Ovde će biti lista svih doktora...</p>
+      
+      <!-- Loading state -->
+      <div *ngIf="isLoadingUsers$ | async" class="loading">
+        <p>Učitavanje doktora...</p>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!(isLoadingUsers$ | async) && (doctors$ | async)?.length === 0" class="empty-state">
+        <p>Nema registrovanih doktora.</p>
+      </div>
+
+      <!-- Doctors Table -->
+      <div *ngIf="!(isLoadingUsers$ | async) && (doctors$ | async)?.length! > 0" class="patients-table-container">
+        <table class="patients-table">
+          <thead>
+            <tr>
+              <th>Ime i Prezime</th>
+              <th>Email</th>
+              <th>Specijalizacija</th>
+              <th>Telefon</th>
+              <th>Datum rođenja</th>
+              <th>Pol</th>
+              <th>Akcije</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let doctor of doctors$ | async">
+              <td>{{ doctor.firstName }} {{ doctor.lastName }}</td>
+              <td>{{ doctor.email }}</td>
+              <td>{{ doctor.specialization || 'Nije uneto' }}</td>
+              <td>{{ doctor.phoneNumber || 'Nije uneto' }}</td>
+              <td>{{ doctor.dateOfBirth || 'Nije uneto' }}</td>
+              <td>{{ doctor.gender || 'Nije uneto' }}</td>
+              <td class="actions">
+                <button class="btn-delete" (click)="deleteDoctor(doctor.id)" title="Obriši doktora">
+                  🗑️ Obriši
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Administratori Tab -->
     <div *ngIf="activeTab === 'administratori'" class="tab-content">
       <h3>Upravljanje Administratorima</h3>
-      <p class="placeholder">Ovde će biti lista svih administratora...</p>
+      
+      <!-- Loading state -->
+      <div *ngIf="isLoadingUsers$ | async" class="loading">
+        <p>Učitavanje administratora...</p>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!(isLoadingUsers$ | async) && (admins$ | async)?.length === 0" class="empty-state">
+        <p>Nema registrovanih administratora.</p>
+      </div>
+
+      <!-- Admins Table -->
+      <div *ngIf="!(isLoadingUsers$ | async) && (admins$ | async)?.length! > 0" class="patients-table-container">
+        <table class="patients-table">
+          <thead>
+            <tr>
+              <th>Ime i Prezime</th>
+              <th>Email</th>
+              <th>Telefon</th>
+              <th>Datum rođenja</th>
+              <th>Pol</th>
+              <th>Akcije</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let admin of admins$ | async">
+              <td>{{ admin.firstName }} {{ admin.lastName }}</td>
+              <td>{{ admin.email }}</td>
+              <td>{{ admin.phoneNumber || 'Nije uneto' }}</td>
+              <td>{{ admin.dateOfBirth || 'Nije uneto' }}</td>
+              <td>{{ admin.gender || 'Nije uneto' }}</td>
+              <td class="actions">
+                <button class="btn-delete" (click)="deleteAdmin(admin.id)" title="Obriši administratora">
+                  🗑️ Obriši
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Poveži Tab -->
     <div *ngIf="activeTab === 'povezi'" class="tab-content">
-      <h3>Poveži Lekara i Pacijenta</h3>
-      <p class="placeholder">Ovde će biti forma za povezivanje...</p>
+      <h3>🔗 Poveži doktora i pacijenta</h3>
+      <p style="color: #64748b; margin-bottom: 2rem; text-align: center;">
+        Izaberi pacijenta i doktora da bi ih povezao u sistem
+      </p>
+      
+      <div class="assign-form">
+        <!-- Pacijent Autocomplete -->
+        <div class="form-group autocomplete-container">
+          <label>👤 Pacijent</label>
+          
+          <!-- Izabrani pacijent -->
+          <div *ngIf="selectedPatient" class="selected-user">
+            <div class="user-card">
+              <div class="user-info">
+                <strong>{{ selectedPatient.firstName }} {{ selectedPatient.lastName }}</strong>
+                <span>{{ selectedPatient.email }}</span>
+              </div>
+              <button class="btn-clear" (click)="clearPatient()">✕</button>
+            </div>
+          </div>
+
+          <!-- Search input -->
+          <div *ngIf="!selectedPatient">
+            <input 
+              type="text" 
+              class="form-control"
+              placeholder="Kucaj ime, prezime ili email pacijenta..."
+              (input)="onPatientSearchChange($any($event.target).value)"
+            />
+            
+            <!-- Autocomplete dropdown -->
+            <div class="autocomplete-dropdown" *ngIf="showPatientDropdown && (filteredPatients$ | async) as patients">
+              <div 
+                *ngFor="let patient of patients" 
+                class="autocomplete-item"
+                (mousedown)="selectPatient(patient)">
+                <div class="user-icon">👤</div>
+                <div class="user-details">
+                  <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
+                  <span>{{ patient.email }}</span>
+                </div>
+              </div>
+              <div *ngIf="patients.length === 0" class="no-results">
+                Nema rezultata
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Doktor Autocomplete -->
+        <div class="form-group autocomplete-container">
+          <label>👨‍⚕️ Doktor</label>
+          
+          <!-- Izabrani doktor -->
+          <div *ngIf="selectedDoctor" class="selected-user">
+            <div class="user-card">
+              <div class="user-info">
+                <strong>Dr. {{ selectedDoctor.firstName }} {{ selectedDoctor.lastName }}</strong>
+                <span>{{ selectedDoctor.email }}</span>
+                <span class="specialization" *ngIf="selectedDoctor.specialization">
+                  {{ selectedDoctor.specialization }}
+                </span>
+              </div>
+              <button class="btn-clear" (click)="clearDoctor()">✕</button>
+            </div>
+          </div>
+
+          <!-- Search input -->
+          <div *ngIf="!selectedDoctor">
+            <input 
+              type="text" 
+              class="form-control"
+              placeholder="Kucaj ime, prezime ili email doktora..."
+              (input)="onDoctorSearchChange($any($event.target).value)"
+            />
+            
+            <!-- Autocomplete dropdown -->
+            <div class="autocomplete-dropdown" *ngIf="showDoctorDropdown && (filteredDoctors$ | async) as doctors">
+              <div 
+                *ngFor="let doctor of doctors" 
+                class="autocomplete-item"
+                (mousedown)="selectDoctor(doctor)">
+                <div class="user-icon">👨‍⚕️</div>
+                <div class="user-details">
+                  <strong>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</strong>
+                  <span>{{ doctor.email }}</span>
+                  <span class="spec" *ngIf="doctor.specialization">{{ doctor.specialization }}</span>
+                </div>
+              </div>
+              <div *ngIf="doctors.length === 0" class="no-results">
+                Nema rezultata
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="form-actions">
+          <button 
+            class="btn-assign"
+            [disabled]="!selectedPatient || !selectedDoctor"
+            (click)="assignDoctorToPatient()">
+            🔗 Dodeli doktora pacijentu
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Ukloni Tab -->
     <div *ngIf="activeTab === 'ukloni'" class="tab-content">
-      <h3>Ukloni Pacijenta Lekaru</h3>
+      <h3>Ukloni pacijenta doktoru</h3>
       <p class="placeholder">Ovde će biti forma za uklanjanje...</p>
     </div>
   </div>

@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DoctorPatientLink } from '../../shared/models/doctor.model';
 
@@ -7,7 +9,20 @@ import { DoctorPatientLink } from '../../shared/models/doctor.model';
 })
 export class DoctorPatientService {
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
+
+  // Assign patient to doctor (Admin only)
+  assignPatientToDoctor(doctorId: string, patientId: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.post(`${environment.apiUrl}/doctor-patient/assign`, 
+      { doctorId, patientId }, 
+      { headers }
+    );
+  }
 
   // PROMISE - Get my doctors (for patients)
   async getMyDoctors(): Promise<DoctorPatientLink[]> {

@@ -8,6 +8,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { appReducers } from './store';
 import { AuthEffects } from './store/auth/auth.effects';
+import { UsersEffects } from './store/users/users.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,7 +18,7 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor])
     ),
     provideStore(appReducers),
-    provideEffects([AuthEffects]),
+    provideEffects([AuthEffects, UsersEffects]),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode(),
