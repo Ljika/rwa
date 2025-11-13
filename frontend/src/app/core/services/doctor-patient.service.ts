@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DoctorPatientLink } from '../../shared/models/doctor.model';
+import { User } from '../../shared/models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -76,5 +77,25 @@ export class DoctorPatientService {
     console.log('MY PATIENTS: Uspešno učitano!', data);
     
     return data;
+  }
+
+  // Get patients for specific doctor (Admin only)
+  getDoctorPatients(doctorId: string): Observable<User[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.get<User[]>(`${environment.apiUrl}/doctor-patient/doctor/${doctorId}/patients`, { headers });
+  }
+
+  // Remove patient from doctor (Admin only)
+  removePatientFromDoctor(doctorId: string, patientId: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.delete(`${environment.apiUrl}/doctor-patient/remove?doctorId=${doctorId}&patientId=${patientId}`, { headers });
   }
 }

@@ -198,6 +198,9 @@
               <td>{{ patient.dateOfBirth || 'Nije uneto' }}</td>
               <td>{{ patient.gender || 'Nije uneto' }}</td>
               <td class="actions">
+                <button class="btn-edit" (click)="openEditModal(patient)" title="Izmeni pacijenta">
+                  ✏️ Izmeni
+                </button>
                 <button class="btn-delete" (click)="deletePatient(patient.id)" title="Obriši pacijenta">
                   🗑️ Obriši
                 </button>
@@ -210,7 +213,93 @@
 
     <!-- Doktori Tab -->
     <div *ngIf="activeTab === 'doktori'" class="tab-content">
-      <h3>Upravljanje Doktorima</h3>
+      <div class="tab-header">
+        <h3>Upravljanje Doktorima</h3>
+        <button class="btn-add-doctor" (click)="toggleAddDoctorForm()">
+          {{ showAddDoctorForm ? '❌ Zatvori' : '➕ Dodaj Doktora' }}
+        </button>
+      </div>
+
+      <!-- Add Doctor Form -->
+      <div *ngIf="showAddDoctorForm" class="add-doctor-form">
+        <h4>➕ Kreiranje Novog Doktora</h4>
+        <form [formGroup]="addDoctorForm" (ngSubmit)="createDoctor()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ime *</label>
+              <input type="text" formControlName="firstName" class="form-control" placeholder="Unesite ime">
+              <div class="error" *ngIf="addDoctorForm.get('firstName')?.invalid && addDoctorForm.get('firstName')?.touched">
+                Ime je obavezno
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Prezime *</label>
+              <input type="text" formControlName="lastName" class="form-control" placeholder="Unesite prezime">
+              <div class="error" *ngIf="addDoctorForm.get('lastName')?.invalid && addDoctorForm.get('lastName')?.touched">
+                Prezime je obavezno
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" formControlName="email" class="form-control" placeholder="email@example.com">
+              <div class="error" *ngIf="addDoctorForm.get('email')?.invalid && addDoctorForm.get('email')?.touched">
+                Email je obavezan i mora biti validan
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Lozinka *</label>
+              <input type="password" formControlName="password" class="form-control" placeholder="Minimum 6 karaktera">
+              <div class="error" *ngIf="addDoctorForm.get('password')?.invalid && addDoctorForm.get('password')?.touched">
+                Lozinka je obavezna (min 6 karaktera)
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Specijalizacija *</label>
+              <input type="text" formControlName="specialization" class="form-control" placeholder="Kardiolog, Neurolog...">
+              <div class="error" *ngIf="addDoctorForm.get('specialization')?.invalid && addDoctorForm.get('specialization')?.touched">
+                Specijalizacija je obavezna
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Telefon</label>
+              <input type="text" formControlName="phoneNumber" class="form-control" placeholder="0601234567">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Datum rođenja</label>
+              <input type="date" formControlName="dateOfBirth" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label>Pol</label>
+              <select formControlName="gender" class="form-control">
+                <option value="">Izaberi pol</option>
+                <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-submit" [disabled]="addDoctorForm.invalid || isCreatingDoctor">
+              {{ isCreatingDoctor ? 'Kreiranje...' : '✅ Kreiraj Doktora' }}
+            </button>
+            <button type="button" class="btn-cancel" (click)="toggleAddDoctorForm()" [disabled]="isCreatingDoctor">
+              ❌ Otkaži
+            </button>
+          </div>
+        </form>
+      </div>
       
       <!-- Loading state -->
       <div *ngIf="isLoadingUsers$ | async" class="loading">
@@ -245,6 +334,9 @@
               <td>{{ doctor.dateOfBirth || 'Nije uneto' }}</td>
               <td>{{ doctor.gender || 'Nije uneto' }}</td>
               <td class="actions">
+                <button class="btn-edit" (click)="openEditModal(doctor)" title="Izmeni doktora">
+                  ✏️ Izmeni
+                </button>
                 <button class="btn-delete" (click)="deleteDoctor(doctor.id)" title="Obriši doktora">
                   🗑️ Obriši
                 </button>
@@ -290,6 +382,9 @@
               <td>{{ admin.dateOfBirth || 'Nije uneto' }}</td>
               <td>{{ admin.gender || 'Nije uneto' }}</td>
               <td class="actions">
+                <button class="btn-edit" (click)="openEditModal(admin)" title="Izmeni administratora">
+                  ✏️ Izmeni
+                </button>
                 <button class="btn-delete" (click)="deleteAdmin(admin.id)" title="Obriši administratora">
                   🗑️ Obriši
                 </button>
@@ -412,8 +507,180 @@
 
     <!-- Ukloni Tab -->
     <div *ngIf="activeTab === 'ukloni'" class="tab-content">
-      <h3>Ukloni pacijenta doktoru</h3>
-      <p class="placeholder">Ovde će biti forma za uklanjanje...</p>
+      <h3>❌ Ukloni Pacijenta Doktoru</h3>
+      <p style="color: #64748b; margin-bottom: 2rem; text-align: center;">
+        Prvo izaberi doktora, pa onda pacijenta koji treba da se ukloni
+      </p>
+      
+      <div class="assign-form">
+        <!-- Doktor Autocomplete -->
+        <div class="form-group autocomplete-container">
+          <label>👨‍⚕️ Doktor</label>
+          
+          <!-- Izabrani doktor -->
+          <div *ngIf="selectedRemoveDoctor" class="selected-user">
+            <div class="user-card">
+              <div class="user-info">
+                <strong>Dr. {{ selectedRemoveDoctor.firstName }} {{ selectedRemoveDoctor.lastName }}</strong>
+                <span>{{ selectedRemoveDoctor.email }}</span>
+                <span class="specialization" *ngIf="selectedRemoveDoctor.specialization">
+                  {{ selectedRemoveDoctor.specialization }}
+                </span>
+              </div>
+              <button class="btn-clear" (click)="clearRemoveDoctor()">✕</button>
+            </div>
+          </div>
+
+          <!-- Search input -->
+          <div *ngIf="!selectedRemoveDoctor">
+            <input 
+              type="text" 
+              class="form-control"
+              placeholder="Kucaj ime, prezime ili email doktora..."
+              (input)="onRemoveDoctorSearchChange($any($event.target).value)"
+            />
+            
+            <!-- Autocomplete dropdown -->
+            <div class="autocomplete-dropdown" *ngIf="showRemoveDoctorDropdown && (filteredRemoveDoctors$ | async) as doctors">
+              <div 
+                *ngFor="let doctor of doctors" 
+                class="autocomplete-item"
+                (mousedown)="selectRemoveDoctor(doctor)">
+                <div class="user-icon">👨‍⚕️</div>
+                <div class="user-details">
+                  <strong>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</strong>
+                  <span>{{ doctor.email }}</span>
+                  <span class="spec" *ngIf="doctor.specialization">{{ doctor.specialization }}</span>
+                </div>
+              </div>
+              <div *ngIf="doctors.length === 0" class="no-results">
+                Nema rezultata
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pacijent Autocomplete - prikazuje se samo ako je doktor izabran -->
+        <div class="form-group autocomplete-container" *ngIf="selectedRemoveDoctor">
+          <label>👤 Pacijent</label>
+          
+          <!-- Izabrani pacijent -->
+          <div *ngIf="selectedRemovePatient" class="selected-user">
+            <div class="user-card">
+              <div class="user-info">
+                <strong>{{ selectedRemovePatient.firstName }} {{ selectedRemovePatient.lastName }}</strong>
+                <span>{{ selectedRemovePatient.email }}</span>
+              </div>
+              <button class="btn-clear" (click)="clearRemovePatient()">✕</button>
+            </div>
+          </div>
+
+          <!-- Search input -->
+          <div *ngIf="!selectedRemovePatient">
+            <input 
+              type="text" 
+              class="form-control"
+              placeholder="Kucaj ime, prezime ili email pacijenta..."
+              (input)="onRemovePatientSearchChange($any($event.target).value)"
+            />
+            
+            <!-- Autocomplete dropdown -->
+            <div class="autocomplete-dropdown" *ngIf="showRemovePatientDropdown && (filteredRemovePatients$ | async) as patients">
+              <div 
+                *ngFor="let patient of patients" 
+                class="autocomplete-item"
+                (mousedown)="selectRemovePatient(patient)">
+                <div class="user-icon">👤</div>
+                <div class="user-details">
+                  <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
+                  <span>{{ patient.email }}</span>
+                </div>
+              </div>
+              <div *ngIf="patients.length === 0" class="no-results">
+                Nema pacijenata za ovog doktora
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="form-actions" *ngIf="selectedRemoveDoctor">
+          <button 
+            class="btn-remove"
+            [disabled]="!selectedRemovePatient || !selectedRemoveDoctor"
+            (click)="removePatientFromDoctor()">
+            ❌ Ukloni Pacijenta od Doktora
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit User Modal -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>✏️ Izmeni Korisnika</h3>
+        <button class="btn-close" (click)="closeEditModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form [formGroup]="editUserForm" (ngSubmit)="updateUser()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ime *</label>
+              <input type="text" formControlName="firstName" class="form-control" placeholder="Unesite ime">
+              <div class="error" *ngIf="editUserForm.get('firstName')?.invalid && editUserForm.get('firstName')?.touched">
+                Ime je obavezno
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Prezime *</label>
+              <input type="text" formControlName="lastName" class="form-control" placeholder="Unesite prezime">
+              <div class="error" *ngIf="editUserForm.get('lastName')?.invalid && editUserForm.get('lastName')?.touched">
+                Prezime je obavezno
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Telefon</label>
+              <input type="text" formControlName="phoneNumber" class="form-control" placeholder="0601234567">
+            </div>
+
+            <div class="form-group">
+              <label>Datum rođenja</label>
+              <input type="date" formControlName="dateOfBirth" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Pol</label>
+              <select formControlName="gender" class="form-control">
+                <option value="">Izaberi pol</option>
+                <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
+              </select>
+            </div>
+
+            <div class="form-group" *ngIf="selectedUserForEdit?.role === 'Doctor'">
+              <label>Specijalizacija</label>
+              <input type="text" formControlName="specialization" class="form-control" placeholder="Kardiolog, Neurolog...">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn-submit" [disabled]="editUserForm.invalid || isUpdatingUser">
+              {{ isUpdatingUser ? 'Ažuriranje...' : '✅ Sačuvaj Izmene' }}
+            </button>
+            <button type="button" class="btn-cancel" (click)="closeEditModal()" [disabled]="isUpdatingUser">
+              ❌ Otkaži
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>
