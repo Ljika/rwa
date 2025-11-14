@@ -14,6 +14,18 @@
   <nav class="tabs">
     <button 
       class="tab-button" 
+      [class.active]="activeTab === 'lekovi'" 
+      (click)="selectTab('lekovi')">
+      💊 Lekovi
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'proizvodjaci'" 
+      (click)="selectTab('proizvodjaci')">
+      🏭 Proizvođači
+    </button>
+    <button 
+      class="tab-button" 
       [class.active]="activeTab === 'profil'" 
       (click)="selectTab('profil')">
       👤 Profil
@@ -52,6 +64,14 @@
 
   <!-- Content Area -->
   <div class="content">
+    <!-- Lekovi Tab -->
+    <div *ngIf="activeTab === 'lekovi'" class="tab-content">
+      <app-drugs-admin></app-drugs-admin>
+    </div>
+    <!-- Proizvođači Tab -->
+    <div *ngIf="activeTab === 'proizvodjaci'" class="tab-content">
+      <app-manufacturers-admin></app-manufacturers-admin>
+    </div>
     <!-- Profil Tab -->
     <div *ngIf="activeTab === 'profil'" class="tab-content">
       <div class="profile-header">
@@ -167,48 +187,13 @@
     <div *ngIf="activeTab === 'pacijenti'" class="tab-content">
       <h3>Upravljanje Pacijentima</h3>
       
-      <!-- Loading state -->
-      <div *ngIf="isLoadingUsers$ | async" class="loading">
-        <p>Učitavanje pacijenata...</p>
-      </div>
-
-      <!-- Empty state -->
-      <div *ngIf="!(isLoadingUsers$ | async) && (patients$ | async)?.length === 0" class="empty-state">
-        <p>Nema registrovanih pacijenata.</p>
-      </div>
-
-      <!-- Patients Table -->
-      <div *ngIf="!(isLoadingUsers$ | async) && (patients$ | async)?.length! > 0" class="patients-table-container">
-        <table class="patients-table">
-          <thead>
-            <tr>
-              <th>Ime i Prezime</th>
-              <th>Email</th>
-              <th>Telefon</th>
-              <th>Datum rođenja</th>
-              <th>Pol</th>
-              <th>Akcije</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let patient of patients$ | async">
-              <td>{{ patient.firstName }} {{ patient.lastName }}</td>
-              <td>{{ patient.email }}</td>
-              <td>{{ patient.phoneNumber || 'Nije uneto' }}</td>
-              <td>{{ patient.dateOfBirth || 'Nije uneto' }}</td>
-              <td>{{ patient.gender || 'Nije uneto' }}</td>
-              <td class="actions">
-                <button class="btn-edit" (click)="openEditModal(patient)" title="Izmeni pacijenta">
-                  ✏️ Izmeni
-                </button>
-                <button class="btn-delete" (click)="deletePatient(patient.id)" title="Obriši pacijenta">
-                  🗑️ Obriši
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- PatientListComponent sa @Input i @Output -->
+      <app-patient-list
+        [patients]="(patients$ | async) || []"
+        [loading]="(isLoadingUsers$ | async) || false"
+        (deletePatient)="handleDeletePatient($event)"
+        (editPatient)="handleEditPatient($event)">
+      </app-patient-list>
     </div>
 
     <!-- Doktori Tab -->
@@ -220,179 +205,60 @@
         </button>
       </div>
 
-      <!-- Add Doctor Form -->
-      <div *ngIf="showAddDoctorForm" class="add-doctor-form">
-        <h4>➕ Kreiranje Novog Doktora</h4>
-        <form [formGroup]="addDoctorForm" (ngSubmit)="createDoctor()">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Ime *</label>
-              <input type="text" formControlName="firstName" class="form-control" placeholder="Unesite ime">
-              <div class="error" *ngIf="addDoctorForm.get('firstName')?.invalid && addDoctorForm.get('firstName')?.touched">
-                Ime je obavezno
-              </div>
-            </div>
+      <!-- Add Doctor Form Component -->
+      <app-add-doctor-form
+        *ngIf="showAddDoctorForm"
+        (submitForm)="handleSubmitDoctorForm($event)"
+        (cancel)="handleCancelDoctorForm()">
+      </app-add-doctor-form>
 
-            <div class="form-group">
-              <label>Prezime *</label>
-              <input type="text" formControlName="lastName" class="form-control" placeholder="Unesite prezime">
-              <div class="error" *ngIf="addDoctorForm.get('lastName')?.invalid && addDoctorForm.get('lastName')?.touched">
-                Prezime je obavezno
-              </div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Email *</label>
-              <input type="email" formControlName="email" class="form-control" placeholder="email@example.com">
-              <div class="error" *ngIf="addDoctorForm.get('email')?.invalid && addDoctorForm.get('email')?.touched">
-                Email je obavezan i mora biti validan
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Lozinka *</label>
-              <input type="password" formControlName="password" class="form-control" placeholder="Minimum 6 karaktera">
-              <div class="error" *ngIf="addDoctorForm.get('password')?.invalid && addDoctorForm.get('password')?.touched">
-                Lozinka je obavezna (min 6 karaktera)
-              </div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Specijalizacija *</label>
-              <input type="text" formControlName="specialization" class="form-control" placeholder="Kardiolog, Neurolog...">
-              <div class="error" *ngIf="addDoctorForm.get('specialization')?.invalid && addDoctorForm.get('specialization')?.touched">
-                Specijalizacija je obavezna
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Telefon</label>
-              <input type="text" formControlName="phoneNumber" class="form-control" placeholder="0601234567">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Datum rođenja</label>
-              <input type="date" formControlName="dateOfBirth" class="form-control">
-            </div>
-
-            <div class="form-group">
-              <label>Pol</label>
-              <select formControlName="gender" class="form-control">
-                <option value="">Izaberi pol</option>
-                <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" class="btn-submit" [disabled]="addDoctorForm.invalid || isCreatingDoctor">
-              {{ isCreatingDoctor ? 'Kreiranje...' : '✅ Kreiraj Doktora' }}
-            </button>
-            <button type="button" class="btn-cancel" (click)="toggleAddDoctorForm()" [disabled]="isCreatingDoctor">
-              ❌ Otkaži
-            </button>
-          </div>
-        </form>
-      </div>
-      
-      <!-- Loading state -->
-      <div *ngIf="isLoadingUsers$ | async" class="loading">
-        <p>Učitavanje doktora...</p>
-      </div>
-
-      <!-- Empty state -->
-      <div *ngIf="!(isLoadingUsers$ | async) && (doctors$ | async)?.length === 0" class="empty-state">
-        <p>Nema registrovanih doktora.</p>
-      </div>
-
-      <!-- Doctors Table -->
-      <div *ngIf="!(isLoadingUsers$ | async) && (doctors$ | async)?.length! > 0" class="patients-table-container">
-        <table class="patients-table">
-          <thead>
-            <tr>
-              <th>Ime i Prezime</th>
-              <th>Email</th>
-              <th>Specijalizacija</th>
-              <th>Telefon</th>
-              <th>Datum rođenja</th>
-              <th>Pol</th>
-              <th>Akcije</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let doctor of doctors$ | async">
-              <td>{{ doctor.firstName }} {{ doctor.lastName }}</td>
-              <td>{{ doctor.email }}</td>
-              <td>{{ doctor.specialization || 'Nije uneto' }}</td>
-              <td>{{ doctor.phoneNumber || 'Nije uneto' }}</td>
-              <td>{{ doctor.dateOfBirth || 'Nije uneto' }}</td>
-              <td>{{ doctor.gender || 'Nije uneto' }}</td>
-              <td class="actions">
-                <button class="btn-edit" (click)="openEditModal(doctor)" title="Izmeni doktora">
-                  ✏️ Izmeni
-                </button>
-                <button class="btn-delete" (click)="deleteDoctor(doctor.id)" title="Obriši doktora">
-                  🗑️ Obriši
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- Doctor List Component -->
+      <app-doctor-list
+        [doctors]="(doctors$ | async) || []"
+        [loading]="(isLoadingUsers$ | async) || false"
+        [expandedDoctorId]="expandedDoctorId"
+        [selectedDoctorAction]="selectedDoctorAction"
+        [selectedDoctorId]="selectedDoctorId"
+        [doctorPatients]="doctorPatients"
+        [loadingDoctorPatients]="loadingDoctorPatients"
+        [doctorSchedules]="doctorSchedules"
+        [loadingDoctorSchedules]="loadingDoctorSchedules"
+        [selectedMonth]="selectedMonth"
+        [scheduleSuccessMessage]="scheduleSuccessMessage"
+        [scheduleErrorMessage]="scheduleErrorMessage"
+        (deleteDoctor)="handleDeleteDoctor($event)"
+        (editDoctor)="handleEditDoctor($event)"
+        (toggleDetails)="toggleDoctorDetails($event)"
+        (viewPatients)="viewDoctorPatients($event)"
+        (addSchedule)="openAddScheduleForm($event)"
+        (viewSchedule)="viewDoctorSchedule($event)"
+        (submitSchedule)="handleSubmitSchedule($event)"
+        (closeScheduleForm)="closeScheduleForm()"
+        (monthChange)="onMonthChange($event)">
+      </app-doctor-list>
     </div>
 
     <!-- Administratori Tab -->
     <div *ngIf="activeTab === 'administratori'" class="tab-content">
-      <h3>Upravljanje Administratorima</h3>
-      
-      <!-- Loading state -->
-      <div *ngIf="isLoadingUsers$ | async" class="loading">
-        <p>Učitavanje administratora...</p>
+      <div class="tab-header">
+        <h3>Upravljanje Administratorima</h3>
+        <button class="btn-add-admin" (click)="toggleAddAdminForm()">
+          {{ showAddAdminForm ? '❌ Zatvori' : '➕ Dodaj Administratora' }}
+        </button>
       </div>
 
-      <!-- Empty state -->
-      <div *ngIf="!(isLoadingUsers$ | async) && (admins$ | async)?.length === 0" class="empty-state">
-        <p>Nema registrovanih administratora.</p>
+      <!-- TODO: Add Admin Form - will be implemented later -->
+      <div *ngIf="showAddAdminForm" class="info-message">
+        <p>Add Admin Form - To Be Implemented</p>
       </div>
 
-      <!-- Admins Table -->
-      <div *ngIf="!(isLoadingUsers$ | async) && (admins$ | async)?.length! > 0" class="patients-table-container">
-        <table class="patients-table">
-          <thead>
-            <tr>
-              <th>Ime i Prezime</th>
-              <th>Email</th>
-              <th>Telefon</th>
-              <th>Datum rođenja</th>
-              <th>Pol</th>
-              <th>Akcije</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let admin of admins$ | async">
-              <td>{{ admin.firstName }} {{ admin.lastName }}</td>
-              <td>{{ admin.email }}</td>
-              <td>{{ admin.phoneNumber || 'Nije uneto' }}</td>
-              <td>{{ admin.dateOfBirth || 'Nije uneto' }}</td>
-              <td>{{ admin.gender || 'Nije uneto' }}</td>
-              <td class="actions">
-                <button class="btn-edit" (click)="openEditModal(admin)" title="Izmeni administratora">
-                  ✏️ Izmeni
-                </button>
-                <button class="btn-delete" (click)="deleteAdmin(admin.id)" title="Obriši administratora">
-                  🗑️ Obriši
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- Admin List Component -->
+      <app-admin-list
+        [admins]="(admins$ | async) || []"
+        [loading]="(isLoadingUsers$ | async) || false"
+        (deleteAdmin)="handleDeleteAdmin($event)"
+        (editAdmin)="handleEditAdmin($event)">
+      </app-admin-list>
     </div>
 
     <!-- Poveži Tab -->
@@ -616,71 +482,11 @@
     </div>
   </div>
 
-  <!-- Edit User Modal -->
-  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>✏️ Izmeni Korisnika</h3>
-        <button class="btn-close" (click)="closeEditModal()">✕</button>
-      </div>
-
-      <div class="modal-body">
-        <form [formGroup]="editUserForm" (ngSubmit)="updateUser()">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Ime *</label>
-              <input type="text" formControlName="firstName" class="form-control" placeholder="Unesite ime">
-              <div class="error" *ngIf="editUserForm.get('firstName')?.invalid && editUserForm.get('firstName')?.touched">
-                Ime je obavezno
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Prezime *</label>
-              <input type="text" formControlName="lastName" class="form-control" placeholder="Unesite prezime">
-              <div class="error" *ngIf="editUserForm.get('lastName')?.invalid && editUserForm.get('lastName')?.touched">
-                Prezime je obavezno
-              </div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Telefon</label>
-              <input type="text" formControlName="phoneNumber" class="form-control" placeholder="0601234567">
-            </div>
-
-            <div class="form-group">
-              <label>Datum rođenja</label>
-              <input type="date" formControlName="dateOfBirth" class="form-control">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Pol</label>
-              <select formControlName="gender" class="form-control">
-                <option value="">Izaberi pol</option>
-                <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
-              </select>
-            </div>
-
-            <div class="form-group" *ngIf="selectedUserForEdit?.role === 'Doctor'">
-              <label>Specijalizacija</label>
-              <input type="text" formControlName="specialization" class="form-control" placeholder="Kardiolog, Neurolog...">
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="submit" class="btn-submit" [disabled]="editUserForm.invalid || isUpdatingUser">
-              {{ isUpdatingUser ? 'Ažuriranje...' : '✅ Sačuvaj Izmene' }}
-            </button>
-            <button type="button" class="btn-cancel" (click)="closeEditModal()" [disabled]="isUpdatingUser">
-              ❌ Otkaži
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+  <!-- Edit User Modal Component -->
+  <app-edit-user-modal
+    [user]="selectedUserForEdit"
+    [show]="showEditModal"
+    (save)="handleSaveUser($event)"
+    (close)="handleCloseEditModal()">
+  </app-edit-user-modal>
 </div>

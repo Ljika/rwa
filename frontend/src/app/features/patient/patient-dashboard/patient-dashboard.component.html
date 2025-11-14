@@ -32,6 +32,12 @@
     </button>
     <button 
       class="tab-button" 
+      [class.active]="activeTab === 'termini'" 
+      (click)="selectTab('termini')">
+      📆 Termini
+    </button>
+    <button 
+      class="tab-button" 
       [class.active]="activeTab === 'profil'" 
       (click)="selectTab('profil')">
       👤 Profil
@@ -104,8 +110,12 @@
 
     <!-- Zakaži Termin Tab -->
     <div *ngIf="activeTab === 'zakazi'" class="tab-content">
-      <h3>Zakaži Novi Termin</h3>
-      <p>Ovde će biti forma za zakazivanje...</p>
+      <app-book-appointment></app-book-appointment>
+    </div>
+
+    <!-- Termini Tab -->
+    <div *ngIf="activeTab === 'termini'" class="tab-content">
+      <app-my-appointments></app-my-appointments>
     </div>
 
     <!-- Profil Tab -->

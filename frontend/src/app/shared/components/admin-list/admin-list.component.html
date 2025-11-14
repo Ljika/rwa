@@ -1,0 +1,49 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="loading-state">
+  <p>Učitavanje administratora...</p>
+</div>
+
+<!-- Empty State -->
+<div *ngIf="!loading && admins.length === 0" class="empty-state">
+  <p>Nema registrovanih administratora.</p>
+</div>
+
+<!-- Admins Table -->
+<div *ngIf="!loading && admins.length > 0" class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Ime i Prezime</th>
+        <th>Email</th>
+        <th>Telefon</th>
+        <th>Datum rođenja</th>
+        <th>Pol</th>
+        <th>Akcije</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let admin of admins">
+        <td>{{ admin.firstName }} {{ admin.lastName }}</td>
+        <td>
+          {{ admin.email }}
+          <span *ngIf="isMainAdmin(admin.email)" class="main-admin-badge">👑 Glavni Admin</span>
+        </td>
+        <td>{{ admin.phoneNumber || 'Nije uneto' }}</td>
+        <td>{{ admin.dateOfBirth || 'Nije uneto' }}</td>
+        <td>{{ admin.gender || 'Nije uneto' }}</td>
+        <td class="actions">
+          <button class="btn-edit" (click)="onEdit(admin)" title="Izmeni administratora">
+            ✏️ Izmeni
+          </button>
+          <button 
+            class="btn-delete" 
+            (click)="onDelete(admin.id, admin.email)" 
+            [disabled]="isMainAdmin(admin.email)"
+            [title]="isMainAdmin(admin.email) ? 'Glavni administrator ne može biti obrisan' : 'Obriši administratora'">
+            🗑️ Obriši
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

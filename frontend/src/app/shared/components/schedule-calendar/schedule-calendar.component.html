@@ -1,0 +1,58 @@
+<div class="schedule-calendar">
+  <div class="month-selector">
+    <label>Izaberi mesec:</label>
+    <input type="month" [value]="selectedMonth" (change)="onMonthChange($event)" class="form-control">
+  </div>
+  
+  <div *ngIf="loading" class="loading">
+    <p>Učitavanje smena...</p>
+  </div>
+
+  <div *ngIf="!loading" class="calendar-container">
+    <h6 class="calendar-month">{{ getMonthYearLabel() }}</h6>
+    
+    <!-- Legend -->
+    <div class="calendar-legend">
+      <div class="legend-item">
+        <span class="legend-color shift-morning"></span>
+        <span>🌅 Jutarnja (08:00-16:00)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color shift-afternoon"></span>
+        <span>🌆 Popodnevna (16:00-00:00)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color shift-night"></span>
+        <span>🌙 Noćna (00:00-08:00)</span>
+      </div>
+    </div>
+    
+    <!-- Calendar -->
+    <div class="calendar">
+      <div class="calendar-header">
+        <div class="calendar-day-name">Pon</div>
+        <div class="calendar-day-name">Uto</div>
+        <div class="calendar-day-name">Sre</div>
+        <div class="calendar-day-name">Čet</div>
+        <div class="calendar-day-name">Pet</div>
+        <div class="calendar-day-name">Sub</div>
+        <div class="calendar-day-name">Ned</div>
+      </div>
+      <div class="calendar-grid">
+        <div *ngFor="let dayInfo of getCalendarDays()" 
+             class="calendar-cell"
+             [class.has-schedule]="dayInfo.schedule"
+             [ngClass]="dayInfo.schedule ? getShiftClass(dayInfo.schedule.shift) : ''">
+          <span class="day-number" *ngIf="dayInfo.day">{{ dayInfo.day }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <p class="schedules-count" *ngIf="schedules.length > 0">
+      Ukupno smena: {{ schedules.length }}
+    </p>
+    <p class="empty-state" *ngIf="schedules.length === 0">
+      Nema smena za izabrani mesec.
+    </p>
+  </div>
+</div>

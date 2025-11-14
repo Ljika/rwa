@@ -1,0 +1,45 @@
+<div class="lekovi-header">
+  <h3>Lekovi</h3>
+  <button class="btn-add" (click)="showLekForm = true; editLek = null">➕ Dodaj lek</button>
+</div>
+<form *ngIf="showLekForm" class="lek-form" (ngSubmit)="submitLekForm()" [formGroup]="lekForm">
+  <input type="text" formControlName="name" placeholder="Naziv leka" required />
+  <select formControlName="type" required>
+    <option value="" disabled selected>Izaberi tip leka</option>
+    <option *ngFor="let t of drugTypes" [value]="t">{{ t }}</option>
+  </select>
+  <input type="text" formControlName="dosage" placeholder="Doziranje" required />
+  <input type="text" formControlName="description" placeholder="Opis (opciono)" />
+  <select formControlName="manufacturerId" required>
+    <option value="" disabled selected>Izaberi proizvođača</option>
+    <option *ngFor="let m of manufacturers" [value]="m.id">{{ m.name }}</option>
+  </select>
+  <button type="submit">{{ editLek ? 'Sačuvaj izmene' : 'Dodaj' }}</button>
+  <button type="button" (click)="cancelLekForm()">Otkaži</button>
+</form>
+<table class="lekovi-table">
+  <thead>
+    <tr>
+      <th>Naziv</th>
+      <th>Tip</th>
+      <th>Doziranje</th>
+      <th>Opis</th>
+      <th>Proizvođač</th>
+      <th>Akcije</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let lek of lekovi">
+      <td>{{ lek.name }}</td>
+      <td>{{ lek.type }}</td>
+      <td>{{ lek.dosage }}</td>
+      <td>{{ lek.description }}</td>
+      <td>{{ lek.manufacturer?.name }}</td>
+      <td>
+        <button class="btn-edit" (click)="startEditLek(lek)">Izmeni</button>
+        <button class="btn-delete" (click)="deleteLek(lek)">Obriši</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div *ngIf="lekovi.length === 0" class="empty">Nema lekova za prikaz.</div>

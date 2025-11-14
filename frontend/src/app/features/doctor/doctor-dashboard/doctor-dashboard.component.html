@@ -199,13 +199,49 @@
     <!-- Termini Tab -->
     <div *ngIf="activeTab === 'termini'" class="tab-content">
       <h3>Termini i Zakazivanja</h3>
-      <p class="placeholder">Ovde će biti lista svih termina...</p>
+      <div *ngIf="isLoadingAppointments" class="loading">Učitavanje termina...</div>
+      <div *ngIf="!isLoadingAppointments">
+        <!-- Zahtevi za termine -->
+        <section>
+          <h4>Zahtevi za termine</h4>
+          <div *ngIf="pendingAppointments.length === 0" class="empty">Nema zahteva za termine.</div>
+          <ul *ngIf="pendingAppointments.length > 0" class="appointments-list">
+            <li *ngFor="let apt of pendingAppointments" class="appointment-item">
+              <span>
+                Pacijent: {{ apt.patient?.firstName }} {{ apt.patient?.lastName }} | Datum: {{ apt.date }} | Termin: {{ apt.timeSlot }}
+              </span>
+              <button class="btn-approve" (click)="approveAppointment(apt.id)">Odobri</button>
+              <button class="btn-reject" (click)="rejectAppointment(apt.id)">Odbij</button>
+            </li>
+          </ul>
+        </section>
+        <hr />
+        <!-- Zakazani termini -->
+        <section>
+          <h4>Zakazani termini</h4>
+          <div *ngIf="scheduledAppointments.length === 0" class="empty">Nema zakazanih termina.</div>
+          <ul *ngIf="scheduledAppointments.length > 0" class="appointments-list">
+            <li *ngFor="let apt of scheduledAppointments" class="appointment-item">
+              <span>
+                Pacijent: {{ apt.patient?.firstName }} {{ apt.patient?.lastName }} | Datum: {{ apt.date }} | Termin: {{ apt.timeSlot }} | Status: {{ apt.status }}
+              </span>
+              <button class="btn-cancel" (click)="cancelAppointment(apt.id)">Otkaži</button>
+            </li>
+          </ul>
+        </section>
+      </div>
     </div>
 
     <!-- Smene Tab -->
     <div *ngIf="activeTab === 'smene'" class="tab-content">
       <h3>Moje Smene</h3>
-      <p class="placeholder">Ovde će biti raspored smena...</p>
+      
+      <app-schedule-calendar
+        [schedules]="mySchedules"
+        [loading]="isLoadingSchedules"
+        [selectedMonth]="selectedMonth"
+        (monthChange)="onMonthChange($event)">
+      </app-schedule-calendar>
     </div>
   </div>
 </div>

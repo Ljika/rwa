@@ -63,9 +63,6 @@ export class ManufacturersService {
   }
 
   async remove(id: string): Promise<void> {
-    const manufacturer = await this.findOne(id);
-    
-    manufacturer.isActive = false;
-    await this.manufacturerRepository.save(manufacturer);
+    await this.manufacturerRepository.delete(id);
   }
 }

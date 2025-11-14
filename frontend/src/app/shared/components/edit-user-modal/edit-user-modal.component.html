@@ -1,0 +1,66 @@
+<div class="modal-overlay" *ngIf="show" (click)="onBackdropClick($event)">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>✏️ Izmeni {{ getUserRoleLabel() }}</h3>
+      <button class="btn-close" (click)="onClose()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="editForm" (ngSubmit)="onSubmit()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ime *</label>
+            <input type="text" formControlName="firstName" class="form-control" placeholder="Unesite ime">
+            <div class="error" *ngIf="editForm.get('firstName')?.invalid && editForm.get('firstName')?.touched">
+              Ime je obavezno
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Prezime *</label>
+            <input type="text" formControlName="lastName" class="form-control" placeholder="Unesite prezime">
+            <div class="error" *ngIf="editForm.get('lastName')?.invalid && editForm.get('lastName')?.touched">
+              Prezime je obavezno
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Telefon</label>
+            <input type="tel" formControlName="phoneNumber" class="form-control" placeholder="+381 XX XXX XXXX">
+          </div>
+
+          <div class="form-group">
+            <label>Datum rođenja</label>
+            <input type="date" formControlName="dateOfBirth" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Pol</label>
+            <select formControlName="gender" class="form-control">
+              <option value="">Izaberi pol</option>
+              <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
+            </select>
+          </div>
+
+          <div class="form-group" *ngIf="isDoctor()">
+            <label>Specijalizacija</label>
+            <input type="text" formControlName="specialization" class="form-control" placeholder="Kardiologija, Neurologija...">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn-save" [disabled]="editForm.invalid || isSubmitting">
+            {{ isSubmitting ? 'Čuvanje...' : '💾 Sačuvaj Izmene' }}
+          </button>
+          <button type="button" class="btn-cancel" (click)="onClose()" [disabled]="isSubmitting">
+            ❌ Otkaži
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

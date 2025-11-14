@@ -1,0 +1,33 @@
+/* Stilovi za ManufacturersAdminComponent */
+
+.manufacturers-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.manufacturer-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.manufacturers-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.manufacturers-table th, .manufacturers-table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+}
+
+.btn-add, .btn-edit, .btn-delete {
+  margin-right: 0.5rem;
+}
+
+.empty {
+  color: #888;
+  margin-top: 1rem;
+}

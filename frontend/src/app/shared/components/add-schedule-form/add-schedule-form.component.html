@@ -1,0 +1,68 @@
+<div class="form-container">
+  <h5>📅 Dodaj Smene za doktora {{ doctorName }}</h5>
+  
+  <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()">
+    <div class="form-row">
+      <div class="form-group">
+        <label>📅 Datum od *</label>
+        <input 
+          type="date" 
+          formControlName="dateFrom" 
+          class="form-control"
+          [min]="getTodayDate()">
+        <div class="error" *ngIf="scheduleForm.get('dateFrom')?.invalid && scheduleForm.get('dateFrom')?.touched">
+          Datum od je obavezan
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>📅 Datum do *</label>
+        <input 
+          type="date" 
+          formControlName="dateTo" 
+          class="form-control"
+          [min]="scheduleForm.get('dateFrom')?.value || getTodayDate()">
+        <div class="error" *ngIf="scheduleForm.get('dateTo')?.invalid && scheduleForm.get('dateTo')?.touched">
+          Datum do je obavezan
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>⏰ Smena *</label>
+        <select formControlName="shift" class="form-control">
+          <option value="">Izaberi smenu</option>
+          <option value="Morning">🌅 Jutarnja (08:00 - 16:00)</option>
+          <option value="Afternoon">🌆 Popodnevna (16:00 - 00:00)</option>
+          <option value="Night">🌙 Noćna (00:00 - 08:00)</option>
+        </select>
+        <div class="error" *ngIf="scheduleForm.get('shift')?.invalid && scheduleForm.get('shift')?.touched">
+          Smena je obavezna
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="successMessage" class="success-message">
+      ✅ {{ successMessage }}
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      ❌ {{ errorMessage }}
+    </div>
+
+    <div class="form-actions">
+      <button 
+        type="submit" 
+        class="btn-submit" 
+        [disabled]="scheduleForm.invalid || isSubmitting">
+        {{ isSubmitting ? 'Kreiranje...' : '✅ Kreiraj Smene' }}
+      </button>
+      <button 
+        type="button" 
+        class="btn-cancel" 
+        (click)="onCancel()"
+        [disabled]="isSubmitting">
+        ❌ Otkaži
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,80 @@
+<div class="form-container">
+  <h4>➕ Kreiranje Novog Doktora</h4>
+  
+  <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ime *</label>
+        <input type="text" formControlName="firstName" class="form-control" placeholder="Unesite ime">
+        <div class="error" *ngIf="doctorForm.get('firstName')?.invalid && doctorForm.get('firstName')?.touched">
+          Ime je obavezno
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Prezime *</label>
+        <input type="text" formControlName="lastName" class="form-control" placeholder="Unesite prezime">
+        <div class="error" *ngIf="doctorForm.get('lastName')?.invalid && doctorForm.get('lastName')?.touched">
+          Prezime je obavezno
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" formControlName="email" class="form-control" placeholder="doktor@primer.com">
+        <div class="error" *ngIf="doctorForm.get('email')?.invalid && doctorForm.get('email')?.touched">
+          Email je obavezan i mora biti validan
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Lozinka *</label>
+        <input type="password" formControlName="password" class="form-control" placeholder="Min. 6 karaktera">
+        <div class="error" *ngIf="doctorForm.get('password')?.invalid && doctorForm.get('password')?.touched">
+          Lozinka mora imati najmanje 6 karaktera
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Telefon</label>
+        <input type="tel" formControlName="phoneNumber" class="form-control" placeholder="+381 XX XXX XXXX">
+      </div>
+
+      <div class="form-group">
+        <label>Datum rođenja</label>
+        <input type="date" formControlName="dateOfBirth" class="form-control">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Pol</label>
+        <select formControlName="gender" class="form-control">
+          <option value="">Izaberi pol</option>
+          <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Specijalizacija *</label>
+        <input type="text" formControlName="specialization" class="form-control" placeholder="Kardiologija, Neurologija...">
+        <div class="error" *ngIf="doctorForm.get('specialization')?.invalid && doctorForm.get('specialization')?.touched">
+          Specijalizacija je obavezna
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-submit" [disabled]="doctorForm.invalid || isSubmitting">
+        {{ isSubmitting ? 'Kreiranje...' : '✅ Kreiraj Doktora' }}
+      </button>
+      <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="isSubmitting">
+        ❌ Otkaži
+      </button>
+    </div>
+  </form>
+</div>

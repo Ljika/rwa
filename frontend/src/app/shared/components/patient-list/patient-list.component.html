@@ -1,0 +1,42 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="loading-state">
+  <p>Učitavanje pacijenata...</p>
+</div>
+
+<!-- Empty State -->
+<div *ngIf="!loading && patients.length === 0" class="empty-state">
+  <p>Nema registrovanih pacijenata.</p>
+</div>
+
+<!-- Patients Table -->
+<div *ngIf="!loading && patients.length > 0" class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Ime i Prezime</th>
+        <th>Email</th>
+        <th>Telefon</th>
+        <th>Datum rođenja</th>
+        <th>Pol</th>
+        <th>Akcije</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let patient of patients">
+        <td>{{ patient.firstName }} {{ patient.lastName }}</td>
+        <td>{{ patient.email }}</td>
+        <td>{{ patient.phoneNumber || 'Nije uneto' }}</td>
+        <td>{{ patient.dateOfBirth || 'Nije uneto' }}</td>
+        <td>{{ patient.gender || 'Nije uneto' }}</td>
+        <td class="actions">
+          <button class="btn-edit" (click)="onEdit(patient)" title="Izmeni pacijenta">
+            ✏️ Izmeni
+          </button>
+          <button class="btn-delete" (click)="onDelete(patient.id)" title="Obriši pacijenta">
+            🗑️ Obriši
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

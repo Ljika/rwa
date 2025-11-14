@@ -1,25 +1,124 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Observable, Subject, combineLatest, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, map, switchMap, takeUntil, catchError, tap } from 'rxjs/operators';
+import { Observable, Subject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map, switchMap, takeUntil, catchError } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { AuthService } from '../../../core/services/auth.service';
 import { DoctorPatientService } from '../../../core/services/doctor-patient.service';
+import { DoctorSchedulesService } from '../../../core/services/doctor-schedules.service';
 import { UsersService } from '../../../core/services/users.service';
 import { Gender, User } from '../../../shared/models/user.model';
 import { AppState } from '../../../store';
 import * as UsersActions from '../../../store/users/users.actions';
 import * as UsersSelectors from '../../../store/users/users.selectors';
 
+// Import child components
+import { PatientListComponent } from '../../../shared/components/patient-list/patient-list.component';
+import { DoctorListComponent } from '../../../shared/components/doctor-list/doctor-list.component';
+import { AdminListComponent } from '../../../shared/components/admin-list/admin-list.component';
+import { DrugsService, Drug } from '../../../core/services/drugs.service';
+import { ManufacturersService, Manufacturer } from '../../../core/services/manufacturers.service';
+import { AddDoctorFormComponent, CreateDoctorDto } from '../../../shared/components/add-doctor-form/add-doctor-form.component';
+import { AddScheduleFormComponent, CreateScheduleDto } from '../../../shared/components/add-schedule-form/add-schedule-form.component';
+import { EditUserModalComponent, UpdateUserDto } from '../../../shared/components/edit-user-modal/edit-user-modal.component';
+import { DrugsAdminComponent } from '../drugs-admin/drugs-admin.component';
+import { ManufacturersAdminComponent } from '../manufacturers-admin/manufacturers-admin.component';
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule,
+    PatientListComponent,
+    DoctorListComponent,
+    AdminListComponent,
+    AddDoctorFormComponent,
+    AddScheduleFormComponent,
+    EditUserModalComponent,
+    DrugsAdminComponent,
+    ManufacturersAdminComponent
+  ],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss'
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
+  showLekForm = false;
+  editLek: Drug | null = null;
+  lekForm!: FormGroup;
+
+  manufacturers: Manufacturer[] = [];
+
+  drugTypes = [
+    'Tablet', 'Capsule', 'Syrup', 'Injection', 'Cream', 'Ointment', 'Drops', 'Inhaler', 'Powder', 'Other'
+  ];
+
+  startEditLek(lek: Drug) {
+    this.editLek = lek;
+    this.showLekForm = true;
+    this.lekForm.patchValue({
+      name: lek.name,
+      type: lek.type,
+      dosage: lek.dosage || '',
+      description: lek.description || '',
+      manufacturerId: lek.manufacturer?.id || ''
+    });
+  }
+
+  cancelLekForm() {
+    this.showLekForm = false;
+    this.editLek = null;
+    this.lekForm.reset();
+  }
+
+  submitLekForm() {
+    if (this.lekForm.invalid) return;
+    // Ensure all values are strings for backend
+    const value = {
+      name: String(this.lekForm.value.name ?? ''),
+      type: String(this.lekForm.value.type ?? ''),
+      dosage: String(this.lekForm.value.dosage ?? ''),
+      description: String(this.lekForm.value.description ?? ''),
+      manufacturerId: String(this.lekForm.value.manufacturerId ?? '')
+    };
+    if (this.editLek) {
+      this.drugsService.update(this.editLek.id, value).subscribe({
+        next: () => { this.selectTab('lekovi'); this.cancelLekForm(); },
+        error: () => alert('Greška pri izmeni leka')
+      });
+    } else {
+      this.drugsService.create(value).subscribe({
+        next: () => { this.selectTab('lekovi'); this.cancelLekForm(); },
+        error: () => alert('Greška pri dodavanju leka')
+      });
+    }
+  }
+
+  deleteLek(lek: Drug) {
+    if (!confirm('Da li ste sigurni da želite da obrišete lek: ' + lek.name + '?')) return;
+    this.drugsService.delete(lek.id).subscribe({
+      next: () => this.selectTab('lekovi'),
+      error: () => alert('Greška pri brisanju leka')
+    });
+  }
+
+
+  // Prikaz/dijalog za lekove
+  onAddLek() {
+    // TODO: Otvori modal/formu za dodavanje leka
+    alert('Dodaj lek - forma/modal');
+  }
+  onEditLek(lek: any) {
+    // TODO: Otvori modal/formu za izmenu leka
+    alert('Izmeni lek: ' + lek.name);
+  }
+  onDeleteLek(lek: any) {
+    // TODO: Potvrda i brisanje leka
+    if (confirm('Da li ste sigurni da želite da obrišete lek: ' + lek.name + '?')) {
+      alert('Obriši lek: ' + lek.name);
+    }
+  }
   activeTab: string = 'profil';
   currentUser$: Observable<User | null>;
   isEditMode: boolean = false;
@@ -27,16 +126,24 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   genders = Object.values(Gender);
   isUpdating$: Observable<boolean>;
   
-  // Add Doctor Form
+  // Form visibility flags (child components handle their own forms)
   showAddDoctorForm: boolean = false;
-  addDoctorForm: FormGroup;
-  isCreatingDoctor: boolean = false;
+  showAddAdminForm: boolean = false;
   
   // Edit User Modal
   showEditModal: boolean = false;
   selectedUserForEdit: User | null = null;
-  editUserForm: FormGroup;
-  isUpdatingUser: boolean = false;
+  
+  // Doctor Details Expansion
+  expandedDoctorId: string | null = null;
+  selectedDoctorAction: 'patients' | 'schedule' | 'add-schedule' | null = null;
+  selectedDoctorId: string | null = null;
+  doctorPatients: User[] = [];
+  loadingDoctorPatients: boolean = false;
+  doctorSchedules: any[] = [];
+  loadingDoctorSchedules: boolean = false;
+  selectedMonth: string = '';
+  selectedYear: number = new Date().getFullYear();
   
   // Observables iz Store-a 
   patients$: Observable<User[]>;
@@ -72,6 +179,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   showRemoveDoctorDropdown = false;
   showRemovePatientDropdown = false;
   
+  // Add Schedule Form
+  showAddScheduleForm: boolean = false;
+  addScheduleForm!: FormGroup;
+  isCreatingSchedule: boolean = false;
+  scheduleSuccessMessage: string = '';
+  scheduleErrorMessage: string = '';
+
   // Cleanup
   private destroy$ = new Subject<void>();
 
@@ -79,8 +193,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private store: Store<AppState>,
     private doctorPatientService: DoctorPatientService,
+    private doctorSchedulesService: DoctorSchedulesService,
     private usersService: UsersService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+  private drugsService: DrugsService,
+  private manufacturersService: ManufacturersService
   ) {
     // Observables iz Store-a
     this.currentUser$ = this.authService.currentUser$;
@@ -102,28 +219,16 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       dateOfBirth: [currentUser?.dateOfBirth || ''],
       gender: [currentUser?.gender || '']
     });
-    
-    // Inicijalizuj formu za dodavanje doktora
-    this.addDoctorForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      phoneNumber: [''],
-      dateOfBirth: [''],
-      gender: [''],
-      specialization: ['', Validators.required]
+    // Inicijalizuj lekForm
+    this.lekForm = this.fb.group({
+      name: ['', Validators.required],
+      type: ['', Validators.required],
+      dosage: ['', Validators.required],
+      description: [''],
+      manufacturerId: ['', Validators.required]
     });
     
-    // Inicijalizuj formu za izmenu korisnika
-    this.editUserForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      phoneNumber: [''],
-      dateOfBirth: [''],
-      gender: [''],
-      specialization: [''] // Samo za doktore
-    });
+    // Child komponente imaju svoje forme, ovde ih ne treba inicijalizovati
     
     // Setup autocomplete tokova 
     this.setupAutocomplete();
@@ -131,8 +236,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Učitaj korisnike odmah
-    this.store.dispatch(UsersActions.loadUsers());
+  // Učitaj korisnike odmah
+  this.store.dispatch(UsersActions.loadUsers());
+  // Učitaj proizvođače odmah
+  this.manufacturersService.getAll().subscribe(manu => this.manufacturers = manu);
   }
 
   ngOnDestroy() {
@@ -300,8 +407,16 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.showRemovePatientDropdown = false;
   }
 
+  lekovi: Drug[] = [];
   selectTab(tab: string) {
     this.activeTab = tab;
+    if (tab === 'lekovi') {
+      this.drugsService.getAll().subscribe({
+        next: (data) => (this.lekovi = data),
+        error: () => (this.lekovi = [])
+      });
+      this.manufacturersService.getAll().subscribe(manu => this.manufacturers = manu);
+    }
   }
 
   logout() {
@@ -341,33 +456,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.isEditMode = false;
   }
 
-  // Delete metodama samo dispatchujemo akciju 
-  deletePatient(patientId: string) {
-    if (!confirm('Da li ste sigurni da želite da obrišete ovog pacijenta?')) {
-      return;
-    }
-    
-    // Dispatch akciju - Effects će se pobrinuti za API poziv
-    this.store.dispatch(UsersActions.deleteUser({ userId: patientId }));
-  }
-
-  deleteDoctor(doctorId: string) {
-    if (!confirm('Da li ste sigurni da želite da obrišete ovog doktora?')) {
-      return;
-    }
-    
-    // Dispatch akciju - Effects će se pobrinuti za API poziv
-    this.store.dispatch(UsersActions.deleteUser({ userId: doctorId }));
-  }
-
-  deleteAdmin(adminId: string) {
-    if (!confirm('Da li ste sigurni da želite da obrišete ovog administratora?')) {
-      return;
-    }
-    
-    // Dispatch akciju - Effects će se pobrinuti za API poziv
-    this.store.dispatch(UsersActions.deleteUser({ userId: adminId }));
-  }
+  // Delete metode su zamenjene sa handler metodama u child komponentama
 
   // Assign doctor to patient
   assignDoctorToPatient() {
@@ -424,91 +513,283 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Add Doctor methods
+  // Toggle methods za forme
   toggleAddDoctorForm() {
     this.showAddDoctorForm = !this.showAddDoctorForm;
-    if (!this.showAddDoctorForm) {
-      this.addDoctorForm.reset();
-    }
   }
 
-  createDoctor() {
-    if (this.addDoctorForm.invalid) {
-      alert('Molimo popunite sva obavezna polja!');
-      return;
-    }
-
-    this.isCreatingDoctor = true;
-    const doctorData = {
-      ...this.addDoctorForm.value,
-      role: 'Doctor' // Postavi ulogu na Doctor
-    };
-
-    this.usersService.createDoctor(doctorData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          alert(`Uspešno kreiran doktor: ${doctorData.firstName} ${doctorData.lastName}`);
-          this.addDoctorForm.reset();
-          this.showAddDoctorForm = false;
-          this.isCreatingDoctor = false;
-          // Refresh liste korisnika
-          this.store.dispatch(UsersActions.loadUsers());
-        },
-        error: (error: any) => {
-          console.error('Error creating doctor:', error);
-          alert(error.error?.message || 'Greška pri kreiranju doktora');
-          this.isCreatingDoctor = false;
-        }
-      });
+  toggleAddAdminForm() {
+    this.showAddAdminForm = !this.showAddAdminForm;
   }
 
-  // Edit User methods
+  // Helper methods za modal
   openEditModal(user: User) {
     this.selectedUserForEdit = user;
     this.showEditModal = true;
-    
-    // Popuni formu sa podacima korisnika
-    this.editUserForm.patchValue({
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phoneNumber: user.phoneNumber || '',
-      dateOfBirth: user.dateOfBirth || '',
-      gender: user.gender || '',
-      specialization: user.specialization || ''
-    });
   }
 
   closeEditModal() {
     this.showEditModal = false;
     this.selectedUserForEdit = null;
-    this.editUserForm.reset();
   }
 
-  updateUser() {
-    if (this.editUserForm.invalid || !this.selectedUserForEdit) {
-      alert('Molimo popunite sva obavezna polja!');
-      return;
+  // Doctor Details Methods
+  toggleDoctorDetails(doctorId: string) {
+    if (this.expandedDoctorId === doctorId) {
+      // Zatvori ako je već otvoren
+      this.expandedDoctorId = null;
+      this.selectedDoctorAction = null;
+      this.selectedDoctorId = null;
+      this.doctorPatients = [];
+    } else {
+      // Otvori novi
+      this.expandedDoctorId = doctorId;
+      this.selectedDoctorAction = null;
+      this.selectedDoctorId = null;
+      this.doctorPatients = [];
     }
+  }
 
-    this.isUpdatingUser = true;
-    const userData = this.editUserForm.value;
+  viewDoctorPatients(doctorId: string) {
+    this.selectedDoctorAction = 'patients';
+    this.selectedDoctorId = doctorId;
+    this.loadingDoctorPatients = true;
 
-    this.usersService.updateUser(this.selectedUserForEdit.id, userData)
+    this.doctorPatientService.getDoctorPatients(doctorId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
+        next: (patients: User[]) => {
+          this.doctorPatients = patients;
+          this.loadingDoctorPatients = false;
+          console.log('Doctor patients loaded:', patients);
+        },
+        error: (error: any) => {
+          console.error('Error loading doctor patients:', error);
+          alert('Greška pri učitavanju pacijenata');
+          this.loadingDoctorPatients = false;
+        }
+      });
+  }
+
+  // Helper methods za schedule form i doctor expansion
+  openAddScheduleForm(doctorId: string) {
+    this.selectedDoctorAction = 'add-schedule';
+    this.selectedDoctorId = doctorId;
+    this.scheduleSuccessMessage = '';
+    this.scheduleErrorMessage = '';
+  }
+
+  closeScheduleForm() {
+    this.scheduleSuccessMessage = '';
+    this.scheduleErrorMessage = '';
+  }
+
+  viewDoctorSchedule(doctorId: string) {
+    this.selectedDoctorAction = 'schedule';
+    this.selectedDoctorId = doctorId;
+    this.loadingDoctorSchedules = true;
+    
+    // Default to current month if not selected
+    if (!this.selectedMonth) {
+      const now = new Date();
+      this.selectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
+    
+    this.loadDoctorSchedulesForMonth(doctorId, this.selectedMonth);
+  }
+  
+  loadDoctorSchedulesForMonth(doctorId: string, yearMonth: string) {
+    this.loadingDoctorSchedules = true;
+    const [year, month] = yearMonth.split('-');
+    
+    this.doctorSchedulesService.getDoctorSchedules(doctorId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (schedules: any[]) => {
+          // Filter schedules by selected month
+          this.doctorSchedules = schedules.filter(schedule => {
+            const scheduleDate = new Date(schedule.date);
+            return scheduleDate.getFullYear() === parseInt(year) && 
+                   scheduleDate.getMonth() + 1 === parseInt(month);
+          });
+          this.loadingDoctorSchedules = false;
+        },
+        error: (error: any) => {
+          console.error('Error loading schedules:', error);
+          alert('Greška pri učitavanju smena');
+          this.loadingDoctorSchedules = false;
+        }
+      });
+  }
+  
+  onMonthChange(yearMonth: string) {
+    this.selectedMonth = yearMonth;
+    if (this.selectedDoctorId) {
+      this.loadDoctorSchedulesForMonth(this.selectedDoctorId, yearMonth);
+    }
+  }
+
+  // ========== CHILD COMPONENT EVENT HANDLERS ==========
+  // Handler metode koje primaju evente od child komponenti
+
+  // PatientListComponent handlers
+  handleDeletePatient(patientId: string) {
+    this.usersService.deleteUser(patientId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          alert('Pacijent uspešno obrisan!');
+          this.store.dispatch(UsersActions.loadUsers());
+        },
+        error: (error: any) => {
+          console.error('Error deleting patient:', error);
+          alert('Greška pri brisanju pacijenta');
+        }
+      });
+  }
+
+  handleEditPatient(patient: User) {
+    this.openEditModal(patient);
+  }
+
+  // DoctorListComponent handlers
+  handleDeleteDoctor(doctorId: string) {
+    this.usersService.deleteUser(doctorId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          alert('Doktor uspešno obrisan!');
+          this.store.dispatch(UsersActions.loadUsers());
+        },
+        error: (error: any) => {
+          console.error('Error deleting doctor:', error);
+          alert('Greška pri brisanju doktora');
+        }
+      });
+  }
+
+  handleEditDoctor(doctor: User) {
+    this.openEditModal(doctor);
+  }
+
+  handleToggleDoctorDetails(doctorId: string) {
+    this.toggleDoctorDetails(doctorId);
+  }
+
+  handleViewDoctorPatients(doctorId: string) {
+    this.viewDoctorPatients(doctorId);
+  }
+
+  handleAddDoctorSchedule(doctorId: string) {
+    this.openAddScheduleForm(doctorId);
+  }
+
+  handleViewDoctorSchedule(doctorId: string) {
+    this.viewDoctorSchedule(doctorId);
+  }
+
+  // AdminListComponent handlers
+  handleDeleteAdmin(adminId: string) {
+    this.usersService.deleteUser(adminId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          alert('Administrator uspešno obrisan!');
+          this.store.dispatch(UsersActions.loadUsers());
+        },
+        error: (error: any) => {
+          console.error('Error deleting admin:', error);
+          alert('Greška pri brisanju administratora');
+        }
+      });
+  }
+
+  handleEditAdmin(admin: User) {
+    this.openEditModal(admin);
+  }
+
+  // AddDoctorFormComponent handlers
+  handleSubmitDoctorForm(doctorData: CreateDoctorDto) {
+    const data = {
+      ...doctorData,
+      role: 'Doctor'
+    };
+
+    this.usersService.createDoctor(data)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          alert(`Uspešno kreiran doktor: ${doctorData.firstName} ${doctorData.lastName}`);
+          this.showAddDoctorForm = false;
+          this.store.dispatch(UsersActions.loadUsers());
+        },
+        error: (error: any) => {
+          console.error('Error creating doctor:', error);
+          alert(error.error?.message || 'Greška pri kreiranju doktora');
+        }
+      });
+  }
+
+  handleCancelDoctorForm() {
+    this.showAddDoctorForm = false;
+  }
+
+  // AddScheduleFormComponent handlers  
+  handleSubmitSchedule(scheduleData: CreateScheduleDto) {
+    console.log('Creating schedule with data:', scheduleData);
+    this.isCreatingSchedule = true;
+    this.scheduleErrorMessage = '';
+    this.scheduleSuccessMessage = '';
+
+    this.doctorSchedulesService.createScheduleRange(
+      scheduleData.doctorId,
+      scheduleData.dateFrom,
+      scheduleData.dateTo,
+      scheduleData.shift
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (schedules) => {
+          this.scheduleSuccessMessage = `Uspešno kreirano ${schedules.length} smena!`;
+          this.isCreatingSchedule = false;
+          
+          setTimeout(() => {
+            this.closeScheduleForm();
+            this.selectedDoctorAction = null;
+          }, 2000);
+        },
+        error: (error: any) => {
+          this.scheduleErrorMessage = error.error?.message || 'Greška pri kreiranju smena';
+          this.isCreatingSchedule = false;
+        }
+      });
+  }
+
+  handleCancelScheduleForm() {
+    this.closeScheduleForm();
+    this.selectedDoctorAction = null;
+  }
+
+  // EditUserModalComponent handlers
+  handleSaveUser(userData: UpdateUserDto) {
+    const { id, ...updatePayload } = userData; // Remove id from body
+    
+    this.usersService.updateUser(id, updatePayload)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
           alert(`Uspešno ažuriran korisnik: ${userData.firstName} ${userData.lastName}`);
           this.closeEditModal();
-          this.isUpdatingUser = false;
-          // Refresh liste korisnika
           this.store.dispatch(UsersActions.loadUsers());
         },
         error: (error: any) => {
           console.error('Error updating user:', error);
           alert(error.error?.message || 'Greška pri ažuriranju korisnika');
-          this.isUpdatingUser = false;
         }
       });
+  }
+
+  handleCloseEditModal() {
+    this.closeEditModal();
   }
 }

@@ -1,0 +1,34 @@
+/* Stilovi za DrugsAdminComponent */
+
+.lekovi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.lek-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.lekovi-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lekovi-table th, .lekovi-table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+}
+
+.btn-add, .btn-edit, .btn-delete {
+  margin-right: 0.5rem;
+}
+
+.empty {
+  color: #888;
+  margin-top: 1rem;
+}

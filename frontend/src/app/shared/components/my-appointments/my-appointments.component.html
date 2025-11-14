@@ -1,0 +1,156 @@
+<div class="my-appointments-container">
+  <h2>Moji Termini</h2>
+
+  <!-- Messages -->
+  <div class="message success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+  <div class="message error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tabs">
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'requests'"
+      (click)="selectTab('requests')">
+      Zahtevi za Termine ({{ requestAppointments.length }})
+    </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'scheduled'"
+      (click)="selectTab('scheduled')">
+      Zakazani Termini ({{ scheduledAppointments.length }})
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="isLoading">
+    Učitavanje termina...
+  </div>
+
+  <!-- Zahtevi za Termine Tab -->
+  <div class="tab-content" *ngIf="!isLoading && activeTab === 'requests'">
+    <div class="no-data" *ngIf="requestAppointments.length === 0">
+      Nemate aktivnih zahteva za termine.
+    </div>
+
+    <div class="appointments-list" *ngIf="requestAppointments.length > 0">
+      <div class="appointment-card" *ngFor="let appointment of requestAppointments">
+        <div class="card-header">
+          <div class="doctor-info">
+            <h3>Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}</h3>
+            <p class="specialization" *ngIf="appointment.doctor?.specialization">
+              {{ appointment.doctor.specialization }}
+            </p>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+            {{ getStatusText(appointment.status) }}
+          </span>
+        </div>
+
+        <div class="card-body">
+          <div class="info-row">
+            <span class="label">📅 Datum:</span>
+            <span class="value">{{ formatDate(appointment.date) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">🕐 Vreme:</span>
+            <span class="value">{{ formatTime(appointment.timeSlot) }}</span>
+          </div>
+          <div class="info-row" *ngIf="appointment.reason">
+            <span class="label">📝 Razlog:</span>
+            <span class="value">{{ appointment.reason }}</span>
+          </div>
+          <div class="info-row" *ngIf="appointment.notes">
+            <span class="label">💬 Napomene:</span>
+            <span class="value">{{ appointment.notes }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">📧 Kontakt doktora:</span>
+            <span class="value">{{ appointment.doctor?.email }}</span>
+          </div>
+          <div class="info-row" *ngIf="appointment.doctor?.phoneNumber">
+            <span class="label">📞 Telefon doktora:</span>
+            <span class="value">{{ appointment.doctor.phoneNumber }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">🕒 Kreirano:</span>
+            <span class="value">{{ formatDate(appointment.createdAt) }}</span>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button 
+            class="btn btn-cancel"
+            (click)="cancelAppointment(appointment.id)">
+            Otkaži Zahtev
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zakazani Termini Tab -->
+  <div class="tab-content" *ngIf="!isLoading && activeTab === 'scheduled'">
+    <div class="no-data" *ngIf="scheduledAppointments.length === 0">
+      Nemate zakazanih termina.
+    </div>
+
+    <div class="appointments-list" *ngIf="scheduledAppointments.length > 0">
+      <div class="appointment-card" *ngFor="let appointment of scheduledAppointments">
+        <div class="card-header">
+          <div class="doctor-info">
+            <h3>Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}</h3>
+            <p class="specialization" *ngIf="appointment.doctor?.specialization">
+              {{ appointment.doctor.specialization }}
+            </p>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+            {{ getStatusText(appointment.status) }}
+          </span>
+        </div>
+
+        <div class="card-body">
+          <div class="info-row">
+            <span class="label">📅 Datum:</span>
+            <span class="value">{{ formatDate(appointment.date) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">🕐 Vreme:</span>
+            <span class="value">{{ formatTime(appointment.timeSlot) }}</span>
+          </div>
+          <div class="info-row" *ngIf="appointment.reason">
+            <span class="label">📝 Razlog:</span>
+            <span class="value">{{ appointment.reason }}</span>
+          </div>
+          <div class="info-row" *ngIf="appointment.notes">
+            <span class="label">💬 Napomene:</span>
+            <span class="value">{{ appointment.notes }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">📧 Kontakt doktora:</span>
+            <span class="value">{{ appointment.doctor?.email }}</span>
+          </div>
+          <div class="info-row" *ngIf="appointment.doctor?.phoneNumber">
+            <span class="label">📞 Telefon doktora:</span>
+            <span class="value">{{ appointment.doctor.phoneNumber }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">🕒 Kreirano:</span>
+            <span class="value">{{ formatDate(appointment.createdAt) }}</span>
+          </div>
+        </div>
+
+        <div class="card-actions" *ngIf="appointment.status === 'Approved'">
+          <button 
+            class="btn btn-cancel"
+            (click)="cancelAppointment(appointment.id)">
+            Otkaži Termin
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

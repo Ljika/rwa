@@ -5,11 +5,13 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { DoctorPatientService } from '../../../core/services/doctor-patient.service';
 import { Gender, User } from '../../../shared/models/user.model';
+import { BookAppointmentComponent } from '../../../shared/components/book-appointment/book-appointment.component';
+import { MyAppointmentsComponent } from '../../../shared/components/my-appointments/my-appointments.component';
 
 @Component({
   selector: 'app-patient-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, BookAppointmentComponent, MyAppointmentsComponent],
   templateUrl: './patient-dashboard.component.html',
   styleUrl: './patient-dashboard.component.scss'
 })

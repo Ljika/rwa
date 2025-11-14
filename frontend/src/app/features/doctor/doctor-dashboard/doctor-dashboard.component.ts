@@ -1,19 +1,30 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { DoctorPatientService } from '../../../core/services/doctor-patient.service';
+import { DoctorSchedulesService } from '../../../core/services/doctor-schedules.service';
 import { Gender, User } from '../../../shared/models/user.model';
+import { AppointmentsService } from '../../../core/services/appointments.service';
+import { ScheduleCalendarComponent } from '../../../shared/components/schedule-calendar/schedule-calendar.component';
 
 @Component({
   selector: 'app-doctor-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ScheduleCalendarComponent],
   templateUrl: './doctor-dashboard.component.html',
   styleUrl: './doctor-dashboard.component.scss'
 })
-export class DoctorDashboardComponent implements OnInit {
+export class DoctorDashboardComponent implements OnInit, OnDestroy {
+  cancelAppointment(id: string) {
+    if (!confirm('Da li ste sigurni da želite da otkažete ovaj termin?')) return;
+    this.appointmentsService.updateAppointmentStatus(id, { status: 'Cancelled' }).subscribe({
+      next: () => this.loadMyAppointments(),
+      error: (err: any) => alert('Greška pri otkazivanju termina')
+    });
+  }
+  private destroy$ = new Subject<void>();
   activeTab: string = 'profil';
   currentUser$: Observable<User | null>;
   isEditMode: boolean = false;
@@ -24,10 +35,27 @@ export class DoctorDashboardComponent implements OnInit {
   // Pacijenti tab data
   myPatients: any[] = [];
   isLoadingPatients: boolean = false;
+  
+  // Smene tab data
+  mySchedules: any[] = [];
+  isLoadingSchedules: boolean = false;
+  selectedMonth: string = '';
+
+  // Termini tab data
+  myAppointments: any[] = [];
+  isLoadingAppointments: boolean = false;
+  get pendingAppointments() {
+    return this.myAppointments.filter(a => a.status === 'Pending');
+  }
+  get scheduledAppointments() {
+    return this.myAppointments.filter(a => a.status === 'Approved' || a.status === 'Completed');
+  }
 
   constructor(
     private authService: AuthService,
     private doctorPatientService: DoctorPatientService,
+    private doctorSchedulesService: DoctorSchedulesService,
+    private appointmentsService: AppointmentsService,
     private fb: FormBuilder
   ) {
     // Observables iz Store-a
@@ -50,6 +78,18 @@ export class DoctorDashboardComponent implements OnInit {
   ngOnInit() {
     // Učitaj pacijente odmah
     this.loadMyPatients();
+    
+    // Set default month to current month
+    const now = new Date();
+    this.selectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  // Učitaj termine za doktora
+  this.loadMyAppointments();
+  }
+  
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   selectTab(tab: string) {
@@ -58,6 +98,13 @@ export class DoctorDashboardComponent implements OnInit {
     // Učitaj podatke za tab ako je potrebno
     if (tab === 'pacijenti' && this.myPatients.length === 0) {
       this.loadMyPatients();
+    }
+    
+    if (tab === 'smene') {
+      this.loadMySchedules();
+    }
+    if (tab === 'termini') {
+      this.loadMyAppointments();
     }
   }
 
@@ -73,6 +120,74 @@ export class DoctorDashboardComponent implements OnInit {
     } finally {
       this.isLoadingPatients = false;
     }
+  }
+  
+  // Load My Schedules
+  loadMySchedules() {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser?.id) return;
+    
+    this.isLoadingSchedules = true;
+    
+    this.doctorSchedulesService.getDoctorSchedules(currentUser.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (schedules: any[]) => {
+          // Filter by selected month
+          if (this.selectedMonth) {
+            const [year, month] = this.selectedMonth.split('-');
+            this.mySchedules = schedules.filter(schedule => {
+              const scheduleDate = new Date(schedule.date);
+              return scheduleDate.getFullYear() === parseInt(year) && 
+                     scheduleDate.getMonth() + 1 === parseInt(month);
+            });
+          } else {
+            this.mySchedules = schedules;
+          }
+          this.isLoadingSchedules = false;
+        },
+        error: (error: any) => {
+          console.error('Greška pri učitavanju smena:', error);
+          alert('Greška pri učitavanju smena');
+          this.isLoadingSchedules = false;
+        }
+      });
+  }
+  
+  onMonthChange(yearMonth: string) {
+    this.selectedMonth = yearMonth;
+    this.loadMySchedules();
+  }
+
+  // Termini - učitavanje
+  loadMyAppointments() {
+    this.isLoadingAppointments = true;
+    this.appointmentsService.getMyAppointmentsAsDoctor().subscribe({
+      next: (appointments: any[]) => {
+        this.myAppointments = appointments;
+        this.isLoadingAppointments = false;
+      },
+      error: (err: any) => {
+        console.error('Greška pri učitavanju termina:', err);
+        this.isLoadingAppointments = false;
+      }
+    });
+  }
+
+  // Termini - odobri
+  approveAppointment(id: string) {
+    this.appointmentsService.updateAppointmentStatus(id, { status: 'Approved' }).subscribe({
+      next: () => this.loadMyAppointments(),
+      error: (err: any) => alert('Greška pri odobravanju termina')
+    });
+  }
+
+  // Termini - odbij
+  rejectAppointment(id: string) {
+    this.appointmentsService.updateAppointmentStatus(id, { status: 'Rejected' }).subscribe({
+      next: () => this.loadMyAppointments(),
+      error: (err: any) => alert('Greška pri odbijanju termina')
+    });
   }
 
   logout() {

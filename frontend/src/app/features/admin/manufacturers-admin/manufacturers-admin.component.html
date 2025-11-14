@@ -1,0 +1,33 @@
+<div class="manufacturers-header">
+  <h3>Proizvođači</h3>
+  <button class="btn-add" (click)="showForm = true; editManufacturer = null">➕ Dodaj proizvođača</button>
+</div>
+<form *ngIf="showForm" class="manufacturer-form" (ngSubmit)="submitForm()" [formGroup]="manufacturerForm">
+  <input type="text" formControlName="name" placeholder="Naziv proizvođača" required />
+  <input type="text" formControlName="country" placeholder="Država" required />
+  <input type="email" formControlName="contactEmail" placeholder="Kontakt email" required />
+  <button type="submit">{{ editManufacturer ? 'Sačuvaj izmene' : 'Dodaj' }}</button>
+  <button type="button" (click)="cancelForm()">Otkaži</button>
+</form>
+<table class="manufacturers-table">
+  <thead>
+    <tr>
+      <th>Naziv</th>
+      <th>Država</th>
+      <th>Email</th>
+      <th>Akcije</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let m of manufacturers">
+      <td>{{ m.name }}</td>
+      <td>{{ m.country }}</td>
+      <td>{{ m.contactEmail }}</td>
+      <td>
+        <button class="btn-edit" (click)="startEdit(m)">Izmeni</button>
+        <button class="btn-delete" (click)="deleteManufacturer(m)">Obriši</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div *ngIf="manufacturers.length === 0" class="empty">Nema proizvođača za prikaz.</div>

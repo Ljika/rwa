@@ -1,0 +1,177 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="loading-state">
+  <p>Učitavanje doktora...</p>
+</div>
+
+<!-- Empty State -->
+<div *ngIf="!loading && doctors.length === 0" class="empty-state">
+  <p>Nema registrovanih doktora.</p>
+</div>
+
+<!-- Doctors Table -->
+<div *ngIf="!loading && doctors.length > 0" class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Ime i Prezime</th>
+        <th>Email</th>
+        <th>Telefon</th>
+        <th>Specijalizacija</th>
+        <th>Akcije</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let doctor of doctors">
+        <!-- Main Row -->
+        <tr>
+          <td>{{ doctor.firstName }} {{ doctor.lastName }}</td>
+          <td>{{ doctor.email }}</td>
+          <td>{{ doctor.phoneNumber || 'Nije uneto' }}</td>
+          <td>{{ doctor.specialization || 'Nije uneto' }}</td>
+          <td class="actions">
+            <button class="btn-details" (click)="onToggleDetails(doctor.id)" 
+                    [title]="expandedDoctorId === doctor.id ? 'Sakrij detalje' : 'Prikaži detalje'">
+              {{ expandedDoctorId === doctor.id ? '🔼 Sakrij' : '🔽 Prikaži Detalje' }}
+            </button>
+            <button class="btn-edit" (click)="onEdit(doctor)" title="Izmeni doktora">
+              ✏️ Izmeni
+            </button>
+            <button class="btn-delete" (click)="onDelete(doctor.id)" title="Obriši doktora">
+              🗑️ Obriši
+            </button>
+          </td>
+        </tr>
+
+        <!-- Expanded Details Row -->
+        <tr *ngIf="expandedDoctorId === doctor.id" class="details-row">
+          <td colspan="5">
+            <div class="doctor-details-panel">
+              <h4>Akcije za doktora {{ doctor.firstName }} {{ doctor.lastName }}</h4>
+              
+              <div class="details-actions">
+                <button class="btn-action" (click)="onViewPatients(doctor.id)">
+                  👥 Pogledaj Pacijente
+                </button>
+                <button class="btn-action" (click)="onAddSchedule(doctor.id)">
+                  📅 Dodaj Smene
+                </button>
+                <button class="btn-action" (click)="onViewSchedule(doctor.id)">
+                  📆 Prikaži Smene
+                </button>
+              </div>
+
+              <!-- Doctor Patients Section -->
+              <div *ngIf="selectedDoctorAction === 'patients'" class="doctor-patients-section">
+                <h5>👥 Pacijenti doktora {{ doctor.firstName }} {{ doctor.lastName }}</h5>
+                
+                <div *ngIf="loadingDoctorPatients" class="loading">
+                  <p>Učitavanje pacijenata...</p>
+                </div>
+
+                <div *ngIf="!loadingDoctorPatients && doctorPatients.length === 0" class="empty-state">
+                  <p>Ovaj doktor nema dodeljene pacijente.</p>
+                </div>
+
+                <div *ngIf="!loadingDoctorPatients && doctorPatients.length > 0" class="patients-list">
+                  <table class="mini-table">
+                    <thead>
+                      <tr>
+                        <th>Ime i Prezime</th>
+                        <th>Email</th>
+                        <th>Telefon</th>
+                        <th>Pol</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let patient of doctorPatients">
+                        <td>{{ patient.firstName }} {{ patient.lastName }}</td>
+                        <td>{{ patient.email }}</td>
+                        <td>{{ patient.phoneNumber || 'Nije uneto' }}</td>
+                        <td>{{ patient.gender || 'Nije uneto' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Add Schedule Section -->
+              <div *ngIf="selectedDoctorAction === 'add-schedule' && selectedDoctorId === doctor.id" class="add-schedule-section">
+                <app-add-schedule-form
+                  [doctorId]="selectedDoctorId"
+                  [doctorName]="getSelectedDoctorName()"
+                  [successMessage]="scheduleSuccessMessage"
+                  [errorMessage]="scheduleErrorMessage"
+                  (submitSchedule)="onSubmitSchedule($event)"
+                  (cancel)="onCloseScheduleForm()">
+                </app-add-schedule-form>
+              </div>
+
+              <!-- View Schedules Section -->
+              <div *ngIf="selectedDoctorAction === 'schedule' && selectedDoctorId === doctor.id" class="doctor-schedules-section">
+                <h5>📆 Smene doktora {{ doctor.firstName }} {{ doctor.lastName }}</h5>
+                
+                <div class="month-selector">
+                  <label>Izaberi mesec:</label>
+                  <input type="month" [value]="selectedMonth" (change)="onMonthChange($event)" class="form-control">
+                </div>
+                
+                <div *ngIf="loadingDoctorSchedules" class="loading">
+                  <p>Učitavanje smena...</p>
+                </div>
+
+                <div *ngIf="!loadingDoctorSchedules" class="calendar-container">
+                  <h6 class="calendar-month">{{ getMonthYearLabel() }}</h6>
+                  
+                  <!-- Legend -->
+                  <div class="calendar-legend">
+                    <div class="legend-item">
+                      <span class="legend-color shift-morning"></span>
+                      <span>🌅 Jutarnja (08:00-16:00)</span>
+                    </div>
+                    <div class="legend-item">
+                      <span class="legend-color shift-afternoon"></span>
+                      <span>🌆 Popodnevna (16:00-00:00)</span>
+                    </div>
+                    <div class="legend-item">
+                      <span class="legend-color shift-night"></span>
+                      <span>🌙 Noćna (00:00-08:00)</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Calendar -->
+                  <div class="calendar">
+                    <div class="calendar-header">
+                      <div class="calendar-day-name">Pon</div>
+                      <div class="calendar-day-name">Uto</div>
+                      <div class="calendar-day-name">Sre</div>
+                      <div class="calendar-day-name">Čet</div>
+                      <div class="calendar-day-name">Pet</div>
+                      <div class="calendar-day-name">Sub</div>
+                      <div class="calendar-day-name">Ned</div>
+                    </div>
+                    <div class="calendar-grid">
+                      <div *ngFor="let dayInfo of getCalendarDays()" 
+                           class="calendar-cell"
+                           [class.has-schedule]="dayInfo.schedule"
+                           [ngClass]="dayInfo.schedule ? getShiftClass(dayInfo.schedule.shift) : ''">
+                        <span class="day-number" *ngIf="dayInfo.day">{{ dayInfo.day }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p class="schedules-count" *ngIf="doctorSchedules.length > 0">
+                    Ukupno smena: {{ doctorSchedules.length }}
+                  </p>
+                  <p class="empty-state" *ngIf="doctorSchedules.length === 0">
+                    Nema smena za izabrani mesec.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</div>

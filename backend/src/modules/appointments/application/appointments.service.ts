@@ -26,27 +26,31 @@ export class AppointmentsService {
   ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto, patientId: string): Promise<Appointment> {
-    const { doctorId, date, timeSlot, reason, notes } = createAppointmentDto;
+    try {
+      console.log('CREATE APPOINTMENT - Primljeni podaci:', createAppointmentDto);
+      console.log('CREATE APPOINTMENT - Patient ID:', patientId);
+      
+      const { doctorId, date, timeSlot, reason, notes } = createAppointmentDto;
 
-    const doctor = await this.userRepository.findOne({
-      where: { id: doctorId, role: UserRole.Doctor, isActive: true },
-    });
+      const doctor = await this.userRepository.findOne({
+        where: { id: doctorId, role: UserRole.Doctor, isActive: true },
+      });
 
-    if (!doctor) {
-      throw new NotFoundException('Doktor nije pronađen ili nije aktivan');
-    }
+      if (!doctor) {
+        throw new NotFoundException('Doktor nije pronađen ili nije aktivan');
+      }
 
-    const patient = await this.userRepository.findOne({
-      where: { id: patientId, role: UserRole.Patient, isActive: true },
-    });
+      const patient = await this.userRepository.findOne({
+        where: { id: patientId, role: UserRole.Patient, isActive: true },
+      });
 
-    if (!patient) {
-      throw new NotFoundException('Pacijent nije pronađen ili nije aktivan');
-    }
+      if (!patient) {
+        throw new NotFoundException('Pacijent nije pronađen ili nije aktivan');
+      }
 
-    const link = await this.doctorPatientRepository.findOne({
-      where: { doctorId, patientId },
-    });
+      const link = await this.doctorPatientRepository.findOne({
+        where: { doctorId, patientId },
+      });
 
     if (!link) {
       throw new ForbiddenException('Ne možete zakazati termin kod ovog doktora. Admin mora prvo da vas dodeli ovom doktoru.');
@@ -96,17 +100,25 @@ export class AppointmentsService {
       throw new BadRequestException('Ovaj termin je već zauzet');
     }
 
-    const appointment = this.appointmentRepository.create({
-      doctorId,
-      patientId,
-      date: appointmentDate,
-      timeSlot,
-      reason,
-      notes,
-      status: AppointmentStatus.Pending,
-    });
+      const appointment = this.appointmentRepository.create({
+        doctorId,
+        patientId,
+        date: appointmentDate,
+        timeSlot,
+        reason,
+        notes,
+        status: AppointmentStatus.Pending,
+      });
 
-    return this.appointmentRepository.save(appointment);
+      console.log('CREATE APPOINTMENT - Kreiran appointment objekat:', appointment);
+      const saved = await this.appointmentRepository.save(appointment);
+      console.log('CREATE APPOINTMENT - Sačuvan appointment:', saved);
+      return saved;
+    } catch (error) {
+      console.error('CREATE APPOINTMENT - GREŠKA:', error);
+      console.error('CREATE APPOINTMENT - Error stack:', error.stack);
+      throw error;
+    }
   }
 
   async getAvailableSlots(doctorId: string, date: string): Promise<TimeSlot[]> {
@@ -283,12 +295,22 @@ export class AppointmentsService {
           throw new BadRequestException('Pending termin možete samo odobriti ili odbiti');
         }
       } else if (appointment.status === AppointmentStatus.Approved) {
-        if (updateStatusDto.status !== AppointmentStatus.Completed) {
-          throw new BadRequestException('Odobreni termin možete samo označiti kao završen');
+        if (![AppointmentStatus.Completed, AppointmentStatus.Cancelled].includes(updateStatusDto.status)) {
+          throw new BadRequestException('Odobreni termin možete samo označiti kao završen ili otkazati');
         }
       } else {
         throw new BadRequestException('Ne možete menjati status ovog termina');
       }
+    }
+
+    // Ako se status menja u Cancelled ili Rejected, brišemo termin iz baze
+    if (
+      updateStatusDto.status === AppointmentStatus.Cancelled ||
+      updateStatusDto.status === AppointmentStatus.Rejected
+    ) {
+      await this.appointmentRepository.remove(appointment);
+      // Vraćamo objekat sa statusom za frontend, iako je obrisan
+      return { ...appointment, status: updateStatusDto.status } as Appointment;
     }
 
     appointment.status = updateStatusDto.status;

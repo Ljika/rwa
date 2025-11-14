@@ -26,7 +26,7 @@ export class DoctorPatientService {
   }
 
   // PROMISE - Get my doctors (for patients)
-  async getMyDoctors(): Promise<DoctorPatientLink[]> {
+  async getMyDoctors(): Promise<User[]> {
     const token = localStorage.getItem('token');
     if (!token) {
       throw new Error('No token found');
@@ -46,14 +46,14 @@ export class DoctorPatientService {
       throw new Error(error.message || 'Failed to load doctors');
     }
 
-    const data: DoctorPatientLink[] = await response.json();
+    const data: User[] = await response.json();
     console.log('MY DOCTORS: Uspešno učitano!', data);
     
     return data;
   }
 
   // PROMISE - Get my patients (for doctors)
-  async getMyPatients(): Promise<DoctorPatientLink[]> {
+  async getMyPatients(): Promise<User[]> {
     const token = localStorage.getItem('token');
     if (!token) {
       throw new Error('No token found');
@@ -73,7 +73,7 @@ export class DoctorPatientService {
       throw new Error(error.message || 'Failed to load patients');
     }
 
-    const data: DoctorPatientLink[] = await response.json();
+    const data: User[] = await response.json();
     console.log('MY PATIENTS: Uspešno učitano!', data);
     
     return data;

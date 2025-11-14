@@ -1,0 +1,154 @@
+<div class="book-appointment-container">
+  <h2>Zakaži Termin</h2>
+
+  <!-- Progress Steps -->
+  <div class="steps-indicator">
+    <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+      <div class="step-number">1</div>
+      <div class="step-label">Izaberi Doktora</div>
+    </div>
+    <div class="step-line" [class.completed]="currentStep > 1"></div>
+    <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+      <div class="step-number">2</div>
+      <div class="step-label">Izaberi Datum</div>
+    </div>
+    <div class="step-line" [class.completed]="currentStep > 2"></div>
+    <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+      <div class="step-number">3</div>
+      <div class="step-label">Izaberi Termin</div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="message success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+  <div class="message error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Step 1: Select Doctor -->
+  <div class="step-content" *ngIf="currentStep === 1">
+    <h3>Izaberite Doktora</h3>
+    
+    <div class="loading" *ngIf="loadingDoctors">
+      Učitavanje doktora...
+    </div>
+
+    <div class="no-data" *ngIf="!loadingDoctors && myDoctors.length === 0">
+      Nemate dodeljenog doktora. Kontaktirajte administratora.
+    </div>
+
+    <div class="doctors-list" *ngIf="!loadingDoctors && myDoctors.length > 0">
+      <div 
+        class="doctor-card" 
+        *ngFor="let doctor of myDoctors"
+        (click)="selectDoctor(doctor)"
+      >
+        <div class="doctor-info">
+          <div class="doctor-name">Dr. {{ doctor.firstName }} {{ doctor.lastName }}</div>
+          <div class="doctor-specialization">{{ doctor.specialization }}</div>
+          <div class="doctor-contact" *ngIf="doctor.phoneNumber">
+            📞 {{ doctor.phoneNumber }}
+          </div>
+        </div>
+        <div class="select-arrow">→</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Select Date -->
+  <div class="step-content" *ngIf="currentStep === 2">
+    <h3>Izaberite Datum</h3>
+    
+    <div class="selected-info">
+      <strong>Doktor:</strong> Dr. {{ selectedDoctor?.firstName }} {{ selectedDoctor?.lastName }}
+      <br>
+      <strong>Specijalnost:</strong> {{ selectedDoctor?.specialization }}
+    </div>
+
+    <div class="date-selector">
+      <label for="appointment-date">Datum:</label>
+      <input 
+        type="date" 
+        id="appointment-date"
+        [min]="getTodayDate()"
+        (change)="selectDate($event)"
+        class="date-input"
+      >
+    </div>
+
+    <div class="loading" *ngIf="loadingSlots">
+      Učitavanje slobodnih termina...
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" (click)="goBack()">Nazad</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Select Time Slot -->
+  <div class="step-content" *ngIf="currentStep === 3">
+    <h3>Izaberite Termin</h3>
+    
+    <div class="selected-info">
+      <strong>Doktor:</strong> Dr. {{ selectedDoctor?.firstName }} {{ selectedDoctor?.lastName }}
+      <br>
+      <strong>Datum:</strong> {{ selectedDate }}
+    </div>
+
+    <div class="no-data" *ngIf="availableSlots.length === 0">
+      Nema slobodnih termina za izabrani datum.
+    </div>
+
+    <div class="time-slots-grid" *ngIf="availableSlots.length > 0">
+      <div 
+        class="time-slot" 
+        *ngFor="let slot of availableSlots"
+        [class.selected]="selectedTimeSlot === slot"
+        (click)="selectTimeSlot(slot)"
+      >
+        {{ formatTimeSlot(slot) }}
+      </div>
+    </div>
+
+    <div class="booking-form" *ngIf="selectedTimeSlot">
+      <form [formGroup]="bookingForm">
+        <div class="form-group">
+          <label for="reason">Razlog posete (opciono):</label>
+          <input 
+            type="text" 
+            id="reason" 
+            formControlName="reason"
+            placeholder="npr. Kontrolni pregled"
+            class="form-control"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Napomene (opciono):</label>
+          <textarea 
+            id="notes" 
+            formControlName="notes"
+            placeholder="Dodatne informacije..."
+            rows="3"
+            class="form-control"
+          ></textarea>
+        </div>
+      </form>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" (click)="goBack()" [disabled]="isBooking">
+        Nazad
+      </button>
+      <button 
+        class="btn btn-primary" 
+        (click)="bookAppointment()"
+        [disabled]="!selectedTimeSlot || isBooking"
+      >
+        {{ isBooking ? 'Zakazivanje...' : 'Zakaži Termin' }}
+      </button>
+    </div>
+  </div>
+</div>
