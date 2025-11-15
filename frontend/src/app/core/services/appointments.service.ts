@@ -42,6 +42,10 @@ export class AppointmentsService {
     return this.http.post<Appointment>(this.apiUrl, dto);
   }
 
+  scheduleAppointmentForPatient(dto: CreateAppointmentDto & { patientId: string }): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.apiUrl}/schedule-for-patient`, dto);
+  }
+
   getAvailableSlots(doctorId: string, date: string): Observable<TimeSlot[]> {
     return this.http.get<TimeSlot[]>(`${this.apiUrl}/available-slots`, {
       params: { doctorId, date }
@@ -70,5 +74,17 @@ export class AppointmentsService {
 
   deleteAppointment(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  createBlockAppointment(dto: {
+    doctorId: string;
+    patientId?: string;
+    date: string;
+    startTime: string;
+    numberOfSlots: number;
+    reason: string;
+    notes?: string;
+  }): Observable<Appointment[]> {
+    return this.http.post<Appointment[]>(`${this.apiUrl}/block-appointment`, dto);
   }
 }

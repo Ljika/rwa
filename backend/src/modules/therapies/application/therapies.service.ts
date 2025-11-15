@@ -107,7 +107,7 @@ export class TherapiesService {
   async findOne(id: string): Promise<Therapy> {
     const therapy = await this.therapyRepository.findOne({
       where: { id },
-      relations: ['doctor', 'patient', 'appointment', 'therapyDrugs', 'therapyDrugs.drug', 'therapyDrugs.drug.manufacturer'],
+      relations: ['doctor', 'patient', 'appointment', 'therapyDrugs', 'therapyDrugs.drug'],
     });
 
     if (!therapy) {

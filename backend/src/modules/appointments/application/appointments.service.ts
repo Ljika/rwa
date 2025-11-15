@@ -11,6 +11,7 @@ import { TimeSlot, getTimeSlotsByShift } from '../../../common/enums/time-slot.e
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
+import { CreateBlockAppointmentDto } from './dto/create-block-appointment.dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -119,6 +120,89 @@ export class AppointmentsService {
       console.error('CREATE APPOINTMENT - Error stack:', error.stack);
       throw error;
     }
+  }
+
+  async scheduleForPatient(createAppointmentDto: CreateAppointmentDto, doctorId: string): Promise<Appointment> {
+    const { doctorId: dtodoctorId, date, timeSlot, reason, notes } = createAppointmentDto;
+    const patientId = createAppointmentDto.patientId;
+
+    // Proveri da li je doktor koji poziva metodu isti kao doktor u DTO (sigurnosna provera)
+    if (dtodoctorId !== doctorId) {
+      throw new ForbiddenException('Možete zakazivati termine samo za sebe');
+    }
+
+    const doctor = await this.userRepository.findOne({
+      where: { id: doctorId, role: UserRole.Doctor, isActive: true },
+    });
+
+    if (!doctor) {
+      throw new NotFoundException('Doktor nije pronađen ili nije aktivan');
+    }
+
+    const patient = await this.userRepository.findOne({
+      where: { id: patientId, role: UserRole.Patient, isActive: true },
+    });
+
+    if (!patient) {
+      throw new NotFoundException('Pacijent nije pronađen ili nije aktivan');
+    }
+
+    // Proveri da li je pacijent dodeljen ovom doktoru
+    const link = await this.doctorPatientRepository.findOne({
+      where: { doctorId, patientId },
+    });
+
+    if (!link) {
+      throw new ForbiddenException('Ovaj pacijent nije dodeljen vama');
+    }
+
+    const appointmentDate = new Date(date);
+    appointmentDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (appointmentDate < today) {
+      throw new BadRequestException('Ne možete zakazati termin za prošli datum');
+    }
+
+    const schedule = await this.scheduleRepository.findOne({
+      where: { doctorId, date: appointmentDate },
+    });
+
+    if (!schedule) {
+      throw new BadRequestException('Nemate smenu za taj dan');
+    }
+
+    const allowedSlots = getTimeSlotsByShift(schedule.shift);
+    if (!allowedSlots.includes(timeSlot)) {
+      throw new BadRequestException(`Termin ${timeSlot} nije dostupan u vašoj smeni za taj dan`);
+    }
+
+    // Proveri da li je termin već zauzet
+    const existingAppointment = await this.appointmentRepository.findOne({
+      where: { 
+        doctorId, 
+        date: appointmentDate, 
+        timeSlot,
+      },
+    });
+
+    if (existingAppointment && existingAppointment.status !== AppointmentStatus.Cancelled && existingAppointment.status !== AppointmentStatus.Rejected) {
+      throw new BadRequestException('Ovaj termin je već zauzet');
+    }
+
+    // Kreiraj termin sa statusom Approved (automatski odobren jer ga doktor zakažuje)
+    const appointment = this.appointmentRepository.create({
+      doctorId,
+      patientId,
+      date: appointmentDate,
+      timeSlot,
+      reason,
+      notes,
+      status: AppointmentStatus.Approved,
+    });
+
+    return await this.appointmentRepository.save(appointment);
   }
 
   async getAvailableSlots(doctorId: string, date: string): Promise<TimeSlot[]> {
@@ -334,5 +418,131 @@ export class AppointmentsService {
     }
 
     await this.appointmentRepository.remove(appointment);
+  }
+
+  // Blok termini - za operacije i duže zahvate
+  async createBlockAppointment(dto: CreateBlockAppointmentDto): Promise<Appointment[]> {
+    const { doctorId, patientId, date, startTime, numberOfSlots, reason, notes } = dto;
+
+    // Validacija doktora
+    const doctor = await this.userRepository.findOne({
+      where: { id: doctorId, role: UserRole.Doctor, isActive: true },
+    });
+
+    if (!doctor) {
+      throw new NotFoundException('Doktor nije pronađen ili nije aktivan');
+    }
+
+    // Validacija pacijenta (ako je prosleđen)
+    if (patientId) {
+      const patient = await this.userRepository.findOne({
+        where: { id: patientId, role: UserRole.Patient, isActive: true },
+      });
+
+      if (!patient) {
+        throw new NotFoundException('Pacijent nije pronađen ili nije aktivan');
+      }
+
+      // Provera da li postoji veza doktor-pacijent
+      const link = await this.doctorPatientRepository.findOne({
+        where: { doctorId, patientId },
+      });
+
+      if (!link) {
+        throw new BadRequestException('Pacijent nije povezan sa ovim doktorom');
+      }
+    }
+
+    // Generiši sve time slotove
+    const timeSlots = this.generateTimeSlots(startTime, numberOfSlots);
+
+    // Proveri da li su svi slotovi slobodni
+    const occupiedSlots = await this.checkSlotsOccupied(doctorId, date, timeSlots);
+    if (occupiedSlots.length > 0) {
+      throw new BadRequestException(
+        `Sledeći slotovi su već zauzeti: ${occupiedSlots.join(', ')}`
+      );
+    }
+
+    // Proveri da li doktor ima schedule za taj dan
+    const appointmentDate = new Date(date);
+    appointmentDate.setHours(0, 0, 0, 0);
+    
+    const schedule = await this.scheduleRepository.findOne({
+      where: { doctorId, date: appointmentDate },
+    });
+
+    if (!schedule) {
+      throw new BadRequestException(`Doktor nema definisanu smenu za datum ${date}. Admin prvo mora da kreira schedule za ovaj datum.`);
+    }
+
+    // Proveri da li su svi slotovi u okviru radnog vremena
+    const shift = schedule.shift;
+    const allowedSlots = getTimeSlotsByShift(shift);
+    const invalidSlots = timeSlots.filter(slot => !allowedSlots.includes(slot as TimeSlot));
+    
+    if (invalidSlots.length > 0) {
+      throw new BadRequestException(
+        `Sledeći slotovi nisu u okviru radnog vremena: ${invalidSlots.join(', ')}`
+      );
+    }
+
+    // Kreiraj sve termine
+    const appointments: Appointment[] = [];
+    for (let i = 0; i < timeSlots.length; i++) {
+      const appointment = this.appointmentRepository.create({
+        doctorId,
+        patientId: patientId || undefined,
+        date: new Date(date),
+        timeSlot: timeSlots[i] as TimeSlot,
+        reason,
+        notes: notes || `Blok termin ${i + 1}/${numberOfSlots}`,
+        status: AppointmentStatus.Approved,
+      });
+      appointments.push(appointment);
+    }
+
+    const savedAppointments = await this.appointmentRepository.save(appointments);
+
+    return this.appointmentRepository.find({
+      where: savedAppointments.map(apt => ({ id: apt.id })),
+      relations: ['doctor', 'patient'],
+    });
+  }
+
+  private generateTimeSlots(startTime: string, count: number): string[] {
+    const slots: string[] = [];
+    let [hours, minutes] = startTime.split(':').map(Number);
+    
+    for (let i = 0; i < count; i++) {
+      slots.push(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`);
+      minutes += 30;
+      if (minutes >= 60) {
+        hours++;
+        minutes = 0;
+      }
+    }
+    return slots;
+  }
+
+  private async checkSlotsOccupied(doctorId: string, date: string, timeSlots: string[]): Promise<string[]> {
+    const occupiedSlots: string[] = [];
+    
+    for (const slot of timeSlots) {
+      const existing = await this.appointmentRepository.findOne({
+        where: {
+          doctorId,
+          date: new Date(date),
+          timeSlot: slot as TimeSlot,
+          status: AppointmentStatus.Approved,
+        },
+      });
+
+      if (existing) {
+        occupiedSlots.push(slot);
+      }
+    }
+
+    return occupiedSlots;
   }
 }

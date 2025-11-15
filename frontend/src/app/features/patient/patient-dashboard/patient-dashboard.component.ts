@@ -2,11 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
+import { Store } from '@ngrx/store';
 import { AuthService } from '../../../core/services/auth.service';
 import { DoctorPatientService } from '../../../core/services/doctor-patient.service';
 import { Gender, User } from '../../../shared/models/user.model';
 import { BookAppointmentComponent } from '../../../shared/components/book-appointment/book-appointment.component';
 import { MyAppointmentsComponent } from '../../../shared/components/my-appointments/my-appointments.component';
+import { Therapy } from '../../../core/models/therapy.model';
+import { loadMyTherapies } from '../../../store/therapies/therapies.actions';
+import { selectAllTherapies, selectTherapiesLoading, selectTherapiesError } from '../../../store/therapies/therapies.selectors';
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -27,14 +31,23 @@ export class PatientDashboardComponent implements OnInit {
   myDoctors: any[] = [];
   isLoadingKarton: boolean = false;
 
+  // Terapije tab data
+  myTherapies$: Observable<Therapy[]>;
+  isLoadingTherapies$: Observable<boolean>;
+  therapiesError$: Observable<string | null>;
+
   constructor(
     private authService: AuthService,
     private doctorPatientService: DoctorPatientService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private store: Store
   ) {
     // Observables iz Store-a
     this.currentUser$ = this.authService.currentUser$;
     this.isUpdating$ = this.authService.isLoading$;
+    this.myTherapies$ = this.store.select(selectAllTherapies);
+    this.isLoadingTherapies$ = this.store.select(selectTherapiesLoading);
+    this.therapiesError$ = this.store.select(selectTherapiesError);
     
     // Inicijalizuj formu
     const currentUser = this.authService.getCurrentUser();
@@ -52,10 +65,28 @@ export class PatientDashboardComponent implements OnInit {
   ngOnInit() {
     // Učitaj medicinski karton i lekare odmah pri inicijalizaciji
     this.loadKartonData();
+    // Učitaj terapije
+    this.store.dispatch(loadMyTherapies());
   }
 
   selectTab(tab: string) {
+    console.log('TAB CLICKED:', tab);
     this.activeTab = tab;
+    
+    // Refresh terapije kad se otvori tab
+    if (tab === 'terapije') {
+      console.log('Loading therapies for patient...');
+      this.store.dispatch(loadMyTherapies());
+      
+      // Debug: Subscribe to check what we get
+      this.myTherapies$.subscribe(therapies => {
+        console.log('Therapies in store:', therapies);
+      });
+      
+      this.isLoadingTherapies$.subscribe(loading => {
+        console.log('Loading state:', loading);
+      });
+    }
   }
 
   logout() {

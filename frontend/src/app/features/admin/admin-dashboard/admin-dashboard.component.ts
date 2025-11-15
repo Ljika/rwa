@@ -1,13 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Observable, Subject, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, map, switchMap, takeUntil, catchError } from 'rxjs/operators';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Observable, Subject, of, BehaviorSubject, combineLatest, from } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map, switchMap, takeUntil, catchError, reduce, mergeMap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { AuthService } from '../../../core/services/auth.service';
 import { DoctorPatientService } from '../../../core/services/doctor-patient.service';
 import { DoctorSchedulesService } from '../../../core/services/doctor-schedules.service';
 import { UsersService } from '../../../core/services/users.service';
+import { AppointmentsService } from '../../../core/services/appointments.service';
 import { Gender, User } from '../../../shared/models/user.model';
 import { AppState } from '../../../store';
 import * as UsersActions from '../../../store/users/users.actions';
@@ -31,6 +32,7 @@ import { ManufacturersAdminComponent } from '../manufacturers-admin/manufacturer
   imports: [
     CommonModule, 
     ReactiveFormsModule,
+    FormsModule,
     PatientListComponent,
     DoctorListComponent,
     AdminListComponent,
@@ -186,8 +188,219 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   scheduleSuccessMessage: string = '';
   scheduleErrorMessage: string = '';
 
-  // Cleanup
+  // Termini tab - svi termini sa filterima - REACTIVE sa combineLatest
+  isLoadingAllAppointments: boolean = false;
+  
+  // Cleanup Subject - mora biti definisan PRE filteredAppointments$
   private destroy$ = new Subject<void>();
+  
+  // BehaviorSubject-i za reactive filtering (public da bi HTML mogao pristupiti)
+  public allAppointments$ = new BehaviorSubject<any[]>([]);
+  private dateFilter$ = new BehaviorSubject<string>('');
+  private doctorFilter$ = new BehaviorSubject<string>('');
+  private patientFilter$ = new BehaviorSubject<string>('');
+
+  // combineLatest kombinuje sve filtere i emituje kad se BILO KOJI promeni
+  filteredAppointments$: Observable<any[]> = combineLatest([
+    this.allAppointments$,
+    this.dateFilter$,
+    this.doctorFilter$,
+    this.patientFilter$
+  ]).pipe(
+    map(([appointments, date, doctorId, patientId]) => {
+      console.log('combineLatest emitted! Filters:', { date, doctorId, patientId });
+      
+      // Prvo grupiši blok termine
+      const groupedAppointments = this.groupBlockAppointments(appointments);
+      
+      // Zatim filtriraj
+      return groupedAppointments.filter(apt => {
+        const matchesDate = !date || apt.date === date;
+        const matchesDoctor = !doctorId || apt.doctorId === doctorId;
+        const matchesPatient = !patientId || apt.patientId === patientId;
+        return matchesDate && matchesDoctor && matchesPatient;
+      });
+    }),
+    takeUntil(this.destroy$)
+  );
+
+  // Getter-i za two-way binding u template-u
+  get appointmentDateFilter(): string {
+    return this.dateFilter$.value;
+  }
+  set appointmentDateFilter(value: string) {
+    this.dateFilter$.next(value);
+  }
+
+  get appointmentDoctorFilter(): string {
+    return this.doctorFilter$.value;
+  }
+  set appointmentDoctorFilter(value: string) {
+    this.doctorFilter$.next(value);
+  }
+
+  get appointmentPatientFilter(): string {
+    return this.patientFilter$.value;
+  }
+  set appointmentPatientFilter(value: string) {
+    this.patientFilter$.next(value);
+  }
+
+  // Metoda za resetovanje filtera
+  resetAppointmentFilters() {
+    this.dateFilter$.next('');
+    this.doctorFilter$.next('');
+    this.patientFilter$.next('');
+  }
+
+  // REDUCE operator za statistiku - izračunava broj termina po statusu
+  appointmentStats$: Observable<{status: string, count: number, percentage: number}[]> = 
+    this.allAppointments$.pipe(
+      switchMap(appointments => {
+        if (appointments.length === 0) {
+          return of([]);
+        }
+        
+        // Koristi reduce da izbroji termine po statusu
+        return from(appointments).pipe(
+          reduce((acc, appointment) => {
+            const status = appointment.status;
+            acc[status] = (acc[status] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>),
+          map(statusCounts => {
+            const total = appointments.length;
+            // Konvertuj u array sa procentima
+            return Object.entries(statusCounts).map(([status, count]) => ({
+              status,
+              count,
+              percentage: Math.round((count / total) * 100)
+            }));
+          })
+        );
+      }),
+      takeUntil(this.destroy$)
+    );
+
+  // REDUCE operator za ukupan broj grupisanih termina
+  filteredAppointmentsCount$: Observable<number> = this.filteredAppointments$.pipe(
+    map(appointments => {
+      console.log('reduce - counting appointments:', appointments.length);
+      return appointments.length;
+    })
+  );
+
+  // REDUCE operator za ukupan broj svih termina (pre grupisanja)
+  totalAppointmentsCount$: Observable<number> = this.allAppointments$.pipe(
+    map(appointments => {
+      console.log('reduce - total appointments:', appointments.length);
+      return appointments.length;
+    })
+  );
+
+  // Grupišanje blok termina (uzastopni termini sa istim reason i patientId)
+  groupBlockAppointments(appointments: any[]): any[] {
+    if (!appointments || appointments.length === 0) return [];
+    
+    // Sortiraj po datumu i vremenu
+    const sorted = [...appointments].sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      const timeA = a.timeSlot || a.startTime || '';
+      const timeB = b.timeSlot || b.startTime || '';
+      return timeA.localeCompare(timeB);
+    });
+
+    const grouped: any[] = [];
+    let currentBlock: any[] = [];
+
+    for (let i = 0; i < sorted.length; i++) {
+      const current = sorted[i];
+      
+      if (currentBlock.length === 0) {
+        currentBlock.push(current);
+        continue;
+      }
+
+      const last = currentBlock[currentBlock.length - 1];
+      const isSameDoctor = current.doctorId === last.doctorId;
+      // Ako oba nemaju pacijenta ili imaju istog
+      const isSamePatient = (current.patientId === last.patientId) || 
+                           (!current.patientId && !last.patientId) ||
+                           (current.patientId === null && last.patientId === null);
+      const isSameReason = current.reason?.trim() === last.reason?.trim();
+      const isSameDate = current.date === last.date;
+      const lastTime = last.timeSlot || last.startTime;
+      const currentTime = current.timeSlot || current.startTime;
+      const isConsecutive = this.isConsecutiveTime(lastTime, currentTime);
+
+      console.log('Comparing appointments:', {
+        current: current.id,
+        last: last.id,
+        isSameDoctor,
+        isSamePatient,
+        isSameReason,
+        isSameDate,
+        isConsecutive,
+        currentReason: current.reason,
+        lastReason: last.reason
+      });
+
+      if (isSameDoctor && isSamePatient && isSameReason && isSameDate && isConsecutive) {
+        // Dodaj u trenutni blok
+        console.log('Adding to block');
+        currentBlock.push(current);
+      } else {
+        // Završi trenutni blok i započni novi
+        console.log('Creating new block, current block size:', currentBlock.length);
+        grouped.push(this.createGroupedAppointment(currentBlock));
+        currentBlock = [current];
+      }
+    }
+
+    // Dodaj poslednji blok
+    if (currentBlock.length > 0) {
+      grouped.push(this.createGroupedAppointment(currentBlock));
+    }
+
+    return grouped;
+  }
+
+  isConsecutiveTime(time1: string, time2: string): boolean {
+    const [h1, m1] = time1.split(':').map(Number);
+    const [h2, m2] = time2.split(':').map(Number);
+    const minutes1 = h1 * 60 + m1;
+    const minutes2 = h2 * 60 + m2;
+    return minutes2 - minutes1 === 30; // 30 minuta razlike
+  }
+
+  createGroupedAppointment(block: any[]): any {
+    if (block.length === 1) {
+      // Obični termin - dodaj startTime property za prikaz
+      return {
+        ...block[0],
+        startTime: block[0].timeSlot || block[0].startTime
+      };
+    }
+
+    // Blok termin - kombinuj podatke
+    const first = block[0];
+    const last = block[block.length - 1];
+    const lastTimeStr = last.timeSlot || last.startTime;
+    const [lastH, lastM] = lastTimeStr.split(':').map(Number);
+    const endMinutes = lastH * 60 + lastM + 30;
+    const endTime = `${Math.floor(endMinutes / 60).toString().padStart(2, '0')}:${(endMinutes % 60).toString().padStart(2, '0')}`;
+
+    return {
+      ...first,
+      startTime: first.timeSlot || first.startTime,
+      endTime: endTime,
+      isBlockAppointment: true,
+      blockSize: block.length,
+      duration: block.length * 30, // minuta
+      appointmentIds: block.map(a => a.id)
+    };
+  }
 
   constructor(
     private authService: AuthService,
@@ -196,8 +409,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     private doctorSchedulesService: DoctorSchedulesService,
     private usersService: UsersService,
     private fb: FormBuilder,
-  private drugsService: DrugsService,
-  private manufacturersService: ManufacturersService
+    private drugsService: DrugsService,
+    private manufacturersService: ManufacturersService,
+    private appointmentsService: AppointmentsService
   ) {
     // Observables iz Store-a
     this.currentUser$ = this.authService.currentUser$;
@@ -240,6 +454,25 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   this.store.dispatch(UsersActions.loadUsers());
   // Učitaj proizvođače odmah
   this.manufacturersService.getAll().subscribe(manu => this.manufacturers = manu);
+  }
+
+  loadAllAppointments() {
+    this.isLoadingAllAppointments = true;
+    this.appointmentsService.getAllAppointments()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (appointments) => {
+          console.log('Raw appointments from API:', appointments);
+          // Emituj u BehaviorSubject - combineLatest će automatski reagovati!
+          this.allAppointments$.next(appointments);
+          this.isLoadingAllAppointments = false;
+          console.log('Appointments loaded and emitted to allAppointments$');
+        },
+        error: (error) => {
+          console.error('Error loading appointments:', error);
+          this.isLoadingAllAppointments = false;
+        }
+      });
   }
 
   ngOnDestroy() {
@@ -416,6 +649,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         error: () => (this.lekovi = [])
       });
       this.manufacturersService.getAll().subscribe(manu => this.manufacturers = manu);
+    } else if (tab === 'termini') {
+      this.loadAllAppointments();
+      this.loadUsersForBlockAppointment(); // Učitaj doktore i pacijente za filtere
     }
   }
 
@@ -791,5 +1027,121 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   handleCloseEditModal() {
     this.closeEditModal();
+  }
+
+  // Blok termini - za operacije
+  showBlockAppointmentModal: boolean = false;
+  blockAppointmentForm!: FormGroup;
+  isSubmittingBlockAppointment: boolean = false;
+  allDoctorsForBlock$!: Observable<User[]>;
+  allPatientsForBlock$!: Observable<User[]>;
+  availableStartTimes: string[] = [];
+  isLoadingStartTimes: boolean = false;
+
+  openBlockAppointmentModal() {
+    this.showBlockAppointmentModal = true;
+    this.initializeBlockAppointmentForm();
+    this.loadUsersForBlockAppointment();
+    this.setupBlockFormListeners();
+  }
+
+  closeBlockAppointmentModal() {
+    this.showBlockAppointmentModal = false;
+    this.blockAppointmentForm.reset();
+    this.availableStartTimes = [];
+  }
+
+  initializeBlockAppointmentForm() {
+    const today = new Date().toISOString().split('T')[0];
+    this.blockAppointmentForm = this.fb.group({
+      doctorId: ['', Validators.required],
+      patientId: [''],
+      date: [today, Validators.required],
+      startTime: ['', Validators.required],
+      numberOfSlots: [8, [Validators.required, Validators.min(1), Validators.max(16)]],
+      reason: ['OPERACIJA', Validators.required],
+      notes: ['']
+    });
+  }
+
+  setupBlockFormListeners() {
+    // Kada se promeni doktor ili datum, učitaj slobodne slotove
+    this.blockAppointmentForm.get('doctorId')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadAvailableStartTimes());
+
+    this.blockAppointmentForm.get('date')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadAvailableStartTimes());
+  }
+
+  loadAvailableStartTimes() {
+    const doctorId = this.blockAppointmentForm.get('doctorId')?.value;
+    const date = this.blockAppointmentForm.get('date')?.value;
+
+    if (!doctorId || !date) {
+      this.availableStartTimes = [];
+      return;
+    }
+
+    this.isLoadingStartTimes = true;
+    this.appointmentsService.getAvailableSlots(doctorId, date)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (slots: any[]) => {
+          this.availableStartTimes = slots;
+          this.isLoadingStartTimes = false;
+          
+          // Ako ima slobodnih slotova, postavi prvi kao default
+          if (slots.length > 0) {
+            this.blockAppointmentForm.patchValue({ startTime: slots[0] });
+          } else {
+            this.blockAppointmentForm.patchValue({ startTime: '' });
+          }
+        },
+        error: (err: any) => {
+          console.error('Greška pri učitavanju slobodnih slotova:', err);
+          this.availableStartTimes = [];
+          this.isLoadingStartTimes = false;
+        }
+      });
+  }
+
+  loadUsersForBlockAppointment() {
+    this.allDoctorsForBlock$ = this.store.select(UsersSelectors.selectAllUsers).pipe(
+      map(users => users.filter(u => u.role === 'Doctor' && u.isActive))
+    );
+    this.allPatientsForBlock$ = this.store.select(UsersSelectors.selectAllUsers).pipe(
+      map(users => users.filter(u => u.role === 'Patient' && u.isActive))
+    );
+  }
+
+  submitBlockAppointment() {
+    if (this.blockAppointmentForm.invalid) {
+      alert('Molimo popunite sva obavezna polja');
+      return;
+    }
+
+    this.isSubmittingBlockAppointment = true;
+    const formData = this.blockAppointmentForm.value;
+
+    console.log('Šaljem blok termin:', formData);
+
+    this.appointmentsService.createBlockAppointment(formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (appointments: any[]) => {
+          this.isSubmittingBlockAppointment = false;
+          alert(`Uspešno kreiran blok termin sa ${appointments.length} slotova!`);
+          this.closeBlockAppointmentModal();
+        },
+        error: (err: any) => {
+          this.isSubmittingBlockAppointment = false;
+          console.error('Greška pri kreiranju blok termina:', err);
+          console.error('Backend error details:', err.error);
+          const errorMsg = err.error?.message || err.error?.error || 'Greška pri kreiranju blok termina';
+          alert(errorMsg);
+        }
+      });
   }
 }

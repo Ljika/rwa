@@ -105,7 +105,63 @@
     <!-- Terapije Tab -->
     <div *ngIf="activeTab === 'terapije'" class="tab-content">
       <h3>Moje Terapije</h3>
-      <p>Ovde će biti lista svih terapija...</p>
+      
+      <!-- Error state -->
+      <div *ngIf="therapiesError$ | async as error" class="error-message">
+        <p>❌ Greška: {{ error }}</p>
+      </div>
+      
+      <!-- Loading state -->
+      <div *ngIf="isLoadingTherapies$ | async" class="loading">
+        <p>Učitavanje terapija...</p>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!(isLoadingTherapies$ | async) && !(therapiesError$ | async) && (myTherapies$ | async)?.length === 0" class="empty-state">
+        <p>Nemate propisanih terapija.</p>
+      </div>
+
+      <!-- Therapies List -->
+      <div *ngIf="!(isLoadingTherapies$ | async) && (myTherapies$ | async)?.length! > 0" class="therapies-list">
+        <div *ngFor="let therapy of myTherapies$ | async" class="therapy-card">
+          <div class="therapy-header">
+            <h4>💊 Dijagnoza: {{ therapy.diagnosis }}</h4>
+            <span class="therapy-date">📅 Propisano: {{ therapy.prescribedAt | date:'dd.MM.yyyy' }}</span>
+          </div>
+          
+          <div class="therapy-info">
+            <p class="therapy-doctor">
+              <strong>Lekar:</strong> Dr. {{ therapy.doctor?.firstName }} {{ therapy.doctor?.lastName }}
+              <span *ngIf="therapy.doctor?.specialization"> ({{ therapy.doctor.specialization }})</span>
+            </p>
+            <p *ngIf="therapy.notes" class="therapy-notes">
+              <strong>Napomene:</strong> {{ therapy.notes }}
+            </p>
+          </div>
+
+          <div class="therapy-drugs">
+            <h5>Lekovi:</h5>
+            <div *ngIf="therapy.therapyDrugs && therapy.therapyDrugs.length > 0" class="drugs-list">
+              <div *ngFor="let td of therapy.therapyDrugs" class="drug-item">
+                <div class="drug-name">
+                  <strong>{{ td.drug?.name }}</strong> 
+                  <span class="drug-dosage" *ngIf="td.drug?.dosage">({{ td.drug?.dosage }})</span>
+                </div>
+                <div class="drug-details">
+                  <span class="drug-frequency">{{ td.timesPerDay }}x dnevno</span>
+                  <span class="drug-duration">{{ td.durationDays }} dana</span>
+                </div>
+                <p *ngIf="td.instructions" class="drug-instructions">
+                  <em>{{ td.instructions }}</em>
+                </p>
+              </div>
+            </div>
+            <div *ngIf="!therapy.therapyDrugs || therapy.therapyDrugs.length === 0" class="no-drugs">
+              Nema propisanih lekova.
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Zakaži Termin Tab -->

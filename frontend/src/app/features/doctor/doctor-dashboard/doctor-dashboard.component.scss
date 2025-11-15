@@ -3,6 +3,7 @@
   display: flex;
   flex-direction: column;
   background-color: #f5f7fa;
+  position: relative;
 }
 
 /* Navbar */
@@ -322,17 +323,19 @@
 }
 
 .patient-card {
-  background: #f8fafc;
-  border: 2px solid #e2e8f0;
+  background: white;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
+  flex-direction: column;
   gap: 1rem;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
   &:hover {
     border-color: #667eea;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.15);
     transform: translateY(-2px);
   }
 
@@ -343,25 +346,66 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     border-radius: 50%;
-    border: 2px solid #e2e8f0;
   }
 
   .patient-info {
     flex: 1;
 
     h5 {
-      margin: 0 0 0.5rem 0;
+      margin: 0 0 0.75rem 0;
       color: #1e293b;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 600;
     }
 
     .patient-detail {
-      margin: 0.25rem 0;
+      margin: 0.4rem 0;
       color: #64748b;
       font-size: 0.9rem;
+      line-height: 1.5;
+    }
+  }
+
+  .patient-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+
+    button {
+      flex: 1;
+      padding: 0.7rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    .btn-view-therapies {
+      background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+      color: white;
+
+      &:hover {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      }
+    }
+
+    .btn-view-appointments {
+      background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+      color: white;
+
+      &:hover {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      }
     }
   }
 }
@@ -440,5 +484,528 @@
     button {
       width: 100%;
     }
+  }
+}
+
+/* Therapy Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content, .modal-box {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  background: white;
+
+  h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+  }
+
+  .btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #999;
+    
+    &:hover {
+      color: #333;
+    }
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+
+  .form-group {
+    margin-bottom: 1.5rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #555;
+    }
+
+    textarea,
+    input,
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      
+      &:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+    }
+  }
+
+  .drug-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 2fr auto;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    align-items: center;
+
+    .drug-select {
+      width: 100%;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .input-with-label {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      input {
+        width: 100%;
+        padding-right: 4rem;
+      }
+
+      .input-suffix {
+        position: absolute;
+        right: 0.75rem;
+        font-size: 0.85rem;
+        color: #666;
+        pointer-events: none;
+      }
+    }
+
+    .btn-remove-drug {
+      background: #ff4444;
+      color: white;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      
+      &:hover {
+        background: #cc0000;
+      }
+    }
+  }
+
+  .btn-add-drug {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    
+    &:hover {
+      background: #5568d3;
+    }
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+  background: white;
+
+  button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .btn-cancel-modal {
+    background: #f0f0f0;
+    color: #333;
+    
+    &:hover {
+      background: #e0e0e0;
+    }
+  }
+
+  .btn-submit-therapy {
+    background: #28a745;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background: #218838;
+    }
+
+    &:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Patient Details Modal
+.patient-details-modal {
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: white !important;
+
+  .modal-body {
+    background: white;
+    padding: 1.5rem;
+  }
+
+  .therapies-list, .appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .therapy-card, .appointment-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+
+    .therapy-header, .appointment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+
+      h5 {
+        margin: 0;
+        color: #1e293b;
+        font-size: 1rem;
+      }
+
+      .therapy-date, .appointment-date {
+        color: #64748b;
+        font-size: 0.85rem;
+      }
+    }
+
+    .therapy-notes, p {
+      margin: 0.5rem 0;
+      color: #475569;
+      font-size: 0.9rem;
+    }
+
+    .therapy-drugs {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #e2e8f0;
+
+      h6 {
+        margin: 0 0 0.5rem 0;
+        color: #1e293b;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+          padding: 0.5rem 0;
+          color: #475569;
+          font-size: 0.85rem;
+          border-bottom: 1px solid #f1f5f9;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          strong {
+            color: #1e293b;
+          }
+
+          em {
+            color: #64748b;
+            font-size: 0.8rem;
+          }
+        }
+      }
+    }
+
+    .appointment-status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+
+      &.completed {
+        background: #d1fae5;
+        color: #065f46;
+      }
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #64748b;
+    
+    p {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+  }
+
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: #667eea;
+    font-size: 1rem;
+  }
+}
+
+// Follow-up appointment button
+.btn-follow-up {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+  }
+}
+
+// Follow-up modal
+.follow-up-modal {
+  max-width: 600px;
+  background: white !important;
+
+  .patient-info-box {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+
+    p {
+      margin: 0.25rem 0;
+      color: #0c4a6e;
+      font-size: 0.95rem;
+
+      strong {
+        color: #075985;
+      }
+    }
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #1e293b;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .error {
+      color: #ef4444;
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+
+    .info {
+      color: #3b82f6;
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+      font-style: italic;
+    }
+
+    .loading-slots {
+      padding: 0.75rem;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 6px;
+      color: #0369a1;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+/* Blok termini - za operacije */
+.block-appointment-item {
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+  border: 2px solid #fca5a5;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(252, 165, 165, 0.3);
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(252, 165, 165, 0.4);
+    transform: translateY(-2px);
+  }
+}
+
+.block-appointment {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .block-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #fca5a5;
+
+    .block-badge {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    strong {
+      color: #991b1b;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+  }
+
+  .block-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+
+    p {
+      margin: 0;
+      color: #475569;
+      font-size: 0.95rem;
+
+      strong {
+        color: #1e293b;
+        font-weight: 600;
+      }
+    }
+
+    .block-note {
+      grid-column: 1 / -1;
+      background: #fee2e2;
+      padding: 0.75rem;
+      border-radius: 6px;
+      border-left: 4px solid #dc2626;
+      font-style: italic;
+      color: #991b1b;
+    }
+  }
+
+  .block-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding-top: 0.75rem;
+    border-top: 1px solid #fca5a5;
+
+    button {
+      flex: 1;
+      min-width: 120px;
+    }
+  }
+}
+
+.appointment-item {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
+  }
+
+  span {
+    color: #475569;
+    font-size: 0.95rem;
+  }
+
+  button {
+    margin-left: 0.5rem;
   }
 }

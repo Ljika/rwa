@@ -23,6 +23,12 @@
       (click)="selectTab('scheduled')">
       Zakazani Termini ({{ scheduledAppointments.length }})
     </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'completed'"
+      (click)="selectTab('completed')">
+      Završeni Termini ({{ completedAppointments.length }})
+    </button>
   </div>
 
   <!-- Loading -->
@@ -149,6 +155,60 @@
             (click)="cancelAppointment(appointment.id)">
             Otkaži Termin
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Završeni Termini Tab -->
+  <div class="tab-content" *ngIf="!isLoading && activeTab === 'completed'">
+    <div class="no-data" *ngIf="completedAppointments.length === 0">
+      Nemate završenih termina.
+    </div>
+
+    <div class="appointments-list" *ngIf="completedAppointments.length > 0">
+      <div class="appointment-card" *ngFor="let appointment of completedAppointments">
+        <div class="card-header">
+          <div class="doctor-info">
+            <h3>Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}</h3>
+            <p class="specialization" *ngIf="appointment.doctor?.specialization">
+              {{ appointment.doctor.specialization }}
+            </p>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+            {{ getStatusText(appointment.status) }}
+          </span>
+        </div>
+
+        <div class="card-body">
+          <div class="info-row">
+            <span class="label">📅 Datum:</span>
+            <span class="value">{{ formatDate(appointment.date) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">🕐 Vreme:</span>
+            <span class="value">{{ formatTime(appointment.timeSlot) }}</span>
+          </div>
+          <div class="info-row" *ngIf="appointment.reason">
+            <span class="label">📝 Razlog:</span>
+            <span class="value">{{ appointment.reason }}</span>
+          </div>
+          <div class="info-row" *ngIf="appointment.notes">
+            <span class="label">💬 Napomene:</span>
+            <span class="value">{{ appointment.notes }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">📧 Kontakt doktora:</span>
+            <span class="value">{{ appointment.doctor?.email }}</span>
+          </div>
+          <div class="info-row" *ngIf="appointment.doctor?.phoneNumber">
+            <span class="label">📞 Telefon doktora:</span>
+            <span class="value">{{ appointment.doctor.phoneNumber }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">🕒 Kreirano:</span>
+            <span class="value">{{ formatDate(appointment.createdAt) }}</span>
+          </div>
         </div>
       </div>
     </div>

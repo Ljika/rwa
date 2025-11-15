@@ -342,6 +342,30 @@
     border-radius: 8px;
   }
 
+  .error-message {
+    background-color: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    
+    p {
+      margin: 0;
+    }
+  }
+
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: #667eea;
+    
+    p {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+  }
+
   .doctors-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

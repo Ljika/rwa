@@ -9,6 +9,9 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { appReducers } from './store';
 import { AuthEffects } from './store/auth/auth.effects';
 import { UsersEffects } from './store/users/users.effects';
+import { DrugsEffects } from './store/drugs/drugs.effects';
+import { ManufacturersEffects } from './store/manufacturers/manufacturers.effects';
+import { TherapiesEffects } from './store/therapies/therapies.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -18,7 +21,7 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor])
     ),
     provideStore(appReducers),
-    provideEffects([AuthEffects, UsersEffects]),
+    provideEffects([AuthEffects, UsersEffects, DrugsEffects, ManufacturersEffects, TherapiesEffects]),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode(),

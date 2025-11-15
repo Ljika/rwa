@@ -4,6 +4,7 @@ import { AppointmentsService } from '../application/appointments.service.js';
 import { CreateAppointmentDto } from '../application/dto/create-appointment.dto.js';
 import { UpdateAppointmentDto } from '../application/dto/update-appointment.dto.js';
 import { UpdateAppointmentStatusDto } from '../application/dto/update-appointment-status.dto.js';
+import { CreateBlockAppointmentDto } from '../application/dto/create-block-appointment.dto.js';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../../common/guards/roles.guard.js';
 import { Roles } from '../../../common/decorators/roles.decorator.js';
@@ -27,6 +28,27 @@ export class AppointmentsController {
     @CurrentUser() user: any,
   ) {
     return this.appointmentsService.create(createAppointmentDto, user.id);
+  }
+
+  @Post('schedule-for-patient')
+  @Roles(UserRole.Doctor)
+  @ApiOperation({ summary: 'Doktor zakažuje termin za svog pacijenta (kontrolni pregled)' })
+  @ApiResponse({ status: 201, description: 'Termin uspešno zakazan' })
+  @ApiResponse({ status: 403, description: 'Pacijent nije dodeljen ovom doktoru' })
+  scheduleForPatient(
+    @Body() createAppointmentDto: CreateAppointmentDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.appointmentsService.scheduleForPatient(createAppointmentDto, user.id);
+  }
+
+  @Post('block-appointment')
+  @Roles(UserRole.Admin)
+  @ApiOperation({ summary: 'Admin kreira blok termin (npr. za operaciju - više uzastopnih slotova)' })
+  @ApiResponse({ status: 201, description: 'Blok termin uspešno kreiran' })
+  @ApiResponse({ status: 400, description: 'Neki slotovi su zauzeti ili nisu u radnom vremenu' })
+  createBlockAppointment(@Body() dto: CreateBlockAppointmentDto) {
+    return this.appointmentsService.createBlockAppointment(dto);
   }
 
   @Get()

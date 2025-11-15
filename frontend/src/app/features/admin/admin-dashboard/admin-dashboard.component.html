@@ -60,6 +60,18 @@
       (click)="selectTab('ukloni')">
       ❌ Ukloni pacijenta doktoru
     </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'blok-termini'" 
+      (click)="selectTab('blok-termini')">
+      📅 Blok Termini
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'termini'" 
+      (click)="selectTab('termini')">
+      🗓️ Svi Termini
+    </button>
   </nav>
 
   <!-- Content Area -->
@@ -479,6 +491,273 @@
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- Blok Termini Tab -->
+    <div *ngIf="activeTab === 'blok-termini'" class="tab-content">
+      <div class="section-header">
+        <h3>📅 Blok Termini (Operacije)</h3>
+        <p class="section-description">
+          Kreirajte blok termin (više uzastopnih slotova) za operacije i duže zahvate.
+        </p>
+        <button class="btn-add" (click)="openBlockAppointmentModal()">
+          ➕ Kreiraj Blok Termin
+        </button>
+      </div>
+    </div>
+
+    <!-- Svi Termini Tab -->
+    <div *ngIf="activeTab === 'termini'" class="tab-content">
+      <div class="section-header">
+        <h3>🗓️ Svi Termini</h3>
+        <p class="section-description">
+          Pregled svih termina sa mogućnošću filtriranja po datumu, doktoru i pacijentu.
+        </p>
+      </div>
+
+      <!-- Filter Form - REACTIVE sa combineLatest -->
+      <div class="filter-container">
+        <div class="filter-row">
+          <div class="filter-field">
+            <label for="filterDate">Datum</label>
+            <input 
+              type="date" 
+              id="filterDate" 
+              [(ngModel)]="appointmentDateFilter">
+          </div>
+
+          <div class="filter-field">
+            <label for="filterDoctor">Doktor</label>
+            <select id="filterDoctor" [(ngModel)]="appointmentDoctorFilter">
+              <option value="">-- Svi doktori --</option>
+              <option *ngFor="let doctor of allDoctorsForBlock$ | async" [value]="doctor.id">
+                Dr. {{ doctor.firstName }} {{ doctor.lastName }}
+              </option>
+            </select>
+          </div>
+
+          <div class="filter-field">
+            <label for="filterPatient">Pacijent</label>
+            <select id="filterPatient" [(ngModel)]="appointmentPatientFilter">
+              <option value="">-- Svi pacijenti --</option>
+              <option *ngFor="let patient of allPatientsForBlock$ | async" [value]="patient.id">
+                {{ patient.firstName }} {{ patient.lastName }}
+              </option>
+            </select>
+          </div>
+
+          <div class="filter-actions">
+            <button 
+              class="btn-clear-filter" 
+              (click)="resetAppointmentFilters()">
+              🔄 Resetuj filtere
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoadingAllAppointments" class="loading-state">
+        ⏳ Učitavanje termina...
+      </div>
+
+      <!-- Appointments List - REACTIVE sa async pipe -->
+      <ng-container *ngIf="!isLoadingAllAppointments && (filteredAppointments$ | async) as filteredAppointments">
+        <div *ngIf="filteredAppointments.length === 0" class="empty-state">
+          📭 Nema termina prema zadatim filterima
+        </div>
+
+        <div *ngIf="filteredAppointments.length > 0" class="appointments-grid">
+          <div class="appointment-card" 
+               *ngFor="let appointment of filteredAppointments"
+               [ngClass]="{'block-appointment-card': appointment.isBlockAppointment}">
+          
+          <div class="appointment-header">
+            <span class="appointment-date">📅 {{ appointment.date | date:'dd.MM.yyyy' }}</span>
+            <span class="appointment-time">
+              🕒 {{ appointment.startTime }}
+              <span *ngIf="appointment.isBlockAppointment"> - {{ appointment.endTime }}</span>
+            </span>
+            <span class="appointment-status" [ngClass]="'status-' + appointment.status.toLowerCase()">
+              {{ appointment.status }}
+            </span>
+          </div>
+
+          <!-- Block Appointment Badge -->
+          <div *ngIf="appointment.isBlockAppointment" class="block-badge">
+            📦 BLOK TERMIN - {{ appointment.duration }} min ({{ appointment.blockSize }} slotova)
+          </div>
+          
+          <div class="appointment-body">
+            <div class="appointment-field">
+              <strong>👨‍⚕️ Doktor:</strong> 
+              Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}
+            </div>
+            
+            <div class="appointment-field">
+              <strong>👤 Pacijent:</strong> 
+              <span *ngIf="appointment.patient">
+                {{ appointment.patient.firstName }} {{ appointment.patient.lastName }}
+              </span>
+              <span *ngIf="!appointment.patient" class="text-muted">Nije dodeljen</span>
+            </div>
+            
+            <div class="appointment-field">
+              <strong>📋 Razlog:</strong> 
+              {{ appointment.reason }}
+            </div>
+            
+            <div class="appointment-field" *ngIf="appointment.notes">
+              <strong>📝 Napomena:</strong> 
+              {{ appointment.notes }}
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- Results Counter - sa REDUCE operatorom -->
+        <div class="results-counter">
+          📊 Prikazano termina: 
+          <strong>{{ filteredAppointments.length }}</strong> 
+          od 
+          <strong>{{ totalAppointmentsCount$ | async }}</strong>
+          <span class="counter-note">(grupisani blok termini)</span>
+        </div>
+
+        <!-- Statistika sa REDUCE operatorom -->
+        <div class="stats-container" *ngIf="(appointmentStats$ | async) as stats">
+          <h4>📈 Statistika po statusu (REDUCE operator):</h4>
+          <div class="stats-grid">
+            <div class="stat-card" *ngFor="let stat of stats">
+              <div class="stat-status">{{ stat.status }}</div>
+              <div class="stat-count">{{ stat.count }} termina</div>
+              <div class="stat-percentage">{{ stat.percentage }}%</div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Block Appointment Modal -->
+  <div *ngIf="showBlockAppointmentModal" class="modal-overlay" (click)="closeBlockAppointmentModal()">
+    <div class="modal-content block-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📅 Kreiraj Blok Termin</h3>
+        <button class="btn-close" (click)="closeBlockAppointmentModal()">✕</button>
+      </div>
+      
+      <form [formGroup]="blockAppointmentForm" (ngSubmit)="submitBlockAppointment()" class="modal-body">
+        <!-- Doctor Selection -->
+        <div class="form-group">
+          <label for="blockDoctorId">Izaberi doktora *</label>
+          <select id="blockDoctorId" formControlName="doctorId" required>
+            <option value="">-- Izaberi doktora --</option>
+            <option *ngFor="let doctor of allDoctorsForBlock$ | async" [value]="doctor.id">
+              Dr. {{ doctor.firstName }} {{ doctor.lastName }} - {{ doctor.specialization }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Patient Selection (Optional) -->
+        <div class="form-group">
+          <label for="blockPatientId">Izaberi pacijenta (opciono)</label>
+          <select id="blockPatientId" formControlName="patientId">
+            <option value="">-- Bez pacijenta (prazno) --</option>
+            <option *ngFor="let patient of allPatientsForBlock$ | async" [value]="patient.id">
+              {{ patient.firstName }} {{ patient.lastName }}
+            </option>
+          </select>
+          <small class="field-hint">Možete ostaviti prazno i dodati pacijenta kasnije</small>
+        </div>
+
+        <!-- Date -->
+        <div class="form-group">
+          <label for="blockDate">Datum *</label>
+          <input type="date" id="blockDate" formControlName="date" required>
+        </div>
+
+        <!-- Start Time -->
+        <div class="form-group">
+          <label for="blockStartTime">Početno vreme *</label>
+          <div *ngIf="isLoadingStartTimes" class="loading-slots">
+            ⏳ Učitavanje slobodnih slotova...
+          </div>
+          <select 
+            *ngIf="!isLoadingStartTimes" 
+            id="blockStartTime" 
+            formControlName="startTime" 
+            required>
+            <option value="">-- Izaberi početno vreme --</option>
+            <option *ngFor="let slot of availableStartTimes" [value]="slot">
+              {{ slot }}
+            </option>
+          </select>
+          <small class="field-hint" *ngIf="availableStartTimes.length > 0">
+            Prvi slot blok termina - dostupno {{ availableStartTimes.length }} slobodnih slotova
+          </small>
+          <small class="field-hint field-warning" *ngIf="availableStartTimes.length === 0 && !isLoadingStartTimes && blockAppointmentForm.get('doctorId')?.value && blockAppointmentForm.get('date')?.value">
+            ⚠️ Nema slobodnih slotova za izabrani datum
+          </small>
+        </div>
+
+        <!-- Number of Slots -->
+        <div class="form-group">
+          <label for="blockSlots">Broj slotova *</label>
+          <input 
+            type="number" 
+            id="blockSlots" 
+            formControlName="numberOfSlots" 
+            min="1" 
+            max="16" 
+            required>
+          <small class="field-hint">
+            1 slot = 30 minuta | 
+            <strong>{{ blockAppointmentForm.get('numberOfSlots')?.value || 0 }} slotova = 
+            {{ (blockAppointmentForm.get('numberOfSlots')?.value || 0) * 0.5 }}h</strong>
+          </small>
+        </div>
+
+        <!-- Reason -->
+        <div class="form-group">
+          <label for="blockReason">Razlog/Tip *</label>
+          <input 
+            type="text" 
+            id="blockReason" 
+            formControlName="reason" 
+            placeholder="npr. OPERACIJA, HIRURGIJA..."
+            required>
+          <small class="field-hint">Svi termini će imati isti razlog</small>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+          <label for="blockNotes">Napomena</label>
+          <textarea 
+            id="blockNotes" 
+            formControlName="notes" 
+            rows="3" 
+            placeholder="Dodatne napomene..."></textarea>
+        </div>
+
+        <!-- Submit -->
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn-cancel" 
+            (click)="closeBlockAppointmentModal()"
+            [disabled]="isSubmittingBlockAppointment">
+            Otkaži
+          </button>
+          <button 
+            type="submit" 
+            class="btn-submit" 
+            [disabled]="blockAppointmentForm.invalid || isSubmittingBlockAppointment">
+            <span *ngIf="!isSubmittingBlockAppointment">✅ Kreiraj Blok Termin</span>
+            <span *ngIf="isSubmittingBlockAppointment">⏳ Kreiranje...</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
