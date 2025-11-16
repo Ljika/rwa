@@ -4,31 +4,160 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .lek-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+  max-width: 500px;
+
+  h4 {
+    margin: 0 0 1.5rem 0;
+    color: #1e293b;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 0.95rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn-submit {
+      background: #667eea;
+      color: white;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+
+    .btn-cancel {
+      background: #e2e8f0;
+      color: #64748b;
+
+      &:hover {
+        background: #cbd5e1;
+      }
+    }
+  }
 }
 
 .lekovi-table {
   width: 100%;
   border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
 }
 
-.lekovi-table th, .lekovi-table td {
-  border: 1px solid #ddd;
-  padding: 0.5rem;
+.lekovi-table thead {
+  background: #f8fafc;
+}
+
+.lekovi-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #1e293b;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.lekovi-table td {
+  padding: 1rem;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.lekovi-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .btn-add, .btn-edit, .btn-delete {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.btn-add {
+  background: #667eea;
+  color: white;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.btn-edit {
+  background: #3b82f6;
+  color: white;
   margin-right: 0.5rem;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.btn-delete {
+  background: #ef4444;
+  color: white;
+
+  &:hover {
+    opacity: 0.9;
+  }
 }
 
 .empty {
-  color: #888;
-  margin-top: 1rem;
+  color: #64748b;
+  text-align: center;
+  padding: 2rem;
+  font-style: italic;
 }

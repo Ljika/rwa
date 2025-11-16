@@ -1,0 +1,72 @@
+<div class="form-container">
+  <h4>➕ Kreiranje Novog Administratora</h4>
+  
+  <form [formGroup]="adminForm" (ngSubmit)="onSubmit()">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ime *</label>
+        <input type="text" formControlName="firstName" class="form-control" placeholder="Unesite ime">
+        <div class="error" *ngIf="adminForm.get('firstName')?.invalid && adminForm.get('firstName')?.touched">
+          Ime je obavezno
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Prezime *</label>
+        <input type="text" formControlName="lastName" class="form-control" placeholder="Unesite prezime">
+        <div class="error" *ngIf="adminForm.get('lastName')?.invalid && adminForm.get('lastName')?.touched">
+          Prezime je obavezno
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" formControlName="email" class="form-control" placeholder="admin@primer.com">
+        <div class="error" *ngIf="adminForm.get('email')?.invalid && adminForm.get('email')?.touched">
+          Email je obavezan i mora biti validan
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Lozinka *</label>
+        <input type="password" formControlName="password" class="form-control" placeholder="Min. 6 karaktera">
+        <div class="error" *ngIf="adminForm.get('password')?.invalid && adminForm.get('password')?.touched">
+          Lozinka mora imati najmanje 6 karaktera
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Telefon</label>
+        <input type="tel" formControlName="phoneNumber" class="form-control" placeholder="+381 XX XXX XXXX">
+      </div>
+
+      <div class="form-group">
+        <label>Datum rođenja</label>
+        <input type="date" formControlName="dateOfBirth" class="form-control">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Pol</label>
+        <select formControlName="gender" class="form-control">
+          <option value="">Izaberi pol</option>
+          <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-submit" [disabled]="adminForm.invalid || isSubmitting">
+        {{ isSubmitting ? 'Kreiranje...' : '✅ Kreiraj Administratora' }}
+      </button>
+      <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="isSubmitting">
+        ❌ Otkaži
+      </button>
+    </div>
+  </form>
+</div>

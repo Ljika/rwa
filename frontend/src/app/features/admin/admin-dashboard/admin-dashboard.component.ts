@@ -21,6 +21,7 @@ import { AdminListComponent } from '../../../shared/components/admin-list/admin-
 import { DrugsService, Drug } from '../../../core/services/drugs.service';
 import { ManufacturersService, Manufacturer } from '../../../core/services/manufacturers.service';
 import { AddDoctorFormComponent, CreateDoctorDto } from '../../../shared/components/add-doctor-form/add-doctor-form.component';
+import { AddAdminFormComponent, CreateAdminDto } from '../../../shared/components/add-admin-form/add-admin-form.component';
 import { AddScheduleFormComponent, CreateScheduleDto } from '../../../shared/components/add-schedule-form/add-schedule-form.component';
 import { EditUserModalComponent, UpdateUserDto } from '../../../shared/components/edit-user-modal/edit-user-modal.component';
 import { DrugsAdminComponent } from '../drugs-admin/drugs-admin.component';
@@ -37,6 +38,7 @@ import { ManufacturersAdminComponent } from '../manufacturers-admin/manufacturer
     DoctorListComponent,
     AdminListComponent,
     AddDoctorFormComponent,
+    AddAdminFormComponent,
     AddScheduleFormComponent,
     EditUserModalComponent,
     DrugsAdminComponent,
@@ -946,12 +948,21 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   // AddDoctorFormComponent handlers
   handleSubmitDoctorForm(doctorData: CreateDoctorDto) {
-    const data = {
-      ...doctorData,
+    // Filter out empty optional fields
+    const cleanedData: any = {
+      firstName: doctorData.firstName,
+      lastName: doctorData.lastName,
+      email: doctorData.email,
+      password: doctorData.password,
+      specialization: doctorData.specialization,
       role: 'Doctor'
     };
 
-    this.usersService.createDoctor(data)
+    if (doctorData.phoneNumber) cleanedData.phoneNumber = doctorData.phoneNumber;
+    if (doctorData.dateOfBirth) cleanedData.dateOfBirth = doctorData.dateOfBirth;
+    if (doctorData.gender) cleanedData.gender = doctorData.gender;
+
+    this.usersService.createDoctor(cleanedData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -968,6 +979,40 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   handleCancelDoctorForm() {
     this.showAddDoctorForm = false;
+  }
+
+  // AddAdminFormComponent handlers
+  handleSubmitAdminForm(adminData: CreateAdminDto) {
+    // Filter out empty optional fields
+    const cleanedData: any = {
+      firstName: adminData.firstName,
+      lastName: adminData.lastName,
+      email: adminData.email,
+      password: adminData.password,
+      role: 'Admin'
+    };
+
+    if (adminData.phoneNumber) cleanedData.phoneNumber = adminData.phoneNumber;
+    if (adminData.dateOfBirth) cleanedData.dateOfBirth = adminData.dateOfBirth;
+    if (adminData.gender) cleanedData.gender = adminData.gender;
+
+    this.usersService.createAdmin(cleanedData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          alert(`Uspešno kreiran administrator: ${adminData.firstName} ${adminData.lastName}`);
+          this.showAddAdminForm = false;
+          this.store.dispatch(UsersActions.loadUsers());
+        },
+        error: (error: any) => {
+          console.error('Error creating admin:', error);
+          alert(error.error?.message || 'Greška pri kreiranju administratora');
+        }
+      });
+  }
+
+  handleCancelAdminForm() {
+    this.showAddAdminForm = false;
   }
 
   // AddScheduleFormComponent handlers  

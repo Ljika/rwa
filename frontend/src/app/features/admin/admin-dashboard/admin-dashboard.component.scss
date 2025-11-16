@@ -674,6 +674,28 @@
   }
 }
 
+/* Add Block Appointment Button */
+.btn-add-block {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
 /* Add Doctor Form */
 .add-doctor-form {
   background: white;

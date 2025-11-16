@@ -130,11 +130,11 @@
           </div>
           
           <div class="therapy-info">
-            <p class="therapy-doctor">
+            <p>
               <strong>Lekar:</strong> Dr. {{ therapy.doctor?.firstName }} {{ therapy.doctor?.lastName }}
               <span *ngIf="therapy.doctor?.specialization"> ({{ therapy.doctor.specialization }})</span>
             </p>
-            <p *ngIf="therapy.notes" class="therapy-notes">
+            <p *ngIf="therapy.notes">
               <strong>Napomene:</strong> {{ therapy.notes }}
             </p>
           </div>
@@ -143,17 +143,7 @@
             <h5>Lekovi:</h5>
             <div *ngIf="therapy.therapyDrugs && therapy.therapyDrugs.length > 0" class="drugs-list">
               <div *ngFor="let td of therapy.therapyDrugs" class="drug-item">
-                <div class="drug-name">
-                  <strong>{{ td.drug?.name }}</strong> 
-                  <span class="drug-dosage" *ngIf="td.drug?.dosage">({{ td.drug?.dosage }})</span>
-                </div>
-                <div class="drug-details">
-                  <span class="drug-frequency">{{ td.timesPerDay }}x dnevno</span>
-                  <span class="drug-duration">{{ td.durationDays }} dana</span>
-                </div>
-                <p *ngIf="td.instructions" class="drug-instructions">
-                  <em>{{ td.instructions }}</em>
-                </p>
+                {{ td.drug?.name }}<span *ngIf="td.drug?.dosage"> ({{ td.drug?.dosage }})</span>, {{ td.timesPerDay }}x dnevno, {{ td.durationDays }} dana<span *ngIf="td.instructions"> - {{ td.instructions }}</span>
               </div>
             </div>
             <div *ngIf="!therapy.therapyDrugs || therapy.therapyDrugs.length === 0" class="no-drugs">
@@ -279,3 +269,5 @@
   </div>
 </div>
 
+<!-- Chat Component -->
+<app-chat></app-chat>

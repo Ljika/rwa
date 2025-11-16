@@ -15,11 +15,12 @@ import { selectAllDrugs } from '../../../store/drugs/drugs.selectors';
 import { loadDrugs } from '../../../store/drugs/drugs.actions';
 import { Drug } from '../../../core/models/drug.model';
 import { addTherapy } from '../../../store/therapies/therapies.actions';
+import { ChatComponent } from '../../../shared/components/chat/chat.component';
 
 @Component({
   selector: 'app-doctor-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ScheduleCalendarComponent, FilterByDatePipe],
+  imports: [CommonModule, ReactiveFormsModule, ScheduleCalendarComponent, FilterByDatePipe, ChatComponent],
   templateUrl: './doctor-dashboard.component.html',
   styleUrl: './doctor-dashboard.component.scss'
 })

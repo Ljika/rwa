@@ -48,6 +48,15 @@ export class UsersService {
     return this.http.post(`${environment.apiUrl}/auth/register`, doctorData, { headers });
   }
 
+  createAdmin(adminData: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    
+    return this.http.post(`${environment.apiUrl}/auth/register`, adminData, { headers });
+  }
+
   updateUser(id: string, userData: any): Observable<User> {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({

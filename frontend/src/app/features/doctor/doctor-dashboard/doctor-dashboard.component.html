@@ -213,15 +213,22 @@
         <section>
           <h4>Zahtevi za termine</h4>
           <div *ngIf="pendingAppointments.length === 0" class="empty">Nema zahteva za termine.</div>
-          <ul *ngIf="pendingAppointments.length > 0" class="appointments-list">
-            <li *ngFor="let apt of pendingAppointments" class="appointment-item">
-              <span>
-                Pacijent: {{ apt.patient?.firstName }} {{ apt.patient?.lastName }} | Datum: {{ apt.date }} | Termin: {{ apt.timeSlot }}
-              </span>
-              <button class="btn-approve" (click)="approveAppointment(apt.id)">Odobri</button>
-              <button class="btn-reject" (click)="rejectAppointment(apt.id)">Odbij</button>
-            </li>
-          </ul>
+          <div *ngIf="pendingAppointments.length > 0" class="appointments-list">
+            <div *ngFor="let apt of pendingAppointments" class="appointment-item">
+              <div class="appointment-row">
+                <div class="appointment-info">
+                  <span class="patient-name">{{ apt.patient?.firstName }} {{ apt.patient?.lastName }}</span>
+                  <span class="appointment-time">{{ apt.timeSlot }}</span>
+                  <span class="appointment-date">{{ apt.date }}</span>
+                  <span class="appointment-status status-pending">Na čekanju</span>
+                </div>
+                <div class="appointment-actions">
+                  <button class="btn-approve" (click)="approveAppointment(apt.id)">Odobri</button>
+                  <button class="btn-reject" (click)="rejectAppointment(apt.id)">Odbij</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
         <hr />
         <!-- Zakazani termini -->
@@ -233,25 +240,22 @@
           <div *ngIf="(groupedScheduledAppointments | filterByDate:selectedScheduledDate).length === 0" class="empty">
             Nema zakazanih termina.
           </div>
-          <ul *ngIf="(groupedScheduledAppointments | filterByDate:selectedScheduledDate).length > 0" class="appointments-list">
+          <div *ngIf="(groupedScheduledAppointments | filterByDate:selectedScheduledDate).length > 0" class="appointments-list">
             <!-- Blok termin (npr. operacija) -->
-            <li *ngFor="let apt of groupedScheduledAppointments | filterByDate:selectedScheduledDate" 
-                [ngClass]="{'appointment-item': !apt.isBlock, 'block-appointment-item': apt.isBlock}">
+            <div *ngFor="let apt of groupedScheduledAppointments | filterByDate:selectedScheduledDate" class="appointment-item">
               
               <!-- Blok termin -->
-              <div *ngIf="apt.isBlock" class="block-appointment">
-                <div class="block-header">
-                  <span class="block-badge">BLOK TERMIN</span>
-                  <strong>{{ apt.startTime }} - {{ apt.endTime }} ({{ apt.duration }})</strong>
+              <div *ngIf="apt.isBlock" class="appointment-row">
+                <div class="appointment-info">
+                  <span class="patient-name">{{ apt.patient?.firstName }} {{ apt.patient?.lastName }}</span>
+                  <span class="appointment-time">{{ apt.startTime }} - {{ apt.endTime }}</span>
+                  <span class="appointment-date">{{ apt.date }}</span>
+                  <span class="appointment-status" [class.status-completed]="apt.status === 'Completed'" [class.status-approved]="apt.status === 'Approved'">
+                    {{ apt.status === 'Approved' ? 'Zakazan' : apt.status === 'Completed' ? 'Završen' : apt.status }}
+                  </span>
+                  <span class="appointment-reason">{{ apt.reason }}</span>
                 </div>
-                <div class="block-details">
-                  <p><strong>Razlog:</strong> {{ apt.reason }}</p>
-                  <p><strong>Pacijent:</strong> {{ apt.patient?.firstName }} {{ apt.patient?.lastName }}</p>
-                  <p><strong>Datum:</strong> {{ apt.date }}</p>
-                  <p><strong>Status:</strong> {{ apt.status }}</p>
-                  <p class="block-note" *ngIf="apt.notes">{{ apt.notes }}</p>
-                </div>
-                <div class="block-actions">
+                <div class="appointment-actions">
                   <button class="btn-cancel" *ngIf="apt.status !== 'Completed'" (click)="cancelAppointment(apt.id)">Otkaži</button>
                   <button class="btn-complete" *ngIf="apt.status === 'Approved'" (click)="finishAppointment(apt.id)">Završi</button>
                   <button class="btn-therapy" *ngIf="apt.status === 'Completed'" (click)="openTherapyModal(apt)">Dodaj terapiju</button>
@@ -260,17 +264,24 @@
               </div>
 
               <!-- Obični termin -->
-              <div *ngIf="!apt.isBlock">
-                <span>
-                  Pacijent: {{ apt.patient?.firstName }} {{ apt.patient?.lastName }} | Datum: {{ apt.date }} | Termin: {{ apt.timeSlot }} | Status: {{ apt.status }}
-                </span>
-                <button class="btn-cancel" *ngIf="apt.status !== 'Completed'" (click)="cancelAppointment(apt.id)">Otkaži</button>
-                <button class="btn-complete" *ngIf="apt.status === 'Approved'" (click)="finishAppointment(apt.id)">Završi pregled</button>
-                <button class="btn-therapy" *ngIf="apt.status === 'Completed'" (click)="openTherapyModal(apt)">Dodaj terapiju</button>
-                <button class="btn-follow-up" (click)="openFollowUpModal(apt)">Zakaži kontrolni pregled</button>
+              <div *ngIf="!apt.isBlock" class="appointment-row">
+                <div class="appointment-info">
+                  <span class="patient-name">{{ apt.patient?.firstName }} {{ apt.patient?.lastName }}</span>
+                  <span class="appointment-time">{{ apt.timeSlot }}</span>
+                  <span class="appointment-date">{{ apt.date }}</span>
+                  <span class="appointment-status" [class.status-completed]="apt.status === 'Completed'" [class.status-approved]="apt.status === 'Approved'">
+                    {{ apt.status === 'Approved' ? 'Zakazan' : apt.status === 'Completed' ? 'Završen' : apt.status }}
+                  </span>
+                </div>
+                <div class="appointment-actions">
+                  <button class="btn-cancel" *ngIf="apt.status !== 'Completed'" (click)="cancelAppointment(apt.id)">Otkaži</button>
+                  <button class="btn-complete" *ngIf="apt.status === 'Approved'" (click)="finishAppointment(apt.id)">Završi</button>
+                  <button class="btn-therapy" *ngIf="apt.status === 'Completed'" (click)="openTherapyModal(apt)">Dodaj terapiju</button>
+                  <button class="btn-follow-up" (click)="openFollowUpModal(apt)">Kontrolni pregled</button>
+                </div>
               </div>
-            </li>
-          </ul>
+            </div>
+          </div>
         </section>
       </div>
     </div>
@@ -502,3 +513,6 @@
     </div>
   </div>
 </div>
+
+<!-- Chat Component -->
+<app-chat></app-chat>

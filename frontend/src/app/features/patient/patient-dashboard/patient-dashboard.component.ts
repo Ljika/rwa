@@ -11,11 +11,12 @@ import { MyAppointmentsComponent } from '../../../shared/components/my-appointme
 import { Therapy } from '../../../core/models/therapy.model';
 import { loadMyTherapies } from '../../../store/therapies/therapies.actions';
 import { selectAllTherapies, selectTherapiesLoading, selectTherapiesError } from '../../../store/therapies/therapies.selectors';
+import { ChatComponent } from '../../../shared/components/chat/chat.component';
 
 @Component({
   selector: 'app-patient-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BookAppointmentComponent, MyAppointmentsComponent],
+  imports: [CommonModule, ReactiveFormsModule, BookAppointmentComponent, MyAppointmentsComponent, ChatComponent],
   templateUrl: './patient-dashboard.component.html',
   styleUrl: './patient-dashboard.component.scss'
 })

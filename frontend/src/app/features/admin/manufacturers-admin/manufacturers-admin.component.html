@@ -3,11 +3,27 @@
   <button class="btn-add" (click)="showForm = true; editManufacturer = null">➕ Dodaj proizvođača</button>
 </div>
 <form *ngIf="showForm" class="manufacturer-form" (ngSubmit)="submitForm()" [formGroup]="manufacturerForm">
-  <input type="text" formControlName="name" placeholder="Naziv proizvođača" required />
-  <input type="text" formControlName="country" placeholder="Država" required />
-  <input type="email" formControlName="contactEmail" placeholder="Kontakt email" required />
-  <button type="submit">{{ editManufacturer ? 'Sačuvaj izmene' : 'Dodaj' }}</button>
-  <button type="button" (click)="cancelForm()">Otkaži</button>
+  <h4>{{ editManufacturer ? '✏️ Izmeni proizvođača' : '➕ Dodaj novog proizvođača' }}</h4>
+  
+  <div class="form-group">
+    <label>Naziv proizvođača *</label>
+    <input type="text" formControlName="name" placeholder="Naziv proizvođača" required />
+  </div>
+
+  <div class="form-group">
+    <label>Država *</label>
+    <input type="text" formControlName="country" placeholder="Država" required />
+  </div>
+
+  <div class="form-group">
+    <label>Kontakt email *</label>
+    <input type="email" formControlName="contactEmail" placeholder="Kontakt email" required />
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn-submit">{{ editManufacturer ? '✅ Sačuvaj izmene' : '✅ Dodaj' }}</button>
+    <button type="button" class="btn-cancel" (click)="cancelForm()">❌ Otkaži</button>
+  </div>
 </form>
 <table class="manufacturers-table">
   <thead>

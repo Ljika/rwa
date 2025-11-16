@@ -3,19 +3,43 @@
   <button class="btn-add" (click)="showLekForm = true; editLek = null">➕ Dodaj lek</button>
 </div>
 <form *ngIf="showLekForm" class="lek-form" (ngSubmit)="submitLekForm()" [formGroup]="lekForm">
-  <input type="text" formControlName="name" placeholder="Naziv leka" required />
-  <select formControlName="type" required>
-    <option value="" disabled selected>Izaberi tip leka</option>
-    <option *ngFor="let t of drugTypes" [value]="t">{{ t }}</option>
-  </select>
-  <input type="text" formControlName="dosage" placeholder="Doziranje" required />
-  <input type="text" formControlName="description" placeholder="Opis (opciono)" />
-  <select formControlName="manufacturerId" required>
-    <option value="" disabled selected>Izaberi proizvođača</option>
-    <option *ngFor="let m of manufacturers" [value]="m.id">{{ m.name }}</option>
-  </select>
-  <button type="submit">{{ editLek ? 'Sačuvaj izmene' : 'Dodaj' }}</button>
-  <button type="button" (click)="cancelLekForm()">Otkaži</button>
+  <h4>{{ editLek ? '✏️ Izmeni lek' : '➕ Dodaj novi lek' }}</h4>
+  
+  <div class="form-group">
+    <label>Naziv leka *</label>
+    <input type="text" formControlName="name" placeholder="Naziv leka" required />
+  </div>
+
+  <div class="form-group">
+    <label>Tip leka *</label>
+    <select formControlName="type" required>
+      <option value="" disabled selected>Izaberi tip leka</option>
+      <option *ngFor="let t of drugTypes" [value]="t">{{ t }}</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Doziranje *</label>
+    <input type="text" formControlName="dosage" placeholder="Doziranje" required />
+  </div>
+
+  <div class="form-group">
+    <label>Opis</label>
+    <input type="text" formControlName="description" placeholder="Opis (opciono)" />
+  </div>
+
+  <div class="form-group">
+    <label>Proizvođač *</label>
+    <select formControlName="manufacturerId" required>
+      <option value="" disabled selected>Izaberi proizvođača</option>
+      <option *ngFor="let m of manufacturers" [value]="m.id">{{ m.name }}</option>
+    </select>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn-submit">{{ editLek ? '✅ Sačuvaj izmene' : '✅ Dodaj' }}</button>
+    <button type="button" class="btn-cancel" (click)="cancelLekForm()">❌ Otkaži</button>
+  </div>
 </form>
 <table class="lekovi-table">
   <thead>

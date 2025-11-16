@@ -14,39 +14,39 @@
   <nav class="tabs">
     <button 
       class="tab-button" 
-      [class.active]="activeTab === 'lekovi'" 
-      (click)="selectTab('lekovi')">
-      💊 Lekovi
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'proizvodjaci'" 
-      (click)="selectTab('proizvodjaci')">
-      🏭 Proizvođači
-    </button>
-    <button 
-      class="tab-button" 
       [class.active]="activeTab === 'profil'" 
       (click)="selectTab('profil')">
-      👤 Profil
+      � Profil
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'pacijenti'" 
       (click)="selectTab('pacijenti')">
-      🏥 Pacijenti
+      � Pacijenti
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'doktori'" 
       (click)="selectTab('doktori')">
-      👨‍⚕️ Doktori
+      �‍⚕️ Doktori
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'administratori'" 
       (click)="selectTab('administratori')">
       👔 Administratori
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'lekovi'" 
+      (click)="selectTab('lekovi')">
+      � Lekovi
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'proizvodjaci'" 
+      (click)="selectTab('proizvodjaci')">
+      🏭 Proizvođači
     </button>
     <button 
       class="tab-button" 
@@ -259,10 +259,12 @@
         </button>
       </div>
 
-      <!-- TODO: Add Admin Form - will be implemented later -->
-      <div *ngIf="showAddAdminForm" class="info-message">
-        <p>Add Admin Form - To Be Implemented</p>
-      </div>
+      <!-- Add Admin Form Component -->
+      <app-add-admin-form
+        *ngIf="showAddAdminForm"
+        (submitForm)="handleSubmitAdminForm($event)"
+        (cancel)="handleCancelAdminForm()">
+      </app-add-admin-form>
 
       <!-- Admin List Component -->
       <app-admin-list
@@ -498,9 +500,9 @@
       <div class="section-header">
         <h3>📅 Blok Termini (Operacije)</h3>
         <p class="section-description">
-          Kreirajte blok termin (više uzastopnih slotova) za operacije i duže zahvate.
+          Kreirajte blok termin za operacije i duže zahvate.
         </p>
-        <button class="btn-add" (click)="openBlockAppointmentModal()">
+        <button class="btn-add-block" (click)="openBlockAppointmentModal()">
           ➕ Kreiraj Blok Termin
         </button>
       </div>
@@ -621,12 +623,12 @@
           <strong>{{ filteredAppointments.length }}</strong> 
           od 
           <strong>{{ totalAppointmentsCount$ | async }}</strong>
-          <span class="counter-note">(grupisani blok termini)</span>
+          <span class="counter-note"></span>
         </div>
 
         <!-- Statistika sa REDUCE operatorom -->
         <div class="stats-container" *ngIf="(appointmentStats$ | async) as stats">
-          <h4>📈 Statistika po statusu (REDUCE operator):</h4>
+          <h4>📈 Statistika po statusu:</h4>
           <div class="stats-grid">
             <div class="stat-card" *ngFor="let stat of stats">
               <div class="stat-status">{{ stat.status }}</div>
@@ -661,14 +663,13 @@
 
         <!-- Patient Selection (Optional) -->
         <div class="form-group">
-          <label for="blockPatientId">Izaberi pacijenta (opciono)</label>
+          <label for="blockPatientId">Izaberi pacijenta</label>
           <select id="blockPatientId" formControlName="patientId">
-            <option value="">-- Bez pacijenta (prazno) --</option>
+            <option value="">-- Izaberi pacijenta --</option>
             <option *ngFor="let patient of allPatientsForBlock$ | async" [value]="patient.id">
               {{ patient.firstName }} {{ patient.lastName }}
             </option>
           </select>
-          <small class="field-hint">Možete ostaviti prazno i dodati pacijenta kasnije</small>
         </div>
 
         <!-- Date -->
@@ -712,9 +713,7 @@
             max="16" 
             required>
           <small class="field-hint">
-            1 slot = 30 minuta | 
-            <strong>{{ blockAppointmentForm.get('numberOfSlots')?.value || 0 }} slotova = 
-            {{ (blockAppointmentForm.get('numberOfSlots')?.value || 0) * 0.5 }}h</strong>
+            1 slot = 30 minuta 
           </small>
         </div>
 
@@ -727,7 +726,6 @@
             formControlName="reason" 
             placeholder="npr. OPERACIJA, HIRURGIJA..."
             required>
-          <small class="field-hint">Svi termini će imati isti razlog</small>
         </div>
 
         <!-- Notes -->
