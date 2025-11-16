@@ -1,0 +1,114 @@
+<div class="chat-container" [class.open]="isOpen">
+  <!-- Chat Toggle Button -->
+  <button class="chat-toggle" (click)="toggleChat()" *ngIf="!isOpen">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+    <span class="badge" *ngIf="false">3</span>
+  </button>
+
+  <!-- Chat Window -->
+  <div class="chat-window" *ngIf="isOpen">
+    <!-- Header -->
+    <div class="chat-header">
+      <h3>💬 Chat</h3>
+      <button class="close-btn" (click)="toggleChat()">✕</button>
+    </div>
+
+    <!-- Content -->
+    <div class="chat-content">
+      <!-- Contact List -->
+      <div class="contacts-list" *ngIf="!selectedContact">
+        <div class="contacts-header">
+          <h4>Kontakti</h4>
+        </div>
+        <div class="contacts">
+          <div
+            *ngFor="let contact of contacts"
+            class="contact-item"
+            (click)="selectContact(contact)"
+          >
+            <div class="contact-avatar">{{ getContactInitials(contact) }}</div>
+            <div class="contact-info">
+              <div class="contact-name">
+                {{ contact.firstName }} {{ contact.lastName }}
+              </div>
+              <div class="contact-role">{{ contact.role }}</div>
+            </div>
+            <div class="unread-badge" *ngIf="contact.unreadCount > 0">
+              {{ contact.unreadCount }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Messages -->
+      <div class="messages-view" *ngIf="selectedContact">
+        <div class="messages-header">
+          <button class="back-btn" (click)="selectedContact = null">←</button>
+          <div class="selected-contact">
+            <div class="contact-avatar">
+              {{ getContactInitials(selectedContact) }}
+            </div>
+            <div class="contact-name">
+              {{ selectedContact.firstName }} {{ selectedContact.lastName }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages Container -->
+        <div class="messages-container" #messagesContainer>
+          <div
+            *ngFor="let message of messages"
+            class="message"
+            [class.my-message]="isMyMessage(message)"
+            [class.other-message]="!isMyMessage(message)"
+          >
+            <div class="message-content">{{ message.content }}</div>
+            <div class="message-time">
+              {{ message.timestamp | date : 'short' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Input -->
+        <div class="message-input-container">
+          <textarea
+            class="message-input"
+            placeholder="Unesite poruku..."
+            [(ngModel)]="messageInput"
+            (input)="onTextareaInput($event)"
+            (keydown)="onKeyDown($event)"
+            rows="1"
+          ></textarea>
+          <button class="send-btn" (click)="sendMessage()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

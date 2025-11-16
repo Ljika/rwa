@@ -11,6 +11,8 @@ import { DoctorPatientModule } from './modules/doctor-patient/doctor-patient.mod
 import { DoctorSchedulesModule } from './modules/doctor-schedules/doctor-schedules.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { TherapiesModule } from './modules/therapies/therapies.module';
+import { MessagesModule } from './modules/messages/messages.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { TherapiesModule } from './modules/therapies/therapies.module';
     DoctorSchedulesModule,
     AppointmentsModule,
     TherapiesModule,
+    MessagesModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

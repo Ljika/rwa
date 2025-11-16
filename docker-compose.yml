@@ -17,6 +17,33 @@ services:
     networks:
       - medisync_network
 
+  # Redis za real-time chat poruke
+  redis:
+    image: redis:7-alpine
+    container_name: medisync_redis
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - medisync_network
+    command: redis-server --appendonly yes
+
+  # RedisInsight - GUI za pregled Redis baze (kao phpMyAdmin za MySQL)
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: medisync_redisinsight
+    restart: always
+    ports:
+      - '5540:5540'
+    volumes:
+      - redisinsight_data:/data
+    depends_on:
+      - redis
+    networks:
+      - medisync_network
+
   # Opciono: phpMyAdmin za lakše pregledanje baze
   phpmyadmin:
     image: phpmyadmin:latest
@@ -36,6 +63,8 @@ services:
 
 volumes:
   mysql_data:
+  redis_data:
+  redisinsight_data:
 
 networks:
   medisync_network:
