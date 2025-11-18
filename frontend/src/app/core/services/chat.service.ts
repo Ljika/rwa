@@ -21,9 +21,8 @@ export class ChatService {
   private socket: Socket;
   private sentMessagesSubject = new Subject<Message>();
 
-  // Observable tokovi za MERGE operator
-  private newMessages$: Observable<Message>; // Poruke iz Socket.io
-  private sentMessages$ = this.sentMessagesSubject.asObservable(); // Poslate poruke
+  private newMessages$: Observable<Message>; 
+  private sentMessages$ = this.sentMessagesSubject.asObservable(); 
 
   // MERGE operator - kombinuje sve tokove poruka u jedan
   public allMessages$: Observable<Message>;
@@ -38,12 +37,11 @@ export class ChatService {
     // Kreiraj Observable od Socket.io event-a
     this.newMessages$ = fromEvent<Message>(this.socket, 'newMessage');
 
-    // **MERGE OPERATOR** - kombinuj tokove iz Socket.io i poslate poruke
     this.allMessages$ = merge(
-      this.newMessages$, // Primljene poruke (Socket.io)
-      this.sentMessages$, // Poslate poruke (local)
+      this.newMessages$, 
+      this.sentMessages$, 
     ).pipe(
-      tap((message) => console.log('📩 Message received via MERGE:', message)),
+      tap((message) => console.log('Message received via MERGE:', message)),
       shareReplay(1),
     );
   }
@@ -52,14 +50,14 @@ export class ChatService {
     if (!this.socket.connected) {
       this.socket.connect();
       this.socket.emit('register', userId);
-      console.log('🔌 Socket.io connected, user registered:', userId);
+      console.log('Socket.io connected, user registered:', userId);
     }
   }
 
   disconnect(): void {
     if (this.socket.connected) {
       this.socket.disconnect();
-      console.log('❌ Socket.io disconnected');
+      console.log('Socket.io disconnected');
     }
   }
 
@@ -73,7 +71,6 @@ export class ChatService {
       read: false,
     };
 
-    // Emituj poruku preko sentMessages$ toka (deo MERGE operatora)
     this.sentMessagesSubject.next(tempMessage);
 
     // Pošalji preko Socket.io

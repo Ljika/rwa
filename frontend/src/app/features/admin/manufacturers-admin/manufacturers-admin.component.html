@@ -1,9 +1,9 @@
 <div class="manufacturers-header">
   <h3>Proizvođači</h3>
-  <button class="btn-add" (click)="showForm = true; editManufacturer = null">➕ Dodaj proizvođača</button>
+  <button class="btn-add" (click)="showForm = true; editManufacturer = null">Dodaj proizvođača</button>
 </div>
 <form *ngIf="showForm" class="manufacturer-form" (ngSubmit)="submitForm()" [formGroup]="manufacturerForm">
-  <h4>{{ editManufacturer ? '✏️ Izmeni proizvođača' : '➕ Dodaj novog proizvođača' }}</h4>
+  <h4>{{ editManufacturer ? 'Izmeni proizvođača' : 'Dodaj novog proizvođača' }}</h4>
   
   <div class="form-group">
     <label>Naziv proizvođača *</label>
@@ -21,8 +21,8 @@
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn-submit">{{ editManufacturer ? '✅ Sačuvaj izmene' : '✅ Dodaj' }}</button>
-    <button type="button" class="btn-cancel" (click)="cancelForm()">❌ Otkaži</button>
+    <button type="submit" class="btn-submit">{{ editManufacturer ? 'Sačuvaj izmene' : 'Dodaj' }}</button>
+    <button type="button" class="btn-cancel" (click)="cancelForm()">Otkaži</button>
   </div>
 </form>
 <table class="manufacturers-table">

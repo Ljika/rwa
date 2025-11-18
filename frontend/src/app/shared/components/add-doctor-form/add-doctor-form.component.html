@@ -1,5 +1,5 @@
 <div class="form-container">
-  <h4>➕ Kreiranje Novog Doktora</h4>
+  <h4>Kreiranje Novog Doktora</h4>
   
   <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()">
     <div class="form-row">
@@ -70,10 +70,10 @@
 
     <div class="form-actions">
       <button type="submit" class="btn-submit" [disabled]="doctorForm.invalid || isSubmitting">
-        {{ isSubmitting ? 'Kreiranje...' : '✅ Kreiraj Doktora' }}
+        {{ isSubmitting ? 'Kreiranje...' : 'Kreiraj Doktora' }}
       </button>
       <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="isSubmitting">
-        ❌ Otkaži
+        Otkaži
       </button>
     </div>
   </form>

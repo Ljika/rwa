@@ -1,5 +1,5 @@
 <div class="form-container">
-  <h4>➕ Kreiranje Novog Administratora</h4>
+  <h4>Kreiranje Novog Administratora</h4>
   
   <form [formGroup]="adminForm" (ngSubmit)="onSubmit()">
     <div class="form-row">
@@ -62,10 +62,10 @@
 
     <div class="form-actions">
       <button type="submit" class="btn-submit" [disabled]="adminForm.invalid || isSubmitting">
-        {{ isSubmitting ? 'Kreiranje...' : '✅ Kreiraj Administratora' }}
+        {{ isSubmitting ? 'Kreiranje...' : 'Kreiraj Administratora' }}
       </button>
       <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="isSubmitting">
-        ❌ Otkaži
+        Otkaži
       </button>
     </div>
   </form>

@@ -86,7 +86,6 @@ export class MessagesService implements OnModuleInit, OnModuleDestroy {
       return JSON.stringify(message);
     });
 
-    // Clear old messages and push updated ones
     await this.redisClient.del(chatKey);
     if (updatedMessages.length > 0) {
       await this.redisClient.rPush(chatKey, updatedMessages);

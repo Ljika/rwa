@@ -16,31 +16,31 @@
       class="tab-button" 
       [class.active]="activeTab === 'karton'" 
       (click)="selectTab('karton')">
-      📋 Karton
+      Karton
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'terapije'" 
       (click)="selectTab('terapije')">
-      💊 Terapije
+      Terapije
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'zakazi'" 
       (click)="selectTab('zakazi')">
-      📅 Zakaži Termin
+      Zakaži Termin
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'termini'" 
       (click)="selectTab('termini')">
-      📆 Termini
+      Termini
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'profil'" 
       (click)="selectTab('profil')">
-      👤 Profil
+      Profil
     </button>
   </nav>
 
@@ -90,12 +90,12 @@
         </div>
         <div *ngIf="myDoctors.length > 0" class="doctors-grid">
           <div *ngFor="let doctor of myDoctors" class="doctor-card">
-            <div class="doctor-icon">👨‍⚕️</div>
+            <div class="doctor-icon"></div>
             <div class="doctor-info">
               <h5>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</h5>
               <p class="specialization">{{ doctor.specialization }}</p>
-              <p class="contact">📧 {{ doctor.email }}</p>
-              <p class="contact" *ngIf="doctor.phoneNumber">📞 {{ doctor.phoneNumber }}</p>
+              <p class="contact">Email: {{ doctor.email }}</p>
+              <p class="contact" *ngIf="doctor.phoneNumber">Telefon: {{ doctor.phoneNumber }}</p>
             </div>
           </div>
         </div>
@@ -108,7 +108,7 @@
       
       <!-- Error state -->
       <div *ngIf="therapiesError$ | async as error" class="error-message">
-        <p>❌ Greška: {{ error }}</p>
+        <p>Greška: {{ error }}</p>
       </div>
       
       <!-- Loading state -->
@@ -125,8 +125,8 @@
       <div *ngIf="!(isLoadingTherapies$ | async) && (myTherapies$ | async)?.length! > 0" class="therapies-list">
         <div *ngFor="let therapy of myTherapies$ | async" class="therapy-card">
           <div class="therapy-header">
-            <h4>💊 Dijagnoza: {{ therapy.diagnosis }}</h4>
-            <span class="therapy-date">📅 Propisano: {{ therapy.prescribedAt | date:'dd.MM.yyyy' }}</span>
+            <h4>Dijagnoza: {{ therapy.diagnosis }}</h4>
+            <span class="therapy-date">Propisano: {{ therapy.prescribedAt | date:'dd.MM.yyyy' }}</span>
           </div>
           
           <div class="therapy-info">
@@ -172,7 +172,7 @@
           *ngIf="!isEditMode" 
           class="btn-edit" 
           (click)="toggleEditMode()">
-          ✏️ Izmeni Profil
+          Izmeni Profil
         </button>
       </div>
 
@@ -253,14 +253,14 @@
               type="submit" 
               class="btn-save" 
               [disabled]="editProfileForm.invalid || (isUpdating$ | async)">
-              {{ (isUpdating$ | async) ? 'Čuvanje...' : '💾 Sačuvaj' }}
+              {{ (isUpdating$ | async) ? 'Čuvanje...' : 'Sačuvaj' }}
             </button>
             <button 
               type="button" 
               class="btn-cancel" 
               (click)="cancelEdit()"
               [disabled]="isUpdating$ | async">
-              ❌ Otkaži
+              Otkaži
             </button>
           </div>
         </form>

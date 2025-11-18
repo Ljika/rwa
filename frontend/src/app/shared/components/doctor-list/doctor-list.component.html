@@ -31,13 +31,13 @@
           <td class="actions">
             <button class="btn-details" (click)="onToggleDetails(doctor.id)" 
                     [title]="expandedDoctorId === doctor.id ? 'Sakrij detalje' : 'Prikaži detalje'">
-              {{ expandedDoctorId === doctor.id ? '🔼 Sakrij' : '🔽 Prikaži Detalje' }}
+              {{ expandedDoctorId === doctor.id ? 'Sakrij' : 'Prikaži Detalje' }}
             </button>
             <button class="btn-edit" (click)="onEdit(doctor)" title="Izmeni doktora">
-              ✏️ Izmeni
+              Izmeni
             </button>
             <button class="btn-delete" (click)="onDelete(doctor.id)" title="Obriši doktora">
-              🗑️ Obriši
+              Obriši
             </button>
           </td>
         </tr>
@@ -50,19 +50,19 @@
               
               <div class="details-actions">
                 <button class="btn-action" (click)="onViewPatients(doctor.id)">
-                  👥 Pogledaj Pacijente
+                  Pogledaj Pacijente
                 </button>
                 <button class="btn-action" (click)="onAddSchedule(doctor.id)">
-                  📅 Dodaj Smene
+                  Dodaj Smene
                 </button>
                 <button class="btn-action" (click)="onViewSchedule(doctor.id)">
-                  📆 Prikaži Smene
+                  Prikaži Smene
                 </button>
               </div>
 
               <!-- Doctor Patients Section -->
               <div *ngIf="selectedDoctorAction === 'patients'" class="doctor-patients-section">
-                <h5>👥 Pacijenti doktora {{ doctor.firstName }} {{ doctor.lastName }}</h5>
+                <h5>Pacijenti doktora {{ doctor.firstName }} {{ doctor.lastName }}</h5>
                 
                 <div *ngIf="loadingDoctorPatients" class="loading">
                   <p>Učitavanje pacijenata...</p>
@@ -108,64 +108,14 @@
 
               <!-- View Schedules Section -->
               <div *ngIf="selectedDoctorAction === 'schedule' && selectedDoctorId === doctor.id" class="doctor-schedules-section">
-                <h5>📆 Smene doktora {{ doctor.firstName }} {{ doctor.lastName }}</h5>
+                <h5>Smene doktora {{ doctor.firstName }} {{ doctor.lastName }}</h5>
                 
-                <div class="month-selector">
-                  <label>Izaberi mesec:</label>
-                  <input type="month" [value]="selectedMonth" (change)="onMonthChange($event)" class="form-control">
-                </div>
-                
-                <div *ngIf="loadingDoctorSchedules" class="loading">
-                  <p>Učitavanje smena...</p>
-                </div>
-
-                <div *ngIf="!loadingDoctorSchedules" class="calendar-container">
-                  <h6 class="calendar-month">{{ getMonthYearLabel() }}</h6>
-                  
-                  <!-- Legend -->
-                  <div class="calendar-legend">
-                    <div class="legend-item">
-                      <span class="legend-color shift-morning"></span>
-                      <span>🌅 Jutarnja (08:00-16:00)</span>
-                    </div>
-                    <div class="legend-item">
-                      <span class="legend-color shift-afternoon"></span>
-                      <span>🌆 Popodnevna (16:00-00:00)</span>
-                    </div>
-                    <div class="legend-item">
-                      <span class="legend-color shift-night"></span>
-                      <span>🌙 Noćna (00:00-08:00)</span>
-                    </div>
-                  </div>
-                  
-                  <!-- Calendar -->
-                  <div class="calendar">
-                    <div class="calendar-header">
-                      <div class="calendar-day-name">Pon</div>
-                      <div class="calendar-day-name">Uto</div>
-                      <div class="calendar-day-name">Sre</div>
-                      <div class="calendar-day-name">Čet</div>
-                      <div class="calendar-day-name">Pet</div>
-                      <div class="calendar-day-name">Sub</div>
-                      <div class="calendar-day-name">Ned</div>
-                    </div>
-                    <div class="calendar-grid">
-                      <div *ngFor="let dayInfo of getCalendarDays()" 
-                           class="calendar-cell"
-                           [class.has-schedule]="dayInfo.schedule"
-                           [ngClass]="dayInfo.schedule ? getShiftClass(dayInfo.schedule.shift) : ''">
-                        <span class="day-number" *ngIf="dayInfo.day">{{ dayInfo.day }}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <p class="schedules-count" *ngIf="doctorSchedules.length > 0">
-                    Ukupno smena: {{ doctorSchedules.length }}
-                  </p>
-                  <p class="empty-state" *ngIf="doctorSchedules.length === 0">
-                    Nema smena za izabrani mesec.
-                  </p>
-                </div>
+                <app-schedule-calendar
+                  [schedules]="doctorSchedules"
+                  [loading]="loadingDoctorSchedules"
+                  [selectedMonth]="selectedMonth"
+                  (monthChange)="onMonthChange($event)">
+                </app-schedule-calendar>
               </div>
 
             </div>

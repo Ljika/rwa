@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Observable, Subject, of, BehaviorSubject, combineLatest, from } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, map, switchMap, takeUntil, catchError, reduce, mergeMap } from 'rxjs/operators';
+import { Observable, Subject, of, BehaviorSubject, combineLatest, from, zip } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map, switchMap, takeUntil, catchError, reduce, mergeMap, take } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { AuthService } from '../../../core/services/auth.service';
 import { DoctorPatientService } from '../../../core/services/doctor-patient.service';
@@ -190,13 +190,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   scheduleSuccessMessage: string = '';
   scheduleErrorMessage: string = '';
 
-  // Termini tab - svi termini sa filterima - REACTIVE sa combineLatest
   isLoadingAllAppointments: boolean = false;
   
   // Cleanup Subject - mora biti definisan PRE filteredAppointments$
   private destroy$ = new Subject<void>();
   
-  // BehaviorSubject-i za reactive filtering (public da bi HTML mogao pristupiti)
   public allAppointments$ = new BehaviorSubject<any[]>([]);
   private dateFilter$ = new BehaviorSubject<string>('');
   private doctorFilter$ = new BehaviorSubject<string>('');
@@ -263,7 +261,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           return of([]);
         }
         
-        // Koristi reduce da izbroji termine po statusu
         return from(appointments).pipe(
           reduce((acc, appointment) => {
             const status = appointment.status;
@@ -272,7 +269,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           }, {} as Record<string, number>),
           map(statusCounts => {
             const total = appointments.length;
-            // Konvertuj u array sa procentima
             return Object.entries(statusCounts).map(([status, count]) => ({
               status,
               count,
@@ -284,7 +280,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     );
 
-  // REDUCE operator za ukupan broj grupisanih termina
   filteredAppointmentsCount$: Observable<number> = this.filteredAppointments$.pipe(
     map(appointments => {
       console.log('reduce - counting appointments:', appointments.length);
@@ -292,7 +287,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     })
   );
 
-  // REDUCE operator za ukupan broj svih termina (pre grupisanja)
   totalAppointmentsCount$: Observable<number> = this.allAppointments$.pipe(
     map(appointments => {
       console.log('reduce - total appointments:', appointments.length);
@@ -454,8 +448,22 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   ngOnInit() {
   // Učitaj korisnike odmah
   this.store.dispatch(UsersActions.loadUsers());
-  // Učitaj proizvođače odmah
-  this.manufacturersService.getAll().subscribe(manu => this.manufacturers = manu);
+  
+  zip(
+    this.store.select(UsersSelectors.selectAllUsers).pipe(take(1)),
+    this.manufacturersService.getAll().pipe(take(1))
+  ).pipe(
+    takeUntil(this.destroy$)
+  ).subscribe({
+    next: ([users, manufacturers]) => {
+      console.log('zip: Inicijalni podaci učitani - korisnici i proizvođači');
+      console.log(`Učitano ${users.length} korisnika i ${manufacturers.length} proizvođača`);
+      this.manufacturers = manufacturers;
+    },
+    error: (error) => {
+      console.error('Greška pri inicijalnom učitavanju podataka:', error);
+    }
+  });
   }
 
   loadAllAppointments() {
@@ -486,10 +494,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   setupAutocomplete() {
     // Autocomplete za pacijente - debounceTime, distinctUntilChanged, filter, switchMap
     this.filteredPatients$ = this.patientSearchTerm$.pipe(
-      debounceTime(300),                          // Čeka 300ms da prestaneš da kucaš
-      distinctUntilChanged(),                      // Samo ako se promenio tekst
-      filter(term => term.length >= 2),           // Minimum 2 karaktera
-      switchMap(term =>                           // switchMap - otkazuje prethodni poziv
+      debounceTime(300),                          
+      distinctUntilChanged(),                      
+      filter(term => term.length >= 2),           
+      switchMap(term =>                           
         this.patients$.pipe(
           map(patients => 
             patients.filter(p => 
@@ -544,7 +552,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     );
 
     // Autocomplete za pacijente - samo pacijente izabranog doktora
-    // Koristimo samo search term, a doctorId uzimamo direktno iz komponente
     this.filteredRemovePatients$ = this.removePatientSearchTerm$.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -552,7 +559,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       // switchMap - otkazuje prethodni poziv i učitava pacijente doktora
       switchMap(term =>
         this.doctorPatientService.getDoctorPatients(this.selectedRemoveDoctor!.id).pipe(
-          // map - filtrira pacijente po search termu
           map(patients => 
             patients.filter(p => 
               p.email.toLowerCase().startsWith(term.toLowerCase()) ||
@@ -560,7 +566,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
               p.lastName.toLowerCase().startsWith(term.toLowerCase())
             )
           ),
-          // catchError - hendluje greške i vraća prazan niz
           catchError(error => {
             console.error('Error loading doctor patients:', error);
             return of([]);

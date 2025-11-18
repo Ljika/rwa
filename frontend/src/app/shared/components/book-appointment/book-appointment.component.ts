@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, take } from 'rxjs';
 import { DoctorPatientService } from '../../../core/services/doctor-patient.service';
 import { AppointmentsService, CreateAppointmentDto } from '../../../core/services/appointments.service';
 import { TimeSlot } from '../../../shared/models/appointment.model';
@@ -88,8 +88,12 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
     this.loadingSlots = true;
     this.errorMessage = '';
     
+    // take(1): Automatski se unsubscribe-uje posle prvog emitovanja
     this.appointmentsService.getAvailableSlots(this.selectedDoctor.id, this.selectedDate)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        take(1),
+        takeUntil(this.destroy$)
+      )
       .subscribe({
         next: (slots) => {
           this.availableSlots = slots;

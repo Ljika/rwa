@@ -66,6 +66,20 @@ export class AppointmentsService {
       throw new BadRequestException('Ne možete zakazati termin za prošli datum');
     }
 
+    //Ako je danas, proveri da li je vreme prošlo
+    if (appointmentDate.getTime() === today.getTime()) {
+      const [hours, minutes] = timeSlot.split(':').map(Number);
+      const slotDateTime = new Date(appointmentDate);
+      slotDateTime.setHours(hours, minutes, 0, 0);
+
+      const now = new Date();
+      const bufferTime = new Date(now.getTime() + 30 * 60 * 1000); // 30 minuta unapred
+
+      if (slotDateTime <= bufferTime) {
+        throw new BadRequestException('Ne možete zakazati termin koji je već prošao ili počinje uskoro (minimum 30 minuta unapred)');
+      }
+    }
+
     const schedule = await this.scheduleRepository.findOne({
       where: { doctorId, date: appointmentDate },
     });
@@ -165,6 +179,20 @@ export class AppointmentsService {
       throw new BadRequestException('Ne možete zakazati termin za prošli datum');
     }
 
+    //Ako je danas, proveri da li je vreme prošlo
+    if (appointmentDate.getTime() === today.getTime()) {
+      const [hours, minutes] = timeSlot.split(':').map(Number);
+      const slotDateTime = new Date(appointmentDate);
+      slotDateTime.setHours(hours, minutes, 0, 0);
+
+      const now = new Date();
+      const bufferTime = new Date(now.getTime() + 30 * 60 * 1000); // 30 minuta unapred
+
+      if (slotDateTime <= bufferTime) {
+        throw new BadRequestException('Ne možete zakazati termin koji je već prošao ili počinje uskoro (minimum 30 minuta unapred)');
+      }
+    }
+
     const schedule = await this.scheduleRepository.findOne({
       where: { doctorId, date: appointmentDate },
     });
@@ -191,7 +219,7 @@ export class AppointmentsService {
       throw new BadRequestException('Ovaj termin je već zauzet');
     }
 
-    // Kreiraj termin sa statusom Approved (automatski odobren jer ga doktor zakažuje)
+    // Kreiraj termin sa statusom Approved (automatski odobren jer ga doktor zakazuje)
     const appointment = this.appointmentRepository.create({
       doctorId,
       patientId,
@@ -238,7 +266,26 @@ export class AppointmentsService {
       .filter(apt => apt.status === AppointmentStatus.Pending || apt.status === AppointmentStatus.Approved)
       .map(apt => apt.timeSlot);
 
-    const availableSlots = allSlots.filter(slot => !occupiedSlots.includes(slot));
+    let availableSlots = allSlots.filter(slot => !occupiedSlots.includes(slot));
+
+    // Ako je danas, ukloni prošle termine
+    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (appointmentDate.getTime() === today.getTime()) {
+      //Filter slotove koji su prošli
+      availableSlots = availableSlots.filter(slot => {
+        const [hours, minutes] = slot.split(':').map(Number);
+        const slotTime = new Date(appointmentDate);
+        slotTime.setHours(hours, minutes, 0, 0);
+        
+        // Dodaj 30 minuta buffer (da se ne bi zakazivao termin koji upravo počinje)
+        const bufferTime = new Date(now.getTime() + 30 * 60 * 1000);
+        
+        return slotTime > bufferTime;
+      });
+    }
 
     return availableSlots;
   }
@@ -424,7 +471,6 @@ export class AppointmentsService {
   async createBlockAppointment(dto: CreateBlockAppointmentDto): Promise<Appointment[]> {
     const { doctorId, patientId, date, startTime, numberOfSlots, reason, notes } = dto;
 
-    // Validacija doktora
     const doctor = await this.userRepository.findOne({
       where: { id: doctorId, role: UserRole.Doctor, isActive: true },
     });
@@ -433,7 +479,6 @@ export class AppointmentsService {
       throw new NotFoundException('Doktor nije pronađen ili nije aktivan');
     }
 
-    // Validacija pacijenta (ako je prosleđen)
     if (patientId) {
       const patient = await this.userRepository.findOne({
         where: { id: patientId, role: UserRole.Patient, isActive: true },
@@ -443,7 +488,6 @@ export class AppointmentsService {
         throw new NotFoundException('Pacijent nije pronađen ili nije aktivan');
       }
 
-      // Provera da li postoji veza doktor-pacijent
       const link = await this.doctorPatientRepository.findOne({
         where: { doctorId, patientId },
       });
@@ -453,7 +497,6 @@ export class AppointmentsService {
       }
     }
 
-    // Generiši sve time slotove
     const timeSlots = this.generateTimeSlots(startTime, numberOfSlots);
 
     // Proveri da li su svi slotovi slobodni
@@ -464,7 +507,6 @@ export class AppointmentsService {
       );
     }
 
-    // Proveri da li doktor ima schedule za taj dan
     const appointmentDate = new Date(date);
     appointmentDate.setHours(0, 0, 0, 0);
     

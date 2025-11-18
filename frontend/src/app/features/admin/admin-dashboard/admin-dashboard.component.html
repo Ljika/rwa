@@ -16,61 +16,61 @@
       class="tab-button" 
       [class.active]="activeTab === 'profil'" 
       (click)="selectTab('profil')">
-      � Profil
+       Profil
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'pacijenti'" 
       (click)="selectTab('pacijenti')">
-      � Pacijenti
+       Pacijenti
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'doktori'" 
       (click)="selectTab('doktori')">
-      �‍⚕️ Doktori
+       Doktori
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'administratori'" 
       (click)="selectTab('administratori')">
-      👔 Administratori
+       Administratori
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'lekovi'" 
       (click)="selectTab('lekovi')">
-      � Lekovi
+       Lekovi
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'proizvodjaci'" 
       (click)="selectTab('proizvodjaci')">
-      🏭 Proizvođači
+       Proizvođači
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'povezi'" 
       (click)="selectTab('povezi')">
-      🔗 Poveži doktora i pacijenta
+      Poveži doktora i pacijenta
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'ukloni'" 
       (click)="selectTab('ukloni')">
-      ❌ Ukloni pacijenta doktoru
+       Ukloni pacijenta doktoru
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'blok-termini'" 
       (click)="selectTab('blok-termini')">
-      📅 Blok Termini
+       Blok Termini
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'termini'" 
       (click)="selectTab('termini')">
-      🗓️ Svi Termini
+       Svi Termini
     </button>
   </nav>
 
@@ -92,7 +92,7 @@
           *ngIf="!isEditMode" 
           class="btn-edit" 
           (click)="toggleEditMode()">
-          ✏️ Izmeni Profil
+           Izmeni Profil
         </button>
       </div>
 
@@ -181,14 +181,14 @@
               type="submit" 
               class="btn-save" 
               [disabled]="editProfileForm.invalid || (isUpdating$ | async)">
-              {{ (isUpdating$ | async) ? 'Čuvanje...' : '💾 Sačuvaj' }}
+              {{ (isUpdating$ | async) ? 'Čuvanje...' : ' Sačuvaj' }}
             </button>
             <button 
               type="button" 
               class="btn-cancel" 
               (click)="cancelEdit()"
               [disabled]="isUpdating$ | async">
-              ❌ Otkaži
+               Otkaži
             </button>
           </div>
         </form>
@@ -213,7 +213,7 @@
       <div class="tab-header">
         <h3>Upravljanje Doktorima</h3>
         <button class="btn-add-doctor" (click)="toggleAddDoctorForm()">
-          {{ showAddDoctorForm ? '❌ Zatvori' : '➕ Dodaj Doktora' }}
+          {{ showAddDoctorForm ? ' Zatvori' : ' Dodaj Doktora' }}
         </button>
       </div>
 
@@ -255,7 +255,7 @@
       <div class="tab-header">
         <h3>Upravljanje Administratorima</h3>
         <button class="btn-add-admin" (click)="toggleAddAdminForm()">
-          {{ showAddAdminForm ? '❌ Zatvori' : '➕ Dodaj Administratora' }}
+          {{ showAddAdminForm ? ' Zatvori' : ' Dodaj Administratora' }}
         </button>
       </div>
 
@@ -277,7 +277,7 @@
 
     <!-- Poveži Tab -->
     <div *ngIf="activeTab === 'povezi'" class="tab-content">
-      <h3>🔗 Poveži doktora i pacijenta</h3>
+      <h3> Poveži doktora i pacijenta</h3>
       <p style="color: #64748b; margin-bottom: 2rem; text-align: center;">
         Izaberi pacijenta i doktora da bi ih povezao u sistem
       </p>
@@ -285,7 +285,7 @@
       <div class="assign-form">
         <!-- Pacijent Autocomplete -->
         <div class="form-group autocomplete-container">
-          <label>👤 Pacijent</label>
+          <label> Pacijent</label>
           
           <!-- Izabrani pacijent -->
           <div *ngIf="selectedPatient" class="selected-user">
@@ -313,7 +313,7 @@
                 *ngFor="let patient of patients" 
                 class="autocomplete-item"
                 (mousedown)="selectPatient(patient)">
-                <div class="user-icon">👤</div>
+                <div class="user-icon"></div>
                 <div class="user-details">
                   <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
                   <span>{{ patient.email }}</span>
@@ -328,7 +328,7 @@
 
         <!-- Doktor Autocomplete -->
         <div class="form-group autocomplete-container">
-          <label>👨‍⚕️ Doktor</label>
+          <label> Doktor</label>
           
           <!-- Izabrani doktor -->
           <div *ngIf="selectedDoctor" class="selected-user">
@@ -359,7 +359,7 @@
                 *ngFor="let doctor of doctors" 
                 class="autocomplete-item"
                 (mousedown)="selectDoctor(doctor)">
-                <div class="user-icon">👨‍⚕️</div>
+                <div class="user-icon"></div>
                 <div class="user-details">
                   <strong>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</strong>
                   <span>{{ doctor.email }}</span>
@@ -379,7 +379,7 @@
             class="btn-assign"
             [disabled]="!selectedPatient || !selectedDoctor"
             (click)="assignDoctorToPatient()">
-            🔗 Dodeli doktora pacijentu
+             Dodeli doktora pacijentu
           </button>
         </div>
       </div>
@@ -387,7 +387,7 @@
 
     <!-- Ukloni Tab -->
     <div *ngIf="activeTab === 'ukloni'" class="tab-content">
-      <h3>❌ Ukloni Pacijenta Doktoru</h3>
+      <h3> Ukloni Pacijenta Doktoru</h3>
       <p style="color: #64748b; margin-bottom: 2rem; text-align: center;">
         Prvo izaberi doktora, pa onda pacijenta koji treba da se ukloni
       </p>
@@ -395,7 +395,7 @@
       <div class="assign-form">
         <!-- Doktor Autocomplete -->
         <div class="form-group autocomplete-container">
-          <label>👨‍⚕️ Doktor</label>
+          <label> Doktor</label>
           
           <!-- Izabrani doktor -->
           <div *ngIf="selectedRemoveDoctor" class="selected-user">
@@ -426,7 +426,7 @@
                 *ngFor="let doctor of doctors" 
                 class="autocomplete-item"
                 (mousedown)="selectRemoveDoctor(doctor)">
-                <div class="user-icon">👨‍⚕️</div>
+                <div class="user-icon"></div>
                 <div class="user-details">
                   <strong>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</strong>
                   <span>{{ doctor.email }}</span>
@@ -442,7 +442,7 @@
 
         <!-- Pacijent Autocomplete - prikazuje se samo ako je doktor izabran -->
         <div class="form-group autocomplete-container" *ngIf="selectedRemoveDoctor">
-          <label>👤 Pacijent</label>
+          <label> Pacijent</label>
           
           <!-- Izabrani pacijent -->
           <div *ngIf="selectedRemovePatient" class="selected-user">
@@ -470,7 +470,7 @@
                 *ngFor="let patient of patients" 
                 class="autocomplete-item"
                 (mousedown)="selectRemovePatient(patient)">
-                <div class="user-icon">👤</div>
+                <div class="user-icon"></div>
                 <div class="user-details">
                   <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
                   <span>{{ patient.email }}</span>
@@ -489,7 +489,7 @@
             class="btn-remove"
             [disabled]="!selectedRemovePatient || !selectedRemoveDoctor"
             (click)="removePatientFromDoctor()">
-            ❌ Ukloni Pacijenta od Doktora
+             Ukloni Pacijenta od Doktora
           </button>
         </div>
       </div>
@@ -498,12 +498,12 @@
     <!-- Blok Termini Tab -->
     <div *ngIf="activeTab === 'blok-termini'" class="tab-content">
       <div class="section-header">
-        <h3>📅 Blok Termini (Operacije)</h3>
+        <h3>Blok Termini (Operacije)</h3>
         <p class="section-description">
           Kreirajte blok termin za operacije i duže zahvate.
         </p>
         <button class="btn-add-block" (click)="openBlockAppointmentModal()">
-          ➕ Kreiraj Blok Termin
+          Kreiraj Blok Termin
         </button>
       </div>
     </div>
@@ -511,7 +511,7 @@
     <!-- Svi Termini Tab -->
     <div *ngIf="activeTab === 'termini'" class="tab-content">
       <div class="section-header">
-        <h3>🗓️ Svi Termini</h3>
+        <h3> Svi Termini</h3>
         <p class="section-description">
           Pregled svih termina sa mogućnošću filtriranja po datumu, doktoru i pacijentu.
         </p>
@@ -552,7 +552,7 @@
             <button 
               class="btn-clear-filter" 
               (click)="resetAppointmentFilters()">
-              🔄 Resetuj filtere
+               Resetuj filtere
             </button>
           </div>
         </div>
@@ -560,13 +560,13 @@
 
       <!-- Loading State -->
       <div *ngIf="isLoadingAllAppointments" class="loading-state">
-        ⏳ Učitavanje termina...
+         Učitavanje termina...
       </div>
 
       <!-- Appointments List - REACTIVE sa async pipe -->
       <ng-container *ngIf="!isLoadingAllAppointments && (filteredAppointments$ | async) as filteredAppointments">
         <div *ngIf="filteredAppointments.length === 0" class="empty-state">
-          📭 Nema termina prema zadatim filterima
+           Nema termina prema zadatim filterima
         </div>
 
         <div *ngIf="filteredAppointments.length > 0" class="appointments-grid">
@@ -575,9 +575,9 @@
                [ngClass]="{'block-appointment-card': appointment.isBlockAppointment}">
           
           <div class="appointment-header">
-            <span class="appointment-date">📅 {{ appointment.date | date:'dd.MM.yyyy' }}</span>
+            <span class="appointment-date"> {{ appointment.date | date:'dd.MM.yyyy' }}</span>
             <span class="appointment-time">
-              🕒 {{ appointment.startTime }}
+               {{ appointment.startTime }}
               <span *ngIf="appointment.isBlockAppointment"> - {{ appointment.endTime }}</span>
             </span>
             <span class="appointment-status" [ngClass]="'status-' + appointment.status.toLowerCase()">
@@ -587,17 +587,17 @@
 
           <!-- Block Appointment Badge -->
           <div *ngIf="appointment.isBlockAppointment" class="block-badge">
-            📦 BLOK TERMIN - {{ appointment.duration }} min ({{ appointment.blockSize }} slotova)
+             BLOK TERMIN - {{ appointment.duration }} min ({{ appointment.blockSize }} slotova)
           </div>
           
           <div class="appointment-body">
             <div class="appointment-field">
-              <strong>👨‍⚕️ Doktor:</strong> 
+              <strong> Doktor:</strong> 
               Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}
             </div>
             
             <div class="appointment-field">
-              <strong>👤 Pacijent:</strong> 
+              <strong> Pacijent:</strong> 
               <span *ngIf="appointment.patient">
                 {{ appointment.patient.firstName }} {{ appointment.patient.lastName }}
               </span>
@@ -605,12 +605,12 @@
             </div>
             
             <div class="appointment-field">
-              <strong>📋 Razlog:</strong> 
+              <strong> Razlog:</strong> 
               {{ appointment.reason }}
             </div>
             
             <div class="appointment-field" *ngIf="appointment.notes">
-              <strong>📝 Napomena:</strong> 
+              <strong> Napomena:</strong> 
               {{ appointment.notes }}
             </div>
           </div>
@@ -619,7 +619,7 @@
 
         <!-- Results Counter - sa REDUCE operatorom -->
         <div class="results-counter">
-          📊 Prikazano termina: 
+           Prikazano termina: 
           <strong>{{ filteredAppointments.length }}</strong> 
           od 
           <strong>{{ totalAppointmentsCount$ | async }}</strong>
@@ -628,7 +628,7 @@
 
         <!-- Statistika sa REDUCE operatorom -->
         <div class="stats-container" *ngIf="(appointmentStats$ | async) as stats">
-          <h4>📈 Statistika po statusu:</h4>
+          <h4> Statistika po statusu:</h4>
           <div class="stats-grid">
             <div class="stat-card" *ngFor="let stat of stats">
               <div class="stat-status">{{ stat.status }}</div>
@@ -645,7 +645,7 @@
   <div *ngIf="showBlockAppointmentModal" class="modal-overlay" (click)="closeBlockAppointmentModal()">
     <div class="modal-content block-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>📅 Kreiraj Blok Termin</h3>
+        <h3> Kreiraj Blok Termin</h3>
         <button class="btn-close" (click)="closeBlockAppointmentModal()">✕</button>
       </div>
       
@@ -682,7 +682,7 @@
         <div class="form-group">
           <label for="blockStartTime">Početno vreme *</label>
           <div *ngIf="isLoadingStartTimes" class="loading-slots">
-            ⏳ Učitavanje slobodnih slotova...
+             Učitavanje slobodnih slotova...
           </div>
           <select 
             *ngIf="!isLoadingStartTimes" 
@@ -698,7 +698,7 @@
             Prvi slot blok termina - dostupno {{ availableStartTimes.length }} slobodnih slotova
           </small>
           <small class="field-hint field-warning" *ngIf="availableStartTimes.length === 0 && !isLoadingStartTimes && blockAppointmentForm.get('doctorId')?.value && blockAppointmentForm.get('date')?.value">
-            ⚠️ Nema slobodnih slotova za izabrani datum
+             Nema slobodnih slotova za izabrani datum
           </small>
         </div>
 
@@ -751,8 +751,8 @@
             type="submit" 
             class="btn-submit" 
             [disabled]="blockAppointmentForm.invalid || isSubmittingBlockAppointment">
-            <span *ngIf="!isSubmittingBlockAppointment">✅ Kreiraj Blok Termin</span>
-            <span *ngIf="isSubmittingBlockAppointment">⏳ Kreiranje...</span>
+            <span *ngIf="!isSubmittingBlockAppointment"> Kreiraj Blok Termin</span>
+            <span *ngIf="isSubmittingBlockAppointment"> Kreiranje...</span>
           </button>
         </div>
       </form>

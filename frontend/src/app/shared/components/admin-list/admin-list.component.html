@@ -26,21 +26,21 @@
         <td>{{ admin.firstName }} {{ admin.lastName }}</td>
         <td>
           {{ admin.email }}
-          <span *ngIf="isMainAdmin(admin.email)" class="main-admin-badge">👑 Glavni Admin</span>
+          <span *ngIf="isMainAdmin(admin.email)" class="main-admin-badge">Glavni Admin</span>
         </td>
         <td>{{ admin.phoneNumber || 'Nije uneto' }}</td>
         <td>{{ admin.dateOfBirth || 'Nije uneto' }}</td>
         <td>{{ admin.gender || 'Nije uneto' }}</td>
         <td class="actions">
           <button class="btn-edit" (click)="onEdit(admin)" title="Izmeni administratora">
-            ✏️ Izmeni
+            Izmeni
           </button>
           <button 
             class="btn-delete" 
             (click)="onDelete(admin.id, admin.email)" 
             [disabled]="isMainAdmin(admin.email)"
             [title]="isMainAdmin(admin.email) ? 'Glavni administrator ne može biti obrisan' : 'Obriši administratora'">
-            🗑️ Obriši
+            Obriši
           </button>
         </td>
       </tr>

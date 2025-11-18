@@ -1,9 +1,9 @@
 <div class="lekovi-header">
   <h3>Lekovi</h3>
-  <button class="btn-add" (click)="showLekForm = true; editLek = null">➕ Dodaj lek</button>
+  <button class="btn-add" (click)="showLekForm = true; editLek = null">Dodaj lek</button>
 </div>
 <form *ngIf="showLekForm" class="lek-form" (ngSubmit)="submitLekForm()" [formGroup]="lekForm">
-  <h4>{{ editLek ? '✏️ Izmeni lek' : '➕ Dodaj novi lek' }}</h4>
+  <h4>{{ editLek ? 'Izmeni lek' : 'Dodaj novi lek' }}</h4>
   
   <div class="form-group">
     <label>Naziv leka *</label>
@@ -37,8 +37,8 @@
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn-submit">{{ editLek ? '✅ Sačuvaj izmene' : '✅ Dodaj' }}</button>
-    <button type="button" class="btn-cancel" (click)="cancelLekForm()">❌ Otkaži</button>
+    <button type="submit" class="btn-submit">{{ editLek ? 'Sačuvaj izmene' : 'Dodaj' }}</button>
+    <button type="button" class="btn-cancel" (click)="cancelLekForm()">Otkaži</button>
   </div>
 </form>
 <table class="lekovi-table">

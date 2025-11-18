@@ -1,7 +1,7 @@
 <div class="modal-overlay" *ngIf="show" (click)="onBackdropClick($event)">
   <div class="modal-container">
     <div class="modal-header">
-      <h3>✏️ Izmeni {{ getUserRoleLabel() }}</h3>
+      <h3>Izmeni {{ getUserRoleLabel() }}</h3>
       <button class="btn-close" (click)="onClose()">✕</button>
     </div>
 
@@ -54,10 +54,10 @@
 
         <div class="modal-footer">
           <button type="submit" class="btn-save" [disabled]="editForm.invalid || isSubmitting">
-            {{ isSubmitting ? 'Čuvanje...' : '💾 Sačuvaj Izmene' }}
+            {{ isSubmitting ? 'Čuvanje...' : 'Sačuvaj Izmene' }}
           </button>
           <button type="button" class="btn-cancel" (click)="onClose()" [disabled]="isSubmitting">
-            ❌ Otkaži
+            Otkaži
           </button>
         </div>
       </form>

@@ -59,32 +59,24 @@ export class User {
   updatedAt: Date;
 
   // Relacije:
-  // Appointments gde je ovaj user Doctor
   @OneToMany('Appointment', (appointment: any) => appointment.doctor)
   appointmentsAsDoctor: any[];
 
-  // Appointments gde je ovaj user Patient
   @OneToMany('Appointment', (appointment: any) => appointment.patient)
   appointmentsAsPatient: any[];
 
-  // Therapies koje je ovaj Doctor prepisao
   @OneToMany('Therapy', (therapy: any) => therapy.doctor)
   therapiesAsDoctor: any[];
 
-  // Therapies koje je ovaj Patient dobio
   @OneToMany('Therapy', (therapy: any) => therapy.patient)
   therapiesAsPatient: any[];
 
-  // MANY-TO-MANY: Doktor <-> Pacijenti
-  // Kada je User = Doctor, ovo su svi pacijenti dodeljeni njemu
   @OneToMany('DoctorPatient', (doctorPatient: any) => doctorPatient.doctor)
   doctorPatients: any[];
 
-  // Kada je User = Patient, ovo su svi doktori dodeljeni njemu
   @OneToMany('DoctorPatient', (doctorPatient: any) => doctorPatient.patient)
   patientDoctors: any[];
 
-  // Smene doktora (samo za role = Doctor)
   @OneToMany('DoctorSchedule', (schedule: any) => schedule.doctor)
   doctorSchedules: any[];
 }

@@ -65,7 +65,6 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   }
   selectedScheduledDate: string = '';
   get scheduledAppointments() {
-    // Show all scheduled (approved/completed) appointments, no date filtering here
     return this.myAppointments.filter(a => a.status === 'Approved' || a.status === 'Completed');
   }
 

@@ -22,9 +22,9 @@ export class ScheduleCalendarComponent {
   
   getShiftLabel(shift: string): string {
     switch(shift) {
-      case 'Morning': return '🌅 Jutarnja (08:00-16:00)';
-      case 'Afternoon': return '🌆 Popodnevna (16:00-00:00)';
-      case 'Night': return '🌙 Noćna (00:00-08:00)';
+      case 'Morning': return 'Jutarnja (08:00-16:00)';
+      case 'Afternoon': return 'Popodnevna (16:00-00:00)';
+      case 'Night': return 'Noćna (00:00-08:00)';
       default: return shift;
     }
   }

@@ -174,9 +174,13 @@
 
 .doctor-patients-section {
   margin-top: 1.5rem;
-  padding: 1.5rem;
-  background: #f8fafc;
-  border-radius: 8px;
+
+  h5 {
+    margin: 0 0 1rem 0;
+    color: #1e293b;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
 
   .loading {
     text-align: center;
@@ -190,18 +194,22 @@
     color: #64748b;
     font-style: italic;
   }
+
+  .patients-list {
+    margin-top: 1rem;
+  }
 }
 
 .mini-table {
   width: 100%;
   border-collapse: collapse;
   background: white;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
   thead {
-    background: #f1f5f9;
+    background: #f8fafc;
     
     th {
       padding: 0.75rem 1rem;
@@ -215,8 +223,6 @@
 
   tbody {
     tr {
-      transition: background 0.2s ease;
-
       &:hover {
         background: #f8fafc;
       }
@@ -225,6 +231,7 @@
         padding: 0.75rem 1rem;
         color: #1e293b;
         border-bottom: 1px solid #e2e8f0;
+        font-size: 1rem;
       }
 
       &:last-child td {

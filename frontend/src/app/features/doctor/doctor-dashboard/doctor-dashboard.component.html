@@ -16,25 +16,25 @@
       class="tab-button" 
       [class.active]="activeTab === 'profil'" 
       (click)="selectTab('profil')">
-      👤 Profil
+      Profil
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'pacijenti'" 
       (click)="selectTab('pacijenti')">
-      🏥 Pacijenti
+      Pacijenti
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'termini'" 
       (click)="selectTab('termini')">
-      📅 Termini
+      Termini
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'smene'" 
       (click)="selectTab('smene')">
-      🕐 Smene
+      Smene
     </button>
   </nav>
 
@@ -48,7 +48,7 @@
           *ngIf="!isEditMode" 
           class="btn-edit" 
           (click)="toggleEditMode()">
-          ✏️ Izmeni Profil
+          Izmeni Profil
         </button>
       </div>
 
@@ -139,7 +139,7 @@
               <label>Specijalizacija:</label>
               <input type="text" formControlName="specialization" class="form-control" placeholder="npr. Kardiologija">
               <div class="info-message">
-                ℹ️ Za promenu specijalizacije obratite se administratoru
+                Za promenu specijalizacije obratite se administratoru
               </div>
             </div>
           </div>
@@ -149,14 +149,14 @@
               type="submit" 
               class="btn-save" 
               [disabled]="editProfileForm.invalid || (isUpdating$ | async)">
-              {{ (isUpdating$ | async) ? 'Čuvanje...' : '💾 Sačuvaj' }}
+              {{ (isUpdating$ | async) ? 'Čuvanje...' : 'Sačuvaj' }}
             </button>
             <button 
               type="button" 
               class="btn-cancel" 
               (click)="cancelEdit()"
               [disabled]="isUpdating$ | async">
-              ❌ Otkaži
+              Otkaži
             </button>
           </div>
         </form>
@@ -174,30 +174,29 @@
 
       <!-- Empty state -->
       <div *ngIf="!isLoadingPatients && myPatients.length === 0" class="empty-state">
-        <p>📋 Nemate dodeljenih pacijenata.</p>
+        <p>Nemate dodeljenih pacijenata.</p>
       </div>
 
       <!-- Patients Grid -->
       <div *ngIf="!isLoadingPatients && myPatients.length > 0" class="patients-grid">
         <div *ngFor="let patient of myPatients" class="patient-card">
-          <div class="patient-icon">👤</div>
           <div class="patient-info">
             <h5>{{ patient.firstName }} {{ patient.lastName }}</h5>
-            <p class="patient-detail">📧 {{ patient.email }}</p>
-            <p class="patient-detail" *ngIf="patient.phoneNumber">📞 {{ patient.phoneNumber }}</p>
+            <p class="patient-detail">Email: {{ patient.email }}</p>
+            <p class="patient-detail" *ngIf="patient.phoneNumber">Telefon: {{ patient.phoneNumber }}</p>
             <p class="patient-detail" *ngIf="patient.dateOfBirth">
-              📅 Rođen/a: {{ patient.dateOfBirth }}
+              Rođen/a: {{ patient.dateOfBirth }}
             </p>
             <p class="patient-detail" *ngIf="patient.gender">
-              {{ patient.gender === 'Male' ? '♂️ Muški' : patient.gender === 'Female' ? '♀️ Ženski' : '⚥ ' + patient.gender }}
+              {{ patient.gender === 'Male' ? 'Muški' : patient.gender === 'Female' ? 'Ženski' : patient.gender }}
             </p>
           </div>
           <div class="patient-actions">
             <button class="btn-view-therapies" (click)="viewPatientTherapies(patient)">
-              💊 Pogledaj Terapije
+              Pogledaj Terapije
             </button>
             <button class="btn-view-appointments" (click)="viewPatientAppointments(patient)">
-              📋 Pogledaj Preglede
+              Pogledaj Preglede
             </button>
           </div>
         </div>
@@ -382,8 +381,8 @@
         <div *ngIf="patientTherapies.length > 0" class="therapies-list">
           <div *ngFor="let therapy of patientTherapies" class="therapy-card">
             <div class="therapy-header">
-              <h5>💊 Dijagnoza: {{ therapy.diagnosis }}</h5>
-              <span class="therapy-date">📅 {{ therapy.prescribedAt | date:'dd.MM.yyyy' }}</span>
+              <h5>Dijagnoza: {{ therapy.diagnosis }}</h5>
+              <span class="therapy-date">{{ therapy.prescribedAt | date:'dd.MM.yyyy' }}</span>
             </div>
             <p *ngIf="therapy.notes" class="therapy-notes">
               <strong>Napomene:</strong> {{ therapy.notes }}
@@ -411,8 +410,8 @@
         <div *ngIf="patientAppointments.length > 0" class="appointments-list">
           <div *ngFor="let appointment of patientAppointments" class="appointment-card">
             <div class="appointment-header">
-              <h5>📋 Pregled</h5>
-              <span class="appointment-date">📅 {{ appointment.date }} | 🕐 {{ appointment.timeSlot }}</span>
+              <h5>Pregled</h5>
+              <span class="appointment-date">{{ appointment.date }} | {{ appointment.timeSlot }}</span>
             </div>
             <p *ngIf="appointment.reason">
               <strong>Razlog:</strong> {{ appointment.reason }}
@@ -421,7 +420,7 @@
               <strong>Napomene:</strong> {{ appointment.notes }}
             </p>
             <p class="appointment-status completed">
-              ✅ Završen
+              Završen
             </p>
           </div>
         </div>
