@@ -2,6 +2,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../../database/entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
@@ -13,6 +14,7 @@ export class AuthService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
 
@@ -34,12 +36,14 @@ export class AuthService {
 
     const savedUser = await this.userRepository.save(user);
 
-    const token = this.generateToken(savedUser);
+    const accessToken = this.generateToken(savedUser);
+    const refreshToken = this.generateRefreshToken(savedUser);
 
     const { password, ...userWithoutPassword } = savedUser;
     return {
       user: userWithoutPassword,
-      accessToken: token,
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -63,12 +67,14 @@ export class AuthService {
       throw new UnauthorizedException('Nalog je deaktiviran');
     }
 
-    const token = this.generateToken(user);
+    const accessToken = this.generateToken(user);
+    const refreshToken = this.generateRefreshToken(user);
 
     const { password, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
-      accessToken: token,
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -94,5 +100,47 @@ export class AuthService {
     };
 
     return this.jwtService.sign(payload);
+  }
+
+  private generateRefreshToken(user: User): string {
+    const payload = {
+      sub: user.id,
+    };
+
+    const jwt = require('jsonwebtoken');
+    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+    const refreshExpiration = this.configService.get<string>('JWT_REFRESH_EXPIRATION') || '7d';
+
+    return jwt.sign(payload, refreshSecret, { expiresIn: refreshExpiration });
+  }
+
+  async refreshToken(refreshToken: string) {
+    try {
+      const jwt = require('jsonwebtoken');
+      const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+      
+      // Verifikuj refresh token
+      const payload: any = jwt.verify(refreshToken, refreshSecret);
+
+      // Učitaj user-a iz baze
+      const user = await this.userRepository.findOne({
+        where: { id: payload.sub },
+      });
+
+      if (!user || !user.isActive) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      // Generiši NOVI access token
+      const newAccessToken = this.generateToken(user);
+
+      const { password, ...userWithoutPassword } = user;
+      return {
+        accessToken: newAccessToken,
+        user: userWithoutPassword,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Refresh token expired or invalid');
+    }
   }
 }

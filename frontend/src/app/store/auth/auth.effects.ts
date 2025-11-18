@@ -33,6 +33,7 @@ export class AuthEffects {
           map((data: AuthResponse) => {
             // Sačuvaj u localStorage
             localStorage.setItem('token', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken || '');
             localStorage.setItem('currentUser', JSON.stringify(data.user));
             
             return AuthActions.loginSuccess({
@@ -69,6 +70,7 @@ export class AuthEffects {
           map((data: AuthResponse) => {
             // Sačuvaj u localStorage
             localStorage.setItem('token', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken || '');
             localStorage.setItem('currentUser', JSON.stringify(data.user));
             
             return AuthActions.registerSuccess({
@@ -154,12 +156,54 @@ export class AuthEffects {
     )
   );
 
+  // Refresh Token Effect
+  refreshToken$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.refreshToken),
+      switchMap(({ refreshToken }) =>
+        from(
+          fetch(`${environment.apiUrl}/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken })
+          }).then(async (response) => {
+            if (!response.ok) {
+              throw new Error('Refresh token expired');
+            }
+            return response.json();
+          })
+        ).pipe(
+          map((data: { accessToken: string; user: any }) => {
+            // Sačuvaj NOVI access token
+            localStorage.setItem('token', data.accessToken);
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+            
+            return AuthActions.refreshTokenSuccess({
+              token: data.accessToken,
+              user: data.user
+            });
+          }),
+          catchError((error) => {
+            // Ako refresh token failed → logout
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('currentUser');
+            this.router.navigate(['/login']);
+            
+            return of(AuthActions.refreshTokenFailure({ error: error.message }));
+          })
+        )
+      )
+    )
+  );
+
   // Logout Effect - čisti localStorage
   logout$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.logout),
       tap(() => {
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('currentUser');
         this.router.navigate(['/login']);
       })

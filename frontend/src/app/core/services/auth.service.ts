@@ -61,6 +61,10 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken');
+  }
+
   getCurrentUser(): User | null {
     const storedUser = localStorage.getItem('currentUser');
     return storedUser ? JSON.parse(storedUser) : null;
@@ -73,5 +77,10 @@ export class AuthService {
   hasRole(role: string): boolean {
     const user = this.getCurrentUser();
     return user?.role === role;
+  }
+
+  // Dispatch refresh token action
+  refreshAccessToken(refreshToken: string): void {
+    this.store.dispatch(AuthActions.refreshToken({ refreshToken }));
   }
 }

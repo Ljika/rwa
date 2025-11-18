@@ -64,3 +64,19 @@ export const updateProfileFailure = createAction(
   '[Auth] Update Profile Failure',
   props<{ error: string }>()
 );
+
+// Refresh Token Actions
+export const refreshToken = createAction(
+  '[Auth] Refresh Token',
+  props<{ refreshToken: string }>()
+);
+
+export const refreshTokenSuccess = createAction(
+  '[Auth] Refresh Token Success',
+  props<{ token: string; user: User }>()
+);
+
+export const refreshTokenFailure = createAction(
+  '[Auth] Refresh Token Failure',
+  props<{ error: string }>()
+);
