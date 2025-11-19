@@ -65,4 +65,13 @@ export class UsersService {
     
     return this.http.patch<User>(`${this.apiUrl}/${id}`, userData, { headers });
   }
+
+  getAllPatients(): Observable<User[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    
+    return this.http.get<User[]>(`${this.apiUrl}/all-patients`, { headers });
+  }
 }

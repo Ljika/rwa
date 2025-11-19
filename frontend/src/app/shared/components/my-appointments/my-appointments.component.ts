@@ -13,12 +13,13 @@ import { AppointmentsService, Appointment } from '../../../core/services/appoint
 export class MyAppointmentsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   
-  activeTab: 'requests' | 'scheduled' | 'completed' = 'requests';
+  activeTab: 'requests' | 'scheduled' | 'completed' | 'cancelled' = 'requests';
   
   allAppointments: Appointment[] = [];
   requestAppointments: Appointment[] = [];
   scheduledAppointments: Appointment[] = [];
   completedAppointments: Appointment[] = [];
+  cancelledAppointments: Appointment[] = [];
   
   isLoading: boolean = false;
   errorMessage: string = '';
@@ -58,6 +59,10 @@ export class MyAppointmentsComponent implements OnInit, OnDestroy {
             app => app.status === 'Completed'
           );
           
+          this.cancelledAppointments = appointments.filter(
+            app => app.status === 'Cancelled' || app.status === 'Rejected'
+          );
+          
           this.isLoading = false;
         },
         error: (error) => {
@@ -68,7 +73,7 @@ export class MyAppointmentsComponent implements OnInit, OnDestroy {
       });
   }
 
-  selectTab(tab: 'requests' | 'scheduled' | 'completed') {
+  selectTab(tab: 'requests' | 'scheduled' | 'completed' | 'cancelled') {
     this.activeTab = tab;
   }
 

@@ -29,6 +29,12 @@
       (click)="selectTab('completed')">
       Završeni Termini ({{ completedAppointments.length }})
     </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'cancelled'"
+      (click)="selectTab('cancelled')">
+      Otkazani Termini ({{ cancelledAppointments.length }})
+    </button>
   </div>
 
   <!-- Loading -->
@@ -118,6 +124,35 @@
 
     <div class="appointments-list" *ngIf="completedAppointments.length > 0">
       <div class="appointment-card" *ngFor="let appointment of completedAppointments">
+        <div class="card-header">
+          <div class="doctor-info">
+            <h3>Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}<span *ngIf="appointment.doctor?.specialization"> - {{ appointment.doctor.specialization }}</span></h3>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+            {{ getStatusText(appointment.status) }}
+          </span>
+        </div>
+
+        <div class="card-body">
+          <p>Datum: {{ formatDate(appointment.date) }}</p>
+          <p>Vreme: {{ formatTime(appointment.timeSlot) }}</p>
+          <p *ngIf="appointment.reason">Razlog: {{ appointment.reason }}</p>
+          <p *ngIf="appointment.notes">Napomene: {{ appointment.notes }}</p>
+          <p>Kontakt doktora: {{ appointment.doctor?.email }}</p>
+          <p *ngIf="appointment.doctor?.phoneNumber">Telefon doktora: {{ appointment.doctor.phoneNumber }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Otkazani Termini Tab -->
+  <div class="tab-content" *ngIf="!isLoading && activeTab === 'cancelled'">
+    <div class="no-data" *ngIf="cancelledAppointments.length === 0">
+      Nemate otkazanih termina.
+    </div>
+
+    <div class="appointments-list" *ngIf="cancelledAppointments.length > 0">
+      <div class="appointment-card" *ngFor="let appointment of cancelledAppointments">
         <div class="card-header">
           <div class="doctor-info">
             <h3>Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}<span *ngIf="appointment.doctor?.specialization"> - {{ appointment.doctor.specialization }}</span></h3>

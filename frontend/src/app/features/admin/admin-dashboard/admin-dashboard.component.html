@@ -521,11 +521,19 @@
       <div class="filter-container">
         <div class="filter-row">
           <div class="filter-field">
-            <label for="filterDate">Datum</label>
+            <label for="filterDateFrom">Datum od</label>
             <input 
               type="date" 
-              id="filterDate" 
-              [(ngModel)]="appointmentDateFilter">
+              id="filterDateFrom" 
+              [(ngModel)]="appointmentDateFromFilter">
+          </div>
+
+          <div class="filter-field">
+            <label for="filterDateTo">Datum do</label>
+            <input 
+              type="date" 
+              id="filterDateTo" 
+              [(ngModel)]="appointmentDateToFilter">
           </div>
 
           <div class="filter-field">
@@ -545,6 +553,18 @@
               <option *ngFor="let patient of allPatientsForBlock$ | async" [value]="patient.id">
                 {{ patient.firstName }} {{ patient.lastName }}
               </option>
+            </select>
+          </div>
+
+          <div class="filter-field">
+            <label for="filterStatus">Status</label>
+            <select id="filterStatus" [(ngModel)]="appointmentStatusFilter">
+              <option value="">-- Svi statusi --</option>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+              <option value="Rejected">Rejected</option>
             </select>
           </div>
 

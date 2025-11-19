@@ -31,6 +31,15 @@ export class UsersController {
     return this.usersService.findOne(user.id);
   }
 
+  @Get('all-patients')
+  @Roles(UserRole.Admin, UserRole.Doctor)
+  @ApiOperation({ summary: 'Lista svih pacijenata u sistemu (Admin i Doctor)' })
+  @ApiResponse({ status: 200, description: 'Lista svih pacijenata' })
+  @ApiResponse({ status: 403, description: 'Nemate dozvolu' })
+  findAllPatients() {
+    return this.usersService.findAllByRole(UserRole.Patient);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Detalji korisnika po ID-u' })
   @ApiResponse({ status: 200, description: 'Detalji korisnika' })

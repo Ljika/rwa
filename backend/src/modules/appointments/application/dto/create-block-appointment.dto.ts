@@ -7,11 +7,9 @@ export class CreateBlockAppointmentDto {
   @IsUUID()
   doctorId: string;
 
-  @ApiPropertyOptional({ description: 'ID pacijenta (opciono, može se dodati kasnije)' })
+  @ApiProperty({ description: 'ID pacijenta (obavezno za operacije/procedure)' })
   @IsUUID()
-  @IsOptional()
-  @Transform(({ value }) => value === '' ? undefined : value)
-  patientId?: string;
+  patientId: string;
 
   @ApiProperty({ description: 'Datum termina', example: '2025-11-20' })
   @IsDateString()

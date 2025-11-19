@@ -93,25 +93,16 @@ export class AppointmentsService {
       throw new BadRequestException(`Termin ${timeSlot} nije dostupan u smeni doktora za taj dan`);
     }
 
-    const existingAppointment = await this.appointmentRepository.findOne({
-      where: { 
-        doctorId, 
-        date: appointmentDate, 
-        timeSlot,
-        status: AppointmentStatus.Pending,
-      },
+    // Proveri da li je slot zauzet sa aktivnim statusom 
+    const existingActive = await this.appointmentRepository.findOne({
+      where: [
+        { doctorId, date: appointmentDate, timeSlot, status: AppointmentStatus.Pending },
+        { doctorId, date: appointmentDate, timeSlot, status: AppointmentStatus.Approved },
+        { doctorId, date: appointmentDate, timeSlot, status: AppointmentStatus.Completed },
+      ],
     });
 
-    const existingApproved = await this.appointmentRepository.findOne({
-      where: { 
-        doctorId, 
-        date: appointmentDate, 
-        timeSlot,
-        status: AppointmentStatus.Approved,
-      },
-    });
-
-    if (existingAppointment || existingApproved) {
+    if (existingActive) {
       throw new BadRequestException('Ovaj termin je već zauzet');
     }
 
@@ -206,16 +197,16 @@ export class AppointmentsService {
       throw new BadRequestException(`Termin ${timeSlot} nije dostupan u vašoj smeni za taj dan`);
     }
 
-    // Proveri da li je termin već zauzet
-    const existingAppointment = await this.appointmentRepository.findOne({
-      where: { 
-        doctorId, 
-        date: appointmentDate, 
-        timeSlot,
-      },
+    // Proveri da li je termin već zauzet sa aktivnim statusom
+    const existingActive = await this.appointmentRepository.findOne({
+      where: [
+        { doctorId, date: appointmentDate, timeSlot, status: AppointmentStatus.Pending },
+        { doctorId, date: appointmentDate, timeSlot, status: AppointmentStatus.Approved },
+        { doctorId, date: appointmentDate, timeSlot, status: AppointmentStatus.Completed },
+      ],
     });
 
-    if (existingAppointment && existingAppointment.status !== AppointmentStatus.Cancelled && existingAppointment.status !== AppointmentStatus.Rejected) {
+    if (existingActive) {
       throw new BadRequestException('Ovaj termin je već zauzet');
     }
 
@@ -367,26 +358,16 @@ export class AppointmentsService {
         throw new BadRequestException(`Termin ${newTimeSlot} nije dostupan u smeni doktora`);
       }
 
-      const existingAppointment = await this.appointmentRepository.findOne({
-        where: { 
-          doctorId: appointment.doctorId, 
-          date: newDate, 
-          timeSlot: newTimeSlot,
-          status: AppointmentStatus.Pending,
-        },
+      // Proveri da li je novi slot zauzet sa aktivnim statusom
+      const existingActive = await this.appointmentRepository.findOne({
+        where: [
+          { doctorId: appointment.doctorId, date: newDate, timeSlot: newTimeSlot, status: AppointmentStatus.Pending },
+          { doctorId: appointment.doctorId, date: newDate, timeSlot: newTimeSlot, status: AppointmentStatus.Approved },
+          { doctorId: appointment.doctorId, date: newDate, timeSlot: newTimeSlot, status: AppointmentStatus.Completed },
+        ],
       });
 
-      const existingApproved = await this.appointmentRepository.findOne({
-        where: { 
-          doctorId: appointment.doctorId, 
-          date: newDate, 
-          timeSlot: newTimeSlot,
-          status: AppointmentStatus.Approved,
-        },
-      });
-
-      if ((existingAppointment && existingAppointment.id !== id) || 
-          (existingApproved && existingApproved.id !== id)) {
+      if (existingActive && existingActive.id !== id) {
         throw new BadRequestException('Ovaj termin je već zauzet');
       }
 
@@ -434,16 +415,7 @@ export class AppointmentsService {
       }
     }
 
-    // Ako se status menja u Cancelled ili Rejected, brišemo termin iz baze
-    if (
-      updateStatusDto.status === AppointmentStatus.Cancelled ||
-      updateStatusDto.status === AppointmentStatus.Rejected
-    ) {
-      await this.appointmentRepository.remove(appointment);
-      // Vraćamo objekat sa statusom za frontend, iako je obrisan
-      return { ...appointment, status: updateStatusDto.status } as Appointment;
-    }
-
+    // Samo ažuriraj status 
     appointment.status = updateStatusDto.status;
     return this.appointmentRepository.save(appointment);
   }
@@ -471,6 +443,10 @@ export class AppointmentsService {
   async createBlockAppointment(dto: CreateBlockAppointmentDto): Promise<Appointment[]> {
     const { doctorId, patientId, date, startTime, numberOfSlots, reason, notes } = dto;
 
+    if (!patientId) {
+      throw new BadRequestException('Pacijent je obavezan za blok termine (operacije/procedure)');
+    }
+
     const doctor = await this.userRepository.findOne({
       where: { id: doctorId, role: UserRole.Doctor, isActive: true },
     });
@@ -479,22 +455,12 @@ export class AppointmentsService {
       throw new NotFoundException('Doktor nije pronađen ili nije aktivan');
     }
 
-    if (patientId) {
-      const patient = await this.userRepository.findOne({
-        where: { id: patientId, role: UserRole.Patient, isActive: true },
-      });
+    const patient = await this.userRepository.findOne({
+      where: { id: patientId, role: UserRole.Patient, isActive: true },
+    });
 
-      if (!patient) {
-        throw new NotFoundException('Pacijent nije pronađen ili nije aktivan');
-      }
-
-      const link = await this.doctorPatientRepository.findOne({
-        where: { doctorId, patientId },
-      });
-
-      if (!link) {
-        throw new BadRequestException('Pacijent nije povezan sa ovim doktorom');
-      }
+    if (!patient) {
+      throw new NotFoundException('Pacijent nije pronađen ili nije aktivan');
     }
 
     const timeSlots = this.generateTimeSlots(startTime, numberOfSlots);
@@ -571,13 +537,13 @@ export class AppointmentsService {
     const occupiedSlots: string[] = [];
     
     for (const slot of timeSlots) {
+      // Proveri sve aktivne statuse (ne gledamo Cancelled i Rejected)
       const existing = await this.appointmentRepository.findOne({
-        where: {
-          doctorId,
-          date: new Date(date),
-          timeSlot: slot as TimeSlot,
-          status: AppointmentStatus.Approved,
-        },
+        where: [
+          { doctorId, date: new Date(date), timeSlot: slot as TimeSlot, status: AppointmentStatus.Pending },
+          { doctorId, date: new Date(date), timeSlot: slot as TimeSlot, status: AppointmentStatus.Approved },
+          { doctorId, date: new Date(date), timeSlot: slot as TimeSlot, status: AppointmentStatus.Completed },
+        ],
       });
 
       if (existing) {

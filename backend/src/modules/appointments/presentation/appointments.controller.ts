@@ -43,8 +43,8 @@ export class AppointmentsController {
   }
 
   @Post('block-appointment')
-  @Roles(UserRole.Admin)
-  @ApiOperation({ summary: 'Admin kreira blok termin (npr. za operaciju - više uzastopnih slotova)' })
+  @Roles(UserRole.Admin, UserRole.Doctor)
+  @ApiOperation({ summary: 'Admin ili Doktor kreira blok termin (npr. za operaciju - više uzastopnih slotova)' })
   @ApiResponse({ status: 201, description: 'Blok termin uspešno kreiran' })
   @ApiResponse({ status: 400, description: 'Neki slotovi su zauzeti ili nisu u radnom vremenu' })
   createBlockAppointment(@Body() dto: CreateBlockAppointmentDto) {

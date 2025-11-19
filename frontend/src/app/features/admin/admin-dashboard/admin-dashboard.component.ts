@@ -196,40 +196,61 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   
   public allAppointments$ = new BehaviorSubject<any[]>([]);
-  private dateFilter$ = new BehaviorSubject<string>('');
+  private dateFromFilter$ = new BehaviorSubject<string>('');
+  private dateToFilter$ = new BehaviorSubject<string>('');
   private doctorFilter$ = new BehaviorSubject<string>('');
   private patientFilter$ = new BehaviorSubject<string>('');
+  private statusFilter$ = new BehaviorSubject<string>('');
 
   // combineLatest kombinuje sve filtere i emituje kad se BILO KOJI promeni
   filteredAppointments$: Observable<any[]> = combineLatest([
     this.allAppointments$,
-    this.dateFilter$,
+    this.dateFromFilter$,
+    this.dateToFilter$,
     this.doctorFilter$,
-    this.patientFilter$
+    this.patientFilter$,
+    this.statusFilter$
   ]).pipe(
-    map(([appointments, date, doctorId, patientId]) => {
-      console.log('combineLatest emitted! Filters:', { date, doctorId, patientId });
+    map(([appointments, dateFrom, dateTo, doctorId, patientId, status]) => {
+      console.log('combineLatest emitted! Filters:', { dateFrom, dateTo, doctorId, patientId, status });
       
       // Prvo grupiši blok termine
       const groupedAppointments = this.groupBlockAppointments(appointments);
       
       // Zatim filtriraj
       return groupedAppointments.filter(apt => {
-        const matchesDate = !date || apt.date === date;
+        // Date range filter
+        let matchesDateRange = true;
+        if (dateFrom && dateTo) {
+          matchesDateRange = apt.date >= dateFrom && apt.date <= dateTo;
+        } else if (dateFrom) {
+          matchesDateRange = apt.date >= dateFrom;
+        } else if (dateTo) {
+          matchesDateRange = apt.date <= dateTo;
+        }
+        
         const matchesDoctor = !doctorId || apt.doctorId === doctorId;
         const matchesPatient = !patientId || apt.patientId === patientId;
-        return matchesDate && matchesDoctor && matchesPatient;
+        const matchesStatus = !status || apt.status === status;
+        return matchesDateRange && matchesDoctor && matchesPatient && matchesStatus;
       });
     }),
     takeUntil(this.destroy$)
   );
 
   // Getter-i za two-way binding u template-u
-  get appointmentDateFilter(): string {
-    return this.dateFilter$.value;
+  get appointmentDateFromFilter(): string {
+    return this.dateFromFilter$.value;
   }
-  set appointmentDateFilter(value: string) {
-    this.dateFilter$.next(value);
+  set appointmentDateFromFilter(value: string) {
+    this.dateFromFilter$.next(value);
+  }
+
+  get appointmentDateToFilter(): string {
+    return this.dateToFilter$.value;
+  }
+  set appointmentDateToFilter(value: string) {
+    this.dateToFilter$.next(value);
   }
 
   get appointmentDoctorFilter(): string {
@@ -246,11 +267,20 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.patientFilter$.next(value);
   }
 
+  get appointmentStatusFilter(): string {
+    return this.statusFilter$.value;
+  }
+  set appointmentStatusFilter(value: string) {
+    this.statusFilter$.next(value);
+  }
+
   // Metoda za resetovanje filtera
   resetAppointmentFilters() {
-    this.dateFilter$.next('');
+    this.dateFromFilter$.next('');
+    this.dateToFilter$.next('');
     this.doctorFilter$.next('');
     this.patientFilter$.next('');
+    this.statusFilter$.next('');
   }
 
   // REDUCE operator za statistiku - izračunava broj termina po statusu

@@ -13,7 +13,7 @@ import { AppointmentStatus } from '../../common/enums/appointment-status.enum';
 import { TimeSlot } from '../../common/enums/time-slot.enum';
 
 @Entity('appointments')
-@Unique(['doctorId', 'date', 'timeSlot']) // Jedan doktor ne može imati 2 termina u isto vreme
+@Unique(['doctorId', 'date', 'timeSlot', 'status']) // Jedan doktor može imati više termina za isti slot sa različitim statusom
 export class Appointment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
