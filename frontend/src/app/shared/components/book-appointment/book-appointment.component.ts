@@ -4,8 +4,11 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Subject, takeUntil, take } from 'rxjs';
 import { DoctorPatientService } from '../../../core/services/doctor-patient.service';
 import { AppointmentsService, CreateAppointmentDto } from '../../../core/services/appointments.service';
+import { AppointmentTypesService } from '../../../core/services/appointment-types.service';
 import { TimeSlot } from '../../../shared/models/appointment.model';
 import { User } from '../../../shared/models/user.model';
+import { AppointmentType } from '../../../core/models/appointment-type.model';
+import { Specialization } from '../../../common/enums/specialization.enum';
 
 @Component({
   selector: 'app-book-appointment',
@@ -17,12 +20,15 @@ import { User } from '../../../shared/models/user.model';
 export class BookAppointmentComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   
-  currentStep: number = 1; // 1: Izaberi doktora, 2: Izaberi datum, 3: Izaberi termin
+  currentStep: number = 1; // 1: Izaberi doktora, 2: Izaberi tip pregleda, 3: Izaberi datum, 4: Izaberi termin
   
   myDoctors: User[] = [];
   loadingDoctors: boolean = false;
   
   selectedDoctor: User | null = null;
+  selectedAppointmentType: AppointmentType | null = null;
+  availableAppointmentTypes: AppointmentType[] = [];
+  loadingAppointmentTypes: boolean = false;
   selectedDate: string = '';
   selectedTimeSlot: TimeSlot | null = null;
   
@@ -38,6 +44,7 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
   constructor(
     private doctorPatientService: DoctorPatientService,
     private appointmentsService: AppointmentsService,
+    private appointmentTypesService: AppointmentTypesService,
     private fb: FormBuilder
   ) {
     this.bookingForm = this.fb.group({
@@ -71,6 +78,36 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
     this.selectedDoctor = doctor;
     this.currentStep = 2;
     this.errorMessage = '';
+    this.loadAppointmentTypesBySpecialization();
+  }
+
+  loadAppointmentTypesBySpecialization() {
+    if (!this.selectedDoctor || !this.selectedDoctor.specialization) return;
+    
+    this.loadingAppointmentTypes = true;
+    this.appointmentTypesService.getBySpecialization(this.selectedDoctor.specialization as Specialization)
+      .pipe(take(1), takeUntil(this.destroy$))
+      .subscribe({
+        next: (types) => {
+          this.availableAppointmentTypes = types.filter(t => t.isActive);
+          this.loadingAppointmentTypes = false;
+          
+          if (this.availableAppointmentTypes.length === 0) {
+            this.errorMessage = 'Nema dostupnih tipova pregleda za ovu specijalizaciju';
+          }
+        },
+        error: (error) => {
+          console.error('Greška pri učitavanju tipova pregleda:', error);
+          this.errorMessage = 'Greška pri učitavanju tipova pregleda';
+          this.loadingAppointmentTypes = false;
+        }
+      });
+  }
+
+  selectAppointmentType(type: AppointmentType) {
+    this.selectedAppointmentType = type;
+    this.currentStep = 3;
+    this.errorMessage = '';
   }
 
   selectDate(event: Event) {
@@ -98,10 +135,12 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
         next: (slots) => {
           this.availableSlots = slots;
           this.loadingSlots = false;
-          this.currentStep = 3;
           
           if (slots.length === 0) {
-            this.errorMessage = 'Nema slobodnih termina za izabrani datum';
+            this.errorMessage = 'Nema slobodnih termina za izabrani datum. Molimo izaberite drugi datum.';
+            this.currentStep = 3;
+          } else {
+            this.currentStep = 4;
           }
         },
         error: (error) => {
@@ -117,8 +156,8 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
   }
 
   bookAppointment() {
-    if (!this.selectedDoctor || !this.selectedDate || !this.selectedTimeSlot) {
-      this.errorMessage = 'Molimo izaberite doktora, datum i termin';
+    if (!this.selectedDoctor || !this.selectedAppointmentType || !this.selectedDate || !this.selectedTimeSlot) {
+      this.errorMessage = 'Molimo izaberite doktora, tip pregleda, datum i termin';
       return;
     }
 
@@ -126,15 +165,24 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
 
+    console.log('=== DEBUG: Podaci pre kreiranje DTO ===');
+    console.log('selectedDoctor:', this.selectedDoctor);
+    console.log('selectedAppointmentType:', this.selectedAppointmentType);
+    console.log('selectedDate:', this.selectedDate);
+    console.log('selectedTimeSlot:', this.selectedTimeSlot);
+
     const dto: CreateAppointmentDto = {
       doctorId: this.selectedDoctor.id,
+      appointmentTypeId: this.selectedAppointmentType.id,
       date: this.selectedDate,
       timeSlot: this.selectedTimeSlot,
       reason: this.bookingForm.value.reason || undefined,
       notes: this.bookingForm.value.notes || undefined
     };
 
-    console.log('Zakazivanje termina sa podacima:', dto);
+    console.log('=== DEBUG: DTO koji se šalje na backend ===');
+    console.log('DTO:', dto);
+    console.log('DTO JSON:', JSON.stringify(dto, null, 2));
 
     this.appointmentsService.createAppointment(dto)
       .pipe(takeUntil(this.destroy$))
@@ -150,12 +198,21 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
           }, 2000);
         },
         error: (error) => {
-          console.error('Greška pri zakazivanju - pun error objekat:', error);
+          console.error('=== DEBUG: Greška pri zakazivanju ===');
+          console.error('Pun error objekat:', error);
           console.error('Error response body:', error.error);
           console.error('Error status:', error.status);
           console.error('Error message:', error.message);
           
-          const backendMessage = error.error?.message || error.error?.error || error.statusText;
+          // Ako je message array, prikaži prvi element
+          let backendMessage;
+          if (error.error?.message && Array.isArray(error.error.message)) {
+            backendMessage = error.error.message[0];
+            console.error('Backend validation errors:', error.error.message);
+          } else {
+            backendMessage = error.error?.message || error.error?.error || error.statusText;
+          }
+          
           this.errorMessage = backendMessage || 'Greška pri zakazivanju termina';
           this.isBooking = false;
         }
@@ -165,6 +222,8 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
   resetForm() {
     this.currentStep = 1;
     this.selectedDoctor = null;
+    this.selectedAppointmentType = null;
+    this.availableAppointmentTypes = [];
     this.selectedDate = '';
     this.selectedTimeSlot = null;
     this.availableSlots = [];
@@ -179,10 +238,17 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
       
       if (this.currentStep === 1) {
         this.selectedDoctor = null;
+        this.selectedAppointmentType = null;
+        this.availableAppointmentTypes = [];
         this.selectedDate = '';
         this.selectedTimeSlot = null;
         this.availableSlots = [];
       } else if (this.currentStep === 2) {
+        this.selectedAppointmentType = null;
+        this.selectedDate = '';
+        this.selectedTimeSlot = null;
+        this.availableSlots = [];
+      } else if (this.currentStep === 3) {
         this.selectedDate = '';
         this.selectedTimeSlot = null;
         this.availableSlots = [];

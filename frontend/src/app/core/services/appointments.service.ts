@@ -6,6 +6,7 @@ import { TimeSlot } from '../../shared/models/appointment.model';
 
 export interface CreateAppointmentDto {
   doctorId: string;
+  appointmentTypeId?: string;
   date: string;
   timeSlot: TimeSlot;
   reason?: string;
@@ -25,6 +26,15 @@ export interface Appointment {
   status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' | 'Completed';
   reason?: string;
   notes?: string;
+  appointmentTypeId?: string;
+  appointmentType?: {
+    id: string;
+    name: string;
+    description?: string;
+    price: number;
+    durationMinutes: number;
+    specialization: string;
+  };
   doctor?: any;
   patient?: any;
   createdAt: string;

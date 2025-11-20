@@ -18,6 +18,10 @@ import { selectAllAllergies, selectAllergiesLoading, selectAllergiesError } from
 import { Allergy } from '../../../core/models/allergy.model';
 import { PatientAllergy } from '../../../core/models/patient-allergy.model';
 import { PatientAllergiesService } from '../../../core/services/patient-allergies.service';
+import * as AppointmentTypesActions from '../../../store/appointment-types/appointment-types.actions';
+import { selectAllAppointmentTypes, selectAppointmentTypesLoading, selectAppointmentTypesError } from '../../../store/appointment-types/appointment-types.selectors';
+import { AppointmentType } from '../../../core/models/appointment-type.model';
+import { Specialization } from '../../../common/enums/specialization.enum';
 
 // Import child components
 import { PatientListComponent } from '../../../shared/components/patient-list/patient-list.component';
@@ -490,6 +494,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.allergies$ = this.store.select(selectAllAllergies);
     this.isLoadingAllergies$ = this.store.select(selectAllergiesLoading);
     this.allergiesError$ = this.store.select(selectAllergiesError);
+
+    // AppointmentTypes Store selektori
+    this.appointmentTypes$ = this.store.select(selectAllAppointmentTypes);
+    this.isLoadingAppointmentTypes$ = this.store.select(selectAppointmentTypesLoading);
+    this.appointmentTypesError$ = this.store.select(selectAppointmentTypesError);
         
     // Setup autocomplete tokova 
     this.setupAutocomplete();
@@ -497,9 +506,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-  // Učitaj korisnike i alergije odmah
+  // Učitaj korisnike, alergije i tipove pregleda odmah
   this.store.dispatch(UsersActions.loadUsers());
   this.store.dispatch(AllergiesActions.loadAllergies());
+  this.store.dispatch(AppointmentTypesActions.loadAppointmentTypes());
   
   zip(
     this.store.select(UsersSelectors.selectAllUsers).pipe(take(1)),
@@ -665,6 +675,96 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         }
       });
   }
+
+
+  openAddAppointmentTypeModal() {
+    this.appointmentTypeModalMode = 'add';
+    this.selectedAppointmentTypeForEdit = null;
+    this.showAppointmentTypeModal = true;
+    this.appointmentTypeForm = this.fb.group({
+      name: ['', [Validators.required]],
+      description: [''],
+      specialization: ['', [Validators.required]],
+      price: ['', [Validators.required, Validators.min(0)]],
+      durationMinutes: [30, [Validators.required]]
+    });
+  }
+
+  openEditAppointmentTypeModal(appointmentType: AppointmentType) {
+    this.appointmentTypeModalMode = 'edit';
+    this.selectedAppointmentTypeForEdit = appointmentType;
+    this.showAppointmentTypeModal = true;
+    this.appointmentTypeForm = this.fb.group({
+      name: [appointmentType.name, [Validators.required]],
+      description: [appointmentType.description || ''],
+      specialization: [appointmentType.specialization, [Validators.required]],
+      price: [appointmentType.price, [Validators.required, Validators.min(0)]],
+      durationMinutes: [appointmentType.durationMinutes, [Validators.required]]
+    });
+  }
+
+  closeAppointmentTypeModal() {
+    this.showAppointmentTypeModal = false;
+    this.selectedAppointmentTypeForEdit = null;
+    this.appointmentTypeForm.reset();
+  }
+
+  submitAppointmentTypeForm() {
+    if (this.appointmentTypeForm.invalid) {
+      alert('Molimo popunite sva obavezna polja ispravno');
+      return;
+    }
+
+    this.isSubmittingAppointmentType = true;
+    const rawFormData = this.appointmentTypeForm.value;
+    
+    // Konvertuj tipove i očisti podatke
+    const formData: any = {
+      name: rawFormData.name,
+      specialization: rawFormData.specialization,
+      price: Number(rawFormData.price),
+      durationMinutes: Number(rawFormData.durationMinutes)
+    };
+    
+    // Dodaj description samo ako nije prazan
+    if (rawFormData.description && rawFormData.description.trim()) {
+      formData.description = rawFormData.description.trim();
+    }
+
+    if (this.appointmentTypeModalMode === 'add') {
+      this.store.dispatch(AppointmentTypesActions.createAppointmentType({ appointmentType: formData }));
+    } else if (this.selectedAppointmentTypeForEdit) {
+      this.store.dispatch(AppointmentTypesActions.updateAppointmentType({ 
+        id: this.selectedAppointmentTypeForEdit.id, 
+        changes: formData 
+      }));
+    }
+
+    // Čekaj malo pa zatvori modal
+    setTimeout(() => {
+      this.isSubmittingAppointmentType = false;
+      this.closeAppointmentTypeModal();
+    }, 500);
+  }
+
+  deactivateAppointmentType(id: string, name: string) {
+    if (!confirm(`Da li ste sigurni da želite da deaktivirate tip pregleda "${name}"?`)) return;
+    
+    this.store.dispatch(AppointmentTypesActions.updateAppointmentType({ 
+      id, 
+      changes: { isActive: false } 
+    }));
+  }
+
+  activateAppointmentType(id: string, name: string) {
+    if (!confirm(`Da li ste sigurni da želite da aktivirate tip pregleda "${name}"?`)) return;
+    
+    this.store.dispatch(AppointmentTypesActions.updateAppointmentType({ 
+      id, 
+      changes: { isActive: true } 
+    }));
+  }
+
 
   ngOnDestroy() {
     // Cleanup subscriptions 
@@ -1286,6 +1386,17 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   selectedPatientName: string = '';
   selectedPatientAllergies: PatientAllergy[] = [];
   isLoadingPatientAllergies: boolean = false;
+
+  // Appointment Types - CRUD
+  appointmentTypes$!: Observable<AppointmentType[]>;
+  isLoadingAppointmentTypes$!: Observable<boolean>;
+  appointmentTypesError$!: Observable<string | null>;
+  showAppointmentTypeModal: boolean = false;
+  appointmentTypeModalMode: 'add' | 'edit' = 'add';
+  appointmentTypeForm!: FormGroup;
+  selectedAppointmentTypeForEdit: AppointmentType | null = null;
+  isSubmittingAppointmentType: boolean = false;
+  specializations = Object.values(Specialization);
 
   openBlockAppointmentModal() {
     this.showBlockAppointmentModal = true;

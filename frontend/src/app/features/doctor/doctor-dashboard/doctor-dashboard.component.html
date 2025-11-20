@@ -288,6 +288,14 @@
                 
                 <span class="appointment-date">{{ apt.date }}</span>
                 
+                <!-- Tip pregleda -->
+                <span class="appointment-type" *ngIf="apt.appointmentType">
+                  📋 {{ apt.appointmentType.name }} ({{ apt.appointmentType.price }} RSD, {{ apt.appointmentType.durationMinutes }} min)
+                </span>
+                <span class="appointment-type-missing" *ngIf="!apt.appointmentType && !apt.isBlockAppointment">
+                  ℹ️ Tip pregleda nije definisan
+                </span>
+                
                 <span class="appointment-status" 
                       [class.status-pending]="apt.status === 'Pending'"
                       [class.status-approved]="apt.status === 'Approved'"

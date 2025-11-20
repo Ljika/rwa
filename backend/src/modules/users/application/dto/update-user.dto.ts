@@ -2,6 +2,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../../../../common/enums/user-role.enum';
 import { Gender } from '../../../../common/enums/gender.enum';
+import { Specialization } from '../../../../common/enums/specialization.enum';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ example: 'Ana', description: 'Ime korisnika' })
@@ -35,10 +36,10 @@ export class UpdateUserDto {
   @IsOptional()
   gender?: Gender;
 
-  @ApiPropertyOptional({ example: 'Kardiolog', description: 'Specijalizacija (samo za doktore)' })
-  @IsString()
+  @ApiPropertyOptional({ enum: Specialization, example: Specialization.CARDIOLOGY, description: 'Specijalizacija (samo za doktore)' })
+  @IsEnum(Specialization)
   @IsOptional()
-  specialization?: string;
+  specialization?: Specialization;
 
   @ApiPropertyOptional({ enum: UserRole, example: UserRole.Doctor, description: 'Uloga korisnika (samo Admin može menjati)' })
   @IsEnum(UserRole)

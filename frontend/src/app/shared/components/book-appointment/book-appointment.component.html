@@ -3,7 +3,7 @@
 
   <!-- Instructions -->
   <div class="booking-instructions">
-    Da biste zakazali termin prvo izaberite doktora, pa datum i vreme pregleda.
+    Da biste zakazali termin prvo izaberite doktora, vrstu pregleda, datum i vreme.
   </div>
 
   <!-- Messages -->
@@ -44,14 +44,55 @@
     </div>
   </div>
 
-  <!-- Step 2: Select Date -->
+  <!-- Step 2: Select Appointment Type -->
   <div class="step-content" *ngIf="currentStep === 2">
-    <h3>Izaberite Datum</h3>
+    <h3>Izaberite Vrstu Pregleda</h3>
     
     <div class="selected-info">
       <strong>Doktor:</strong> Dr. {{ selectedDoctor?.firstName }} {{ selectedDoctor?.lastName }}
       <br>
       <strong>Specijalnost:</strong> {{ selectedDoctor?.specialization }}
+    </div>
+
+    <div class="loading" *ngIf="loadingAppointmentTypes">
+      Učitavanje vrsta pregleda...
+    </div>
+
+    <div class="no-data" *ngIf="!loadingAppointmentTypes && availableAppointmentTypes.length === 0">
+      Nema dostupnih vrsta pregleda za ovu specijalnost.
+    </div>
+
+    <div class="appointment-types-list" *ngIf="!loadingAppointmentTypes && availableAppointmentTypes.length > 0">
+      <div 
+        class="appointment-type-card" 
+        *ngFor="let type of availableAppointmentTypes"
+        (click)="selectAppointmentType(type)"
+      >
+        <div class="type-info">
+          <div class="type-name">{{ type.name }}</div>
+          <div class="type-description" *ngIf="type.description">{{ type.description }}</div>
+          <div class="type-details">
+            <span class="type-price">{{ type.price }} RSD</span>
+            <span class="type-duration">{{ type.durationMinutes }} minuta</span>
+          </div>
+        </div>
+        <div class="select-arrow">→</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" (click)="goBack()">Nazad</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Select Date -->
+  <div class="step-content" *ngIf="currentStep === 3">
+    <h3>Izaberite Datum</h3>
+    
+    <div class="selected-info">
+      <strong>Doktor:</strong> Dr. {{ selectedDoctor?.firstName }} {{ selectedDoctor?.lastName }}
+      <br>
+      <strong>Vrsta pregleda:</strong> {{ selectedAppointmentType?.name }} ({{ selectedAppointmentType?.price }} RSD, {{ selectedAppointmentType?.durationMinutes }} min)
     </div>
 
     <div class="date-selector">
@@ -74,12 +115,14 @@
     </div>
   </div>
 
-  <!-- Step 3: Select Time Slot -->
-  <div class="step-content" *ngIf="currentStep === 3">
+  <!-- Step 4: Select Time Slot -->
+  <div class="step-content" *ngIf="currentStep === 4">
     <h3>Izaberite Termin</h3>
     
     <div class="selected-info">
       <strong>Doktor:</strong> Dr. {{ selectedDoctor?.firstName }} {{ selectedDoctor?.lastName }}
+      <br>
+      <strong>Vrsta pregleda:</strong> {{ selectedAppointmentType?.name }} ({{ selectedAppointmentType?.price }} RSD)
       <br>
       <strong>Datum:</strong> {{ selectedDate }}
     </div>

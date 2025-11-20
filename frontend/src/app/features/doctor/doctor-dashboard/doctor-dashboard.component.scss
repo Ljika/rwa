@@ -1041,6 +1041,25 @@
       flex: 1;
     }
 
+    .appointment-type {
+      color: #059669;
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: #d1fae5;
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid #34d399;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .appointment-type-missing {
+      color: #6b7280;
+      font-size: 0.85rem;
+      font-style: italic;
+      opacity: 0.7;
+    }
+
     .appointment-status {
       padding: 0.4rem 1rem;
       border-radius: 6px;

@@ -38,7 +38,17 @@ export class Appointment {
   reason: string; 
 
   @Column({ type: 'text', nullable: true })
-  notes: string; 
+  notes: string;
+
+  // Relacija: Više Appointments -> Jedan AppointmentType
+  @ManyToOne('AppointmentType', (appointmentType: any) => appointmentType.appointments, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'appointmentTypeId' })
+  appointmentType: any;
+
+  @Column({ type: 'uuid', nullable: true })
+  appointmentTypeId: string;
 
   @CreateDateColumn()
   createdAt: Date;

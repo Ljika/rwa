@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { DataSource } from 'typeorm';
 import { seedAllergies } from './modules/allergies/seed/seed-allergies';
+import { seedAppointmentTypes } from './modules/appointment-types/seed/seed-appointment-types';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,8 +39,9 @@ async function bootstrap() {
   console.log(`Server running on http://localhost:${process.env.PORT ?? 3000}`);
   console.log(`Swagger docs on http://localhost:${process.env.PORT ?? 3000}/api`);
 
-  // Seed alergije
+  // Seed podataka
   const dataSource = app.get(DataSource);
   await seedAllergies(dataSource);
+  await seedAppointmentTypes(dataSource);
 }
 bootstrap();

@@ -13,6 +13,11 @@ export class CreateAppointmentDto {
   @IsOptional()
   patientId?: string;
 
+  @ApiPropertyOptional({ example: 'uuid-tipa-pregleda', description: 'ID tipa pregleda (opciono)' })
+  @IsUUID('4', { message: 'ID tipa pregleda mora biti validan UUID' })
+  @IsOptional()
+  appointmentTypeId?: string;
+
   @ApiProperty({ example: '2025-11-15', description: 'Datum termina (YYYY-MM-DD)' })
   @IsDateString({}, { message: 'Datum mora biti u ISO 8601 formatu' })
   @IsNotEmpty({ message: 'Datum termina je obavezan' })

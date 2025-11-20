@@ -1899,6 +1899,17 @@
   }
 }
 
+.appointment-type-badge {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  padding: 4px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #059669;
+  color: #065f46;
+  font-weight: 500;
+  display: inline-block;
+  margin-left: 8px;
+}
+
 .text-muted {
   color: #94a3b8;
   font-style: italic;
@@ -2207,5 +2218,83 @@
     .form-group-button {
       grid-column: 1 / -1;
     }
+  }
+}
+
+// Appointment Types Table
+.appointment-types-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  
+  thead {
+    background: #f9fafb;
+    
+    th {
+      padding: 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      color: #6b7280;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      border-bottom: 2px solid #e5e7eb;
+    }
+  }
+  
+  tbody {
+    tr {
+      border-bottom: 1px solid #f3f4f6;
+      transition: background 0.2s;
+      
+      &:hover {
+        background: #f9fafb;
+      }
+      
+      td {
+        padding: 0.75rem;
+        color: #1f2937;
+        
+        &.no-data {
+          text-align: center;
+          color: #9ca3af;
+          font-style: italic;
+        }
+      }
+    }
+  }
+}
+
+// Status Badge
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  
+  &.active {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  
+  &.inactive {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+}
+
+// Button - Aktiviraj
+.btn-activate-small {
+  padding: 0.4rem 0.75rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #059669;
   }
 }

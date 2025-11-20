@@ -8,6 +8,7 @@
 } from 'typeorm';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { Gender } from '../../common/enums/gender.enum';
+import { Specialization } from '../../common/enums/specialization.enum';
 
 @Entity('users')
 export class User {
@@ -46,8 +47,12 @@ export class User {
   })
   gender: Gender;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  specialization: string; 
+  @Column({
+    type: 'enum',
+    enum: Specialization,
+    nullable: true,
+  })
+  specialization: Specialization;
 
   @Column({ type: 'boolean', default: true })
   isActive: boolean;

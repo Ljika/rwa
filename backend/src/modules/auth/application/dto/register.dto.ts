@@ -2,6 +2,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../../../../common/enums/user-role.enum';
 import { Gender } from '../../../../common/enums/gender.enum';
+import { Specialization } from '../../../../common/enums/specialization.enum';
 
 export class RegisterDto {
   @ApiProperty({ example: 'ana@example.com', description: 'Email adresa korisnika' })
@@ -45,8 +46,8 @@ export class RegisterDto {
   @IsOptional()
   gender?: Gender;
 
-  @ApiPropertyOptional({ example: 'Kardiolog', description: 'Specijalizacija (samo za doktore)' })
-  @IsString()
+  @ApiPropertyOptional({ enum: Specialization, example: Specialization.CARDIOLOGY, description: 'Specijalizacija (samo za doktore)' })
+  @IsEnum(Specialization, { message: 'Specijalizacija mora biti validna vrednost iz enum-a' })
   @IsOptional()
-  specialization?: string;
+  specialization?: Specialization;
 }

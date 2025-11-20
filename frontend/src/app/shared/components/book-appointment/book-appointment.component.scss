@@ -117,6 +117,71 @@
   }
 }
 
+// Appointment Types List
+.appointment-types-list {
+  display: grid;
+  gap: 15px;
+
+  .appointment-type-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: #667eea;
+      background: #f8f9ff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    }
+
+    .type-info {
+      flex: 1;
+
+      .type-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+      }
+
+      .type-description {
+        color: #777;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+
+      .type-details {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+
+        .type-price {
+          color: #10b981;
+          font-weight: 600;
+          font-size: 16px;
+        }
+
+        .type-duration {
+          color: #667eea;
+          font-weight: 500;
+          font-size: 14px;
+        }
+      }
+    }
+
+    .select-arrow {
+      font-size: 24px;
+      color: #667eea;
+      font-weight: bold;
+    }
+  }
+}
+
 // Date Selector
 .date-selector {
   margin-bottom: 20px;

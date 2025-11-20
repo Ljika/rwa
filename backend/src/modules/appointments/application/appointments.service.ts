@@ -31,7 +31,7 @@ export class AppointmentsService {
       console.log('CREATE APPOINTMENT - Primljeni podaci:', createAppointmentDto);
       console.log('CREATE APPOINTMENT - Patient ID:', patientId);
       
-      const { doctorId, date, timeSlot, reason, notes } = createAppointmentDto;
+      const { doctorId, date, timeSlot, reason, notes, appointmentTypeId } = createAppointmentDto;
 
       const doctor = await this.userRepository.findOne({
         where: { id: doctorId, role: UserRole.Doctor, isActive: true },
@@ -113,6 +113,7 @@ export class AppointmentsService {
         timeSlot,
         reason,
         notes,
+        appointmentTypeId: appointmentTypeId || undefined,
         status: AppointmentStatus.Pending,
       });
 
@@ -128,7 +129,7 @@ export class AppointmentsService {
   }
 
   async scheduleForPatient(createAppointmentDto: CreateAppointmentDto, doctorId: string): Promise<Appointment> {
-    const { doctorId: dtodoctorId, date, timeSlot, reason, notes } = createAppointmentDto;
+    const { doctorId: dtodoctorId, date, timeSlot, reason, notes, appointmentTypeId } = createAppointmentDto;
     const patientId = createAppointmentDto.patientId;
 
     // Proveri da li je doktor koji poziva metodu isti kao doktor u DTO (sigurnosna provera)
@@ -218,6 +219,7 @@ export class AppointmentsService {
       timeSlot,
       reason,
       notes,
+      appointmentTypeId: appointmentTypeId || undefined,
       status: AppointmentStatus.Approved,
     });
 
@@ -251,13 +253,29 @@ export class AppointmentsService {
         doctorId, 
         date: appointmentDate,
       },
+      relations: ['appointmentType'],
     });
 
-    const occupiedSlots = occupiedAppointments
+    // Kreiraj Set zauzetih slotova uzimajući u obzir trajanje pregleda
+    const occupiedSlots = new Set<string>();
+    
+    occupiedAppointments
       .filter(apt => apt.status === AppointmentStatus.Pending || apt.status === AppointmentStatus.Approved)
-      .map(apt => apt.timeSlot);
+      .forEach(apt => {
+        const duration = apt.appointmentType?.durationMinutes || 30; 
+        const slotsNeeded = duration / 30; 
+        
+        const [hours, minutes] = apt.timeSlot.split(':').map(Number);
+        
+        for (let i = 0; i < slotsNeeded; i++) {
+          const slotHours = hours + Math.floor((minutes + i * 30) / 60);
+          const slotMinutes = (minutes + i * 30) % 60;
+          const slot = `${String(slotHours).padStart(2, '0')}:${String(slotMinutes).padStart(2, '0')}`;
+          occupiedSlots.add(slot);
+        }
+      });
 
-    let availableSlots = allSlots.filter(slot => !occupiedSlots.includes(slot));
+    let availableSlots = allSlots.filter(slot => !occupiedSlots.has(slot));
 
     // Ako je danas, ukloni prošle termine
     const now = new Date();
@@ -283,7 +301,7 @@ export class AppointmentsService {
 
   async findAll(): Promise<Appointment[]> {
     return this.appointmentRepository.find({
-      relations: ['doctor', 'patient'],
+      relations: ['doctor', 'patient', 'appointmentType'],
       order: { date: 'DESC', timeSlot: 'ASC' },
     });
   }
@@ -291,7 +309,7 @@ export class AppointmentsService {
   async findMyAppointmentsAsPatient(patientId: string): Promise<Appointment[]> {
     return this.appointmentRepository.find({
       where: { patientId },
-      relations: ['doctor'],
+      relations: ['doctor', 'appointmentType'],
       order: { date: 'DESC', timeSlot: 'ASC' },
     });
   }
@@ -299,7 +317,7 @@ export class AppointmentsService {
   async findMyAppointmentsAsDoctor(doctorId: string): Promise<Appointment[]> {
     return this.appointmentRepository.find({
       where: { doctorId },
-      relations: ['patient'],
+      relations: ['patient', 'appointmentType'],
       order: { date: 'DESC', timeSlot: 'ASC' },
     });
   }
@@ -307,7 +325,7 @@ export class AppointmentsService {
   async findOne(id: string): Promise<Appointment> {
     const appointment = await this.appointmentRepository.findOne({
       where: { id },
-      relations: ['doctor', 'patient', 'therapy'],
+      relations: ['doctor', 'patient', 'therapy', 'appointmentType'],
     });
 
     if (!appointment) {
@@ -514,7 +532,7 @@ export class AppointmentsService {
 
     return this.appointmentRepository.find({
       where: savedAppointments.map(apt => ({ id: apt.id })),
-      relations: ['doctor', 'patient'],
+      relations: ['doctor', 'patient', 'appointmentType'],
     });
   }
 

@@ -444,6 +444,14 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
     this.isLoadingAppointments = true;
     this.appointmentsService.getMyAppointmentsAsDoctor().subscribe({
       next: (appointments: any[]) => {
+        console.log('=== DEBUG: Termini učitani sa backenda ===');
+        console.log('Broj termina:', appointments.length);
+        console.log('Svi termini:', appointments);
+        if (appointments.length > 0) {
+          console.log('Prvi termin detalji:', appointments[0]);
+          console.log('Prvi termin ima appointmentType?', appointments[0].appointmentType);
+        }
+        
         this.myAppointments = appointments;
         
         // Emituj u BehaviorSubject za reactive filtering

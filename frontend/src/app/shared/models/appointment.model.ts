@@ -66,6 +66,15 @@ export interface Appointment {
   status: AppointmentStatus;
   reason?: string;
   notes?: string;
+  appointmentTypeId?: string;
+  appointmentType?: {
+    id: string;
+    name: string;
+    description?: string;
+    price: number;
+    durationMinutes: number;
+    specialization: string;
+  };
   doctor?: any;
   patient?: any;
   createdAt: string;

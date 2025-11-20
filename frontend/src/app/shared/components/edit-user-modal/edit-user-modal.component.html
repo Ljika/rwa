@@ -48,7 +48,10 @@
 
           <div class="form-group" *ngIf="isDoctor()">
             <label>Specijalizacija</label>
-            <input type="text" formControlName="specialization" class="form-control" placeholder="Kardiologija, Neurologija...">
+            <select formControlName="specialization" class="form-control">
+              <option value="">-- Izaberi specijalizaciju --</option>
+              <option *ngFor="let spec of specializations" [value]="spec">{{ spec }}</option>
+            </select>
           </div>
         </div>
 

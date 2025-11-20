@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChange
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { User, Gender } from '../../../shared/models/user.model';
+import { Specialization } from '../../../common/enums/specialization.enum';
 
 export interface UpdateUserDto {
   id: string;
@@ -29,6 +30,7 @@ export class EditUserModalComponent implements OnInit, OnChanges {
 
   editForm!: FormGroup;
   genders = Object.values(Gender);
+  specializations = Object.values(Specialization);
   isSubmitting: boolean = false;
 
   constructor(private fb: FormBuilder) {}

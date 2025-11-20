@@ -56,6 +56,12 @@
     </button>
     <button 
       class="tab-button" 
+      [class.active]="activeTab === 'tipovi-pregleda'" 
+      (click)="selectTab('tipovi-pregleda')">
+       Tipovi Pregleda
+    </button>
+    <button 
+      class="tab-button" 
       [class.active]="activeTab === 'povezi'" 
       (click)="selectTab('povezi')">
       Poveži doktora i pacijenta
@@ -396,6 +402,62 @@
         (deleteAdmin)="handleDeleteAdmin($event)"
         (editAdmin)="handleEditAdmin($event)">
       </app-admin-list>
+    </div>
+
+    <!-- Tipovi Pregleda Tab -->
+    <div *ngIf="activeTab === 'tipovi-pregleda'" class="tab-content">
+      <h3>Upravljanje Tipovima Pregleda</h3>
+      
+      <div class="section-header">
+        <button class="btn-add" (click)="openAddAppointmentTypeModal()">+ Dodaj Tip Pregleda</button>
+      </div>
+
+      <div *ngIf="isLoadingAppointmentTypes$ | async" class="loading">Učitavanje tipova pregleda...</div>
+      <div *ngIf="appointmentTypesError$ | async as error" class="error-message">{{ error }}</div>
+
+      <table class="appointment-types-table" *ngIf="(appointmentTypes$ | async) as appointmentTypes">
+        <thead>
+          <tr>
+            <th>Naziv</th>
+            <th>Specijalizacija</th>
+            <th>Cena (RSD)</th>
+            <th>Trajanje (min)</th>
+            <th>Status</th>
+            <th>Akcije</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let type of appointmentTypes">
+            <td>{{ type.name }}</td>
+            <td>{{ type.specialization }}</td>
+            <td>{{ type.price | number:'1.0-0' }}</td>
+            <td>{{ type.durationMinutes }}</td>
+            <td>
+              <span class="status-badge" [class.active]="type.isActive" [class.inactive]="!type.isActive">
+                {{ type.isActive ? 'Aktivan' : 'Neaktivan' }}
+              </span>
+            </td>
+            <td>
+              <button class="btn-edit-small" (click)="openEditAppointmentTypeModal(type)">Izmeni</button>
+              <button 
+                class="btn-delete-small" 
+                *ngIf="type.isActive"
+                (click)="deactivateAppointmentType(type.id, type.name)">
+                Deaktiviraj
+              </button>
+              <button 
+                class="btn-activate-small" 
+                *ngIf="!type.isActive"
+                (click)="activateAppointmentType(type.id, type.name)">
+                Aktiviraj
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="appointmentTypes.length === 0">
+            <td colspan="6" class="no-data">Nema tipova pregleda u sistemu</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Poveži Tab -->
@@ -752,6 +814,13 @@
               {{ appointment.reason }}
             </div>
             
+            <div class="appointment-field" *ngIf="appointment.appointmentType">
+              <strong>📋 Tip pregleda:</strong> 
+              <span class="appointment-type-badge">
+                {{ appointment.appointmentType.name }} ({{ appointment.appointmentType.price }} RSD, {{ appointment.appointmentType.durationMinutes }} min)
+              </span>
+            </div>
+            
             <div class="appointment-field" *ngIf="appointment.notes">
               <strong> Napomena:</strong> 
               {{ appointment.notes }}
@@ -935,6 +1004,81 @@
           <button type="button" class="btn-cancel" (click)="closeAllergyModal()">Otkaži</button>
           <button type="submit" class="btn-save" [disabled]="allergyForm.invalid || isSubmittingAllergy">
             {{ isSubmittingAllergy ? 'Čuvanje...' : 'Sačuvaj' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- AppointmentType Modal (Add/Edit) -->
+  <div *ngIf="showAppointmentTypeModal" class="modal-overlay" (click)="closeAppointmentTypeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ appointmentTypeModalMode === 'add' ? 'Dodaj Novi Tip Pregleda' : 'Izmeni Tip Pregleda' }}</h3>
+        <button class="btn-close" (click)="closeAppointmentTypeModal()">✕</button>
+      </div>
+      
+      <form [formGroup]="appointmentTypeForm" (ngSubmit)="submitAppointmentTypeForm()" class="modal-body">
+        <div class="form-group">
+          <label for="appointmentTypeName">Naziv Tipa Pregleda *</label>
+          <input 
+            type="text" 
+            id="appointmentTypeName" 
+            formControlName="name"
+            placeholder="Npr: Kontrolni pregled, EKG, Ultrazvuk...">
+          <div class="error" *ngIf="appointmentTypeForm.get('name')?.invalid && appointmentTypeForm.get('name')?.touched">
+            Naziv je obavezan
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="appointmentTypeDescription">Opis</label>
+          <textarea 
+            id="appointmentTypeDescription" 
+            formControlName="description"
+            rows="3"
+            placeholder="Detaljan opis pregleda..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="appointmentTypeSpecialization">Specijalizacija *</label>
+          <select id="appointmentTypeSpecialization" formControlName="specialization">
+            <option value="">-- Izaberi specijalizaciju --</option>
+            <option *ngFor="let spec of specializations" [value]="spec">{{ spec }}</option>
+          </select>
+          <div class="error" *ngIf="appointmentTypeForm.get('specialization')?.invalid && appointmentTypeForm.get('specialization')?.touched">
+            Specijalizacija je obavezna
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="appointmentTypePrice">Cena (RSD) *</label>
+          <input 
+            type="number" 
+            id="appointmentTypePrice" 
+            formControlName="price"
+            placeholder="2500"
+            min="0">
+          <div class="error" *ngIf="appointmentTypeForm.get('price')?.invalid && appointmentTypeForm.get('price')?.touched">
+            Cena mora biti pozitivan broj
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="appointmentTypeDuration">Trajanje (minuta) *</label>
+          <select id="appointmentTypeDuration" formControlName="durationMinutes">
+            <option [value]="30">30 minuta</option>
+            <option [value]="60">60 minuta</option>
+          </select>
+          <div class="error" *ngIf="appointmentTypeForm.get('durationMinutes')?.invalid && appointmentTypeForm.get('durationMinutes')?.touched">
+            Trajanje je obavezno
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeAppointmentTypeModal()">Otkaži</button>
+          <button type="submit" class="btn-save" [disabled]="appointmentTypeForm.invalid || isSubmittingAppointmentType">
+            {{ isSubmittingAppointmentType ? 'Čuvanje...' : 'Sačuvaj' }}
           </button>
         </div>
       </form>

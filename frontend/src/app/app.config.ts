@@ -13,6 +13,7 @@ import { DrugsEffects } from './store/drugs/drugs.effects';
 import { ManufacturersEffects } from './store/manufacturers/manufacturers.effects';
 import { TherapiesEffects } from './store/therapies/therapies.effects';
 import { AllergiesEffects } from './store/allergies/allergies.effects';
+import { AppointmentTypesEffects } from './store/appointment-types/appointment-types.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,7 +23,7 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor])
     ),
     provideStore(appReducers),
-    provideEffects([AuthEffects, UsersEffects, DrugsEffects, ManufacturersEffects, TherapiesEffects, AllergiesEffects]),
+    provideEffects([AuthEffects, UsersEffects, DrugsEffects, ManufacturersEffects, TherapiesEffects, AllergiesEffects, AppointmentTypesEffects]),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode(),

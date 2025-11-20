@@ -16,6 +16,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { AllergiesModule } from './modules/allergies/allergies.module';
 import { PatientAllergiesModule } from './modules/patient-allergies/patient-allergies.module';
 import { DrugAllergiesModule } from './modules/drug-allergies/drug-allergies.module';
+import { AppointmentTypesModule } from './modules/appointment-types/appointment-types.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { DrugAllergiesModule } from './modules/drug-allergies/drug-allergies.mod
     AllergiesModule,
     PatientAllergiesModule,
     DrugAllergiesModule,
+    AppointmentTypesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

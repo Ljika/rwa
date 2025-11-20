@@ -5,6 +5,7 @@ import { DrugState, drugsReducer } from './drugs/drugs.reducer';
 import { ManufacturerState, manufacturersReducer } from './manufacturers/manufacturers.reducer';
 import { TherapyState, therapiesReducer } from './therapies/therapies.reducer';
 import { AllergiesState, allergiesReducer } from './allergies/allergies.reducer';
+import { AppointmentTypesState, appointmentTypesReducer } from './appointment-types/appointment-types.reducer';
 
 export interface AppState {
   auth: AuthState;
@@ -13,6 +14,7 @@ export interface AppState {
   manufacturers: ManufacturerState;
   therapies: TherapyState;
   allergies: AllergiesState;
+  appointmentTypes: AppointmentTypesState;
 }
 
 export const appReducers: ActionReducerMap<AppState> = {
@@ -21,5 +23,6 @@ export const appReducers: ActionReducerMap<AppState> = {
   drugs: drugsReducer,
   manufacturers: manufacturersReducer,
   therapies: therapiesReducer,
-  allergies: allergiesReducer
+  allergies: allergiesReducer,
+  appointmentTypes: appointmentTypesReducer
 };
