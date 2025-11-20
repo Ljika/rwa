@@ -13,6 +13,9 @@ import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { TherapiesModule } from './modules/therapies/therapies.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { AllergiesModule } from './modules/allergies/allergies.module';
+import { PatientAllergiesModule } from './modules/patient-allergies/patient-allergies.module';
+import { DrugAllergiesModule } from './modules/drug-allergies/drug-allergies.module';
 
 @Module({
   imports: [
@@ -48,6 +51,9 @@ import { ChatModule } from './modules/chat/chat.module';
     TherapiesModule,
     MessagesModule,
     ChatModule,
+    AllergiesModule,
+    PatientAllergiesModule,
+    DrugAllergiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

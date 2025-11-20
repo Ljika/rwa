@@ -192,6 +192,9 @@
             </p>
           </div>
           <div class="patient-actions">
+            <button class="btn-allergies" (click)="viewPatientAllergies(patient)">
+              Alergije
+            </button>
             <button class="btn-view-details" (click)="viewPatientDetails(patient)">
               Pogledaj preglede i terapije
             </button>
@@ -446,7 +449,9 @@
               <div *ngFor="let drug of drugsArray.controls; let i = index" [formGroupName]="i" class="drug-row">
                 <select formControlName="drugId" class="drug-select">
                   <option value="">Izaberi lek...</option>
-                  <option *ngFor="let d of allDrugs$ | async" [value]="d.id">{{ d.name }} ({{ d.dosage }})</option>
+                  <option *ngFor="let d of allDrugs$ | async" [value]="d.id" [class.allergic-drug]="isPatientAllergicToDrug(d.id)">
+                    <span *ngIf="isPatientAllergicToDrug(d.id)">⚠️ </span>{{ d.name }} ({{ d.dosage }})
+                  </option>
                 </select>
                 <div class="input-with-label">
                   <input type="number" formControlName="timesPerDay" placeholder="Puta dnevno" min="1" />
@@ -736,6 +741,33 @@
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Modal za Alergije Pacijenta -->
+<div class="modal-overlay" *ngIf="showPatientAllergiesModal" (click)="closePatientAllergiesModal()">
+  <div class="modal-content allergies-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Alergije pacijenta: {{ selectedPatientForAllergies?.firstName }} {{ selectedPatientForAllergies?.lastName }}</h3>
+      <button class="close-btn" (click)="closePatientAllergiesModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="isLoadingPatientAllergies" class="loading">Učitavanje...</div>
+      <div *ngIf="!isLoadingPatientAllergies && patientAllergiesList.length === 0" class="empty-modal">
+        ⚠️ Ovaj pacijent nema evidentirane alergije.
+      </div>
+      <div *ngIf="!isLoadingPatientAllergies && patientAllergiesList.length > 0" class="allergies-list">
+        <div *ngFor="let pa of patientAllergiesList" class="allergy-item">
+          <div class="allergy-icon">⚠️</div>
+          <div class="allergy-info">
+            <span class="allergy-name">{{ pa.allergy?.name }}</span>
+            <span class="diagnosed-date" *ngIf="pa.diagnosedDate">
+              Dijagnostikovano: {{ pa.diagnosedDate | date:'dd.MM.yyyy' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

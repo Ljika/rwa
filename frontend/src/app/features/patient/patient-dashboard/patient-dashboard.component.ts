@@ -5,10 +5,12 @@ import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { AuthService } from '../../../core/services/auth.service';
 import { DoctorPatientService } from '../../../core/services/doctor-patient.service';
+import { PatientAllergiesService } from '../../../core/services/patient-allergies.service';
 import { Gender, User } from '../../../shared/models/user.model';
 import { BookAppointmentComponent } from '../../../shared/components/book-appointment/book-appointment.component';
 import { MyAppointmentsComponent } from '../../../shared/components/my-appointments/my-appointments.component';
 import { Therapy } from '../../../core/models/therapy.model';
+import { PatientAllergy } from '../../../core/models/patient-allergy.model';
 import { loadMyTherapies } from '../../../store/therapies/therapies.actions';
 import { selectAllTherapies, selectTherapiesLoading, selectTherapiesError } from '../../../store/therapies/therapies.selectors';
 import { ChatComponent } from '../../../shared/components/chat/chat.component';
@@ -30,6 +32,7 @@ export class PatientDashboardComponent implements OnInit {
 
   // Karton tab data
   myDoctors: any[] = [];
+  myAllergies: PatientAllergy[] = [];
   isLoadingKarton: boolean = false;
 
   // Terapije tab data
@@ -40,6 +43,7 @@ export class PatientDashboardComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private doctorPatientService: DoctorPatientService,
+    private patientAllergiesService: PatientAllergiesService,
     private fb: FormBuilder,
     private store: Store
   ) {
@@ -132,11 +136,27 @@ export class PatientDashboardComponent implements OnInit {
     this.isLoadingKarton = true;
     
     try {
-      // Učitaj samo lekare
+      const currentUser = this.authService.getCurrentUser();
+      if (!currentUser?.id) {
+        throw new Error('Korisnik nije prijavljen');
+      }
+      
+      // Učitaj lekare
       this.myDoctors = await this.doctorPatientService.getMyDoctors();
+      
+      // Učitaj alergije
+      this.patientAllergiesService.getByPatient(currentUser.id).subscribe({
+        next: (allergies) => {
+          this.myAllergies = allergies;
+        },
+        error: (err) => {
+          console.error('Greška pri učitavanju alergija:', err);
+          this.myAllergies = [];
+        }
+      });
     } catch (error: any) {
-      console.error('Greška pri učitavanju lekara:', error);
-      alert(error.message || 'Greška pri učitavanju lekara');
+      console.error('Greška pri učitavanju kartona:', error);
+      alert(error.message || 'Greška pri učitavanju kartona');
     } finally {
       this.isLoadingKarton = false;
     }

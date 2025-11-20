@@ -79,4 +79,7 @@ export class User {
 
   @OneToMany('DoctorSchedule', (schedule: any) => schedule.doctor)
   doctorSchedules: any[];
+
+  @OneToMany('PatientAllergy', (patientAllergy: any) => patientAllergy.patient)
+  patientAllergies: any[];
 }

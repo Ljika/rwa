@@ -50,6 +50,12 @@
     </button>
     <button 
       class="tab-button" 
+      [class.active]="activeTab === 'alergije'" 
+      (click)="selectTab('alergije')">
+       Alergije
+    </button>
+    <button 
+      class="tab-button" 
       [class.active]="activeTab === 'povezi'" 
       (click)="selectTab('povezi')">
       Poveži doktora i pacijenta
@@ -84,6 +90,123 @@
     <div *ngIf="activeTab === 'proizvodjaci'" class="tab-content">
       <app-manufacturers-admin></app-manufacturers-admin>
     </div>
+
+    <!-- Alergije Tab -->
+    <div *ngIf="activeTab === 'alergije'" class="tab-content">
+      <h3>Upravljanje Alergijama</h3>
+      
+      <div class="allergies-section">
+        <!-- CRUD Master Lista Alergija -->
+        <div class="allergies-crud">
+          <div class="section-header">
+            <h4>Master Lista Alergija</h4>
+            <button class="btn-add" (click)="openAddAllergyModal()">+ Dodaj Alergiju</button>
+          </div>
+
+          <div *ngIf="isLoadingAllergies$ | async" class="loading">Učitavanje alergija...</div>
+          <div *ngIf="allergiesError$ | async as error" class="error-message">{{ error }}</div>
+
+          <table class="allergies-table" *ngIf="(allergies$ | async) as allergies">
+            <thead>
+              <tr>
+                <th>Naziv Alergije</th>
+                <th>Datum Kreiranja</th>
+                <th>Akcije</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let allergy of allergies">
+                <td>{{ allergy.name }}</td>
+                <td>{{ allergy.createdAt | date:'dd.MM.yyyy' }}</td>
+                <td>
+                  <button class="btn-edit-small" (click)="openEditAllergyModal(allergy)">Izmeni</button>
+                  <button class="btn-delete-small" (click)="deleteAllergy(allergy.id, allergy.name)">Obriši</button>
+                </td>
+              </tr>
+              <tr *ngIf="allergies.length === 0">
+                <td colspan="3" class="no-data">Nema alergija u sistemu</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Dodavanje Alergija Pacijentima -->
+        <div class="patient-allergies-section">
+          <div class="section-header">
+            <h4>Dodaj Alergiju Pacijentu</h4>
+          </div>
+
+          <form [formGroup]="patientAllergyForm" (ngSubmit)="addPatientAllergy()" class="patient-allergy-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="patientSelect">Pacijent *</label>
+                <select id="patientSelect" formControlName="patientId" (change)="onPatientSelected($event)">
+                  <option value="">-- Izaberi pacijenta --</option>
+                  <option *ngFor="let patient of (patients$ | async)" [value]="patient.id">
+                    {{ patient.firstName }} {{ patient.lastName }}
+                  </option>
+                </select>
+                <div class="error" *ngIf="patientAllergyForm.get('patientId')?.invalid && patientAllergyForm.get('patientId')?.touched">
+                  Pacijent je obavezan
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="allergySelect">Alergija *</label>
+                <select id="allergySelect" formControlName="allergyId">
+                  <option value="">-- Izaberi alergiju --</option>
+                  <option *ngFor="let allergy of (allergies$ | async)" [value]="allergy.id">
+                    {{ allergy.name }}
+                  </option>
+                </select>
+                <div class="error" *ngIf="patientAllergyForm.get('allergyId')?.invalid && patientAllergyForm.get('allergyId')?.touched">
+                  Alergija je obavezna
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="diagnosedDate">Datum Dijagnoze</label>
+                <input type="date" id="diagnosedDate" formControlName="diagnosedDate">
+              </div>
+
+              <div class="form-group-button">
+                <button type="submit" class="btn-primary" [disabled]="patientAllergyForm.invalid || isAddingPatientAllergy">
+                  {{ isAddingPatientAllergy ? 'Dodavanje...' : 'Dodaj' }}
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Lista alergija selektovanog pacijenta -->
+          <div *ngIf="selectedPatientId" class="selected-patient-allergies">
+            <h5>Alergije pacijenta: {{ selectedPatientName }}</h5>
+            <div *ngIf="isLoadingPatientAllergies" class="loading">Učitavanje...</div>
+            <table class="patient-allergies-table" *ngIf="!isLoadingPatientAllergies && selectedPatientAllergies.length > 0">
+              <thead>
+                <tr>
+                  <th>Alergija</th>
+                  <th>Datum Dijagnoze</th>
+                  <th>Akcije</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let pa of selectedPatientAllergies">
+                  <td>{{ pa.allergy?.name }}</td>
+                  <td>{{ pa.diagnosedDate ? (pa.diagnosedDate | date:'dd.MM.yyyy') : 'N/A' }}</td>
+                  <td>
+                    <button class="btn-delete-small" (click)="removePatientAllergy(pa.id)">Ukloni</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p *ngIf="!isLoadingPatientAllergies && selectedPatientAllergies.length === 0" class="no-data">
+              Pacijent nema evidentirane alergije
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Profil Tab -->
     <div *ngIf="activeTab === 'profil'" class="tab-content">
       <div class="profile-header">
@@ -786,4 +909,35 @@
     (save)="handleSaveUser($event)"
     (close)="handleCloseEditModal()">
   </app-edit-user-modal>
+
+  <!-- Allergy Modal (Add/Edit) -->
+  <div *ngIf="showAllergyModal" class="modal-overlay" (click)="closeAllergyModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ allergyModalMode === 'add' ? 'Dodaj Novu Alergiju' : 'Izmeni Alergiju' }}</h3>
+        <button class="btn-close" (click)="closeAllergyModal()">✕</button>
+      </div>
+      
+      <form [formGroup]="allergyForm" (ngSubmit)="submitAllergyForm()" class="modal-body">
+        <div class="form-group">
+          <label for="allergyName">Naziv Alergije *</label>
+          <input 
+            type="text" 
+            id="allergyName" 
+            formControlName="name"
+            placeholder="Npr: Penicilin, Kikiriki, Polen...">
+          <div class="error" *ngIf="allergyForm.get('name')?.invalid && allergyForm.get('name')?.touched">
+            Naziv alergije je obavezan (min 2 karaktera)
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeAllergyModal()">Otkaži</button>
+          <button type="submit" class="btn-save" [disabled]="allergyForm.invalid || isSubmittingAllergy">
+            {{ isSubmittingAllergy ? 'Čuvanje...' : 'Sačuvaj' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>

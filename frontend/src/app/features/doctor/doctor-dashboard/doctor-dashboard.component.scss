@@ -384,6 +384,25 @@
   }
 }
 
+    .btn-allergies {
+      background: #ef4444;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 0.5rem;
+
+      &:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      }
+    }
+
     .btn-view-details {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
@@ -562,6 +581,13 @@
 
     .drug-select {
       width: 100%;
+      
+      // Stil za lekove na koje je pacijent alergičan
+      option.allergic-drug {
+        color: #dc2626;
+        font-weight: 600;
+        background-color: #fee2e2;
+      }
     }
 
     input,
@@ -1371,6 +1397,80 @@
         &:disabled {
           opacity: 0.6;
           cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+// ===== MODAL ZA ALERGIJE PACIJENTA =====
+.allergies-modal {
+  max-width: 600px;
+
+  .modal-body {
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #64748b;
+    }
+
+    .empty-modal {
+      text-align: center;
+      padding: 2.5rem;
+      color: #64748b;
+      font-size: 1.1rem;
+      background: #f8fafc;
+      border-radius: 8px;
+    }
+
+    .allergies-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      .allergy-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border: 2px solid #fca5a5;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: translateX(4px);
+          box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+        }
+
+        .allergy-icon {
+          font-size: 1.8rem;
+          width: 45px;
+          height: 45px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: white;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        .allergy-info {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 0.3rem;
+
+          .allergy-name {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #991b1b;
+          }
+
+          .diagnosed-date {
+            font-size: 0.85rem;
+            color: #dc2626;
+          }
         }
       }
     }

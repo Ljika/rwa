@@ -50,4 +50,7 @@ export class Drug {
   // Relacija za many-to-many sa Therapy preko TherapyDrug
   @OneToMany('TherapyDrug', (therapyDrug: any) => therapyDrug.drug)
   therapyDrugs: any[];
+
+  @OneToMany('DrugAllergy', (drugAllergy: any) => drugAllergy.drug)
+  drugAllergies: any[];
 }

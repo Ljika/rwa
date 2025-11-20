@@ -6,6 +6,8 @@ import { Store } from '@ngrx/store';
 import { AuthService } from '../../../core/services/auth.service';
 import { DoctorPatientService } from '../../../core/services/doctor-patient.service';
 import { DoctorSchedulesService } from '../../../core/services/doctor-schedules.service';
+import { PatientAllergiesService } from '../../../core/services/patient-allergies.service';
+import { DrugAllergiesService } from '../../../core/services/drug-allergies.service';
 import { Gender, User } from '../../../shared/models/user.model';
 import { AppointmentsService } from '../../../core/services/appointments.service';
 import { TherapiesService } from '../../../core/services/therapies.service';
@@ -15,6 +17,7 @@ import { FilterByDatePipe } from './filter-by-date.pipe';
 import { selectAllDrugs } from '../../../store/drugs/drugs.selectors';
 import { loadDrugs } from '../../../store/drugs/drugs.actions';
 import { Drug } from '../../../core/models/drug.model';
+import { PatientAllergy } from '../../../core/models/patient-allergy.model';
 import { addTherapy } from '../../../store/therapies/therapies.actions';
 import { ChatComponent } from '../../../shared/components/chat/chat.component';
 
@@ -50,6 +53,12 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   selectedPatient: any = null;
   patientAppointmentsWithTherapies: any[] = [];
   isLoadingPatientDetails: boolean = false;
+  
+  // Patient allergies modal
+  showPatientAllergiesModal: boolean = false;
+  selectedPatientForAllergies: any = null;
+  patientAllergiesList: PatientAllergy[] = [];
+  isLoadingPatientAllergies: boolean = false;
   
   // Smene tab data
   mySchedules: any[] = [];
@@ -94,6 +103,7 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   therapyForm!: FormGroup;
   allDrugs$: Observable<Drug[]>;
   isSubmittingTherapy: boolean = false;
+  patientAllergicDrugIds: Set<string> = new Set(); // IDs lekova na koje je pacijent alergičan
 
   // Follow-up appointment modal data
   showFollowUpModal: boolean = false;
@@ -117,6 +127,8 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
     private doctorSchedulesService: DoctorSchedulesService,
     private appointmentsService: AppointmentsService,
     private therapiesService: TherapiesService,
+    private patientAllergiesService: PatientAllergiesService,
+    private drugAllergiesService: DrugAllergiesService,
     private fb: FormBuilder,
     private store: Store,
     private usersService: UsersService
@@ -480,6 +492,9 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
     this.therapyForm.reset();
     this.drugsArray.clear();
     this.addDrugRow(); // Dodaj jedan prazan red za početak
+    
+    // Učitaj alergije pacijenta i mapuj na lekove
+    this.loadPatientAllergicDrugs(appointment.patient.id);
   }
 
   closeTherapyModal() {
@@ -850,5 +865,59 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
           alert(errorMsg);
         }
       });
+  }
+
+  viewPatientAllergies(patient: any) {
+    this.selectedPatientForAllergies = patient;
+    this.showPatientAllergiesModal = true;
+    this.isLoadingPatientAllergies = true;
+    
+    this.patientAllergiesService.getByPatient(patient.id).subscribe({
+      next: (allergies) => {
+        this.patientAllergiesList = allergies;
+        this.isLoadingPatientAllergies = false;
+      },
+      error: (err) => {
+        console.error('Greška pri učitavanju alergija:', err);
+        this.isLoadingPatientAllergies = false;
+        this.patientAllergiesList = [];
+      }
+    });
+  }
+
+  closePatientAllergiesModal() {
+    this.showPatientAllergiesModal = false;
+    this.selectedPatientForAllergies = null;
+    this.patientAllergiesList = [];
+  }
+
+  loadPatientAllergicDrugs(patientId: string) {
+    this.patientAllergicDrugIds.clear();
+    
+    this.patientAllergiesService.getByPatient(patientId).subscribe({
+      next: (patientAllergies) => {
+        const allergyIds = patientAllergies.map(pa => pa.allergyId);
+        
+        allergyIds.forEach(allergyId => {
+          this.allDrugs$.subscribe(drugs => {
+            drugs.forEach(drug => {
+              this.drugAllergiesService.getByDrug(drug.id).subscribe({
+                next: (drugAllergies) => {
+                  const hasDangerousAllergy = drugAllergies.some(da => da.allergyId === allergyId);
+                  if (hasDangerousAllergy) {
+                    this.patientAllergicDrugIds.add(drug.id);
+                  }
+                }
+              });
+            });
+          });
+        });
+      },
+      error: (err) => console.error('Greška pri učitavanju alergija pacijenta:', err)
+    });
+  }
+
+  isPatientAllergicToDrug(drugId: string): boolean {
+    return this.patientAllergicDrugIds.has(drugId);
   }
 }

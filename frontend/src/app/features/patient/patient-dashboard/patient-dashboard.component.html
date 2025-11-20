@@ -82,6 +82,25 @@
         </div>
       </div>
 
+      <!-- Allergies Section -->
+      <div *ngIf="!isLoadingKarton" class="allergies-section">
+        <h4>Alergije</h4>
+        <div *ngIf="myAllergies.length === 0" class="empty-state">
+          <p>Nemate evidentirane alergije.</p>
+        </div>
+        <div *ngIf="myAllergies.length > 0" class="allergies-grid">
+          <div *ngFor="let pa of myAllergies" class="allergy-card">
+            <div class="allergy-icon">⚠️</div>
+            <div class="allergy-info">
+              <h5>{{ pa.allergy?.name }}</h5>
+              <p class="diagnosed-date" *ngIf="pa.diagnosedDate">
+                Dijagnostikovano: {{ pa.diagnosedDate | date:'dd.MM.yyyy' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- My Doctors Section -->
       <div *ngIf="!isLoadingKarton" class="doctors-section">
         <h4>Moji Lekari</h4>

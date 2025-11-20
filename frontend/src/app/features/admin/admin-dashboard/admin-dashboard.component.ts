@@ -13,6 +13,11 @@ import { Gender, User } from '../../../shared/models/user.model';
 import { AppState } from '../../../store';
 import * as UsersActions from '../../../store/users/users.actions';
 import * as UsersSelectors from '../../../store/users/users.selectors';
+import * as AllergiesActions from '../../../store/allergies/allergies.actions';
+import { selectAllAllergies, selectAllergiesLoading, selectAllergiesError } from '../../../store/allergies/allergies.selectors';
+import { Allergy } from '../../../core/models/allergy.model';
+import { PatientAllergy } from '../../../core/models/patient-allergy.model';
+import { PatientAllergiesService } from '../../../core/services/patient-allergies.service';
 
 // Import child components
 import { PatientListComponent } from '../../../shared/components/patient-list/patient-list.component';
@@ -437,7 +442,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private drugsService: DrugsService,
     private manufacturersService: ManufacturersService,
-    private appointmentsService: AppointmentsService
+    private appointmentsService: AppointmentsService,
+    private patientAllergiesService: PatientAllergiesService
   ) {
     // Observables iz Store-a
     this.currentUser$ = this.authService.currentUser$;
@@ -467,17 +473,33 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       description: [''],
       manufacturerId: ['', Validators.required]
     });
-    
-    // Child komponente imaju svoje forme, ovde ih ne treba inicijalizovati
-    
+
+    // Inicijalizuj allergyForm
+    this.allergyForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2)]]
+    });
+
+    // Inicijalizuj patientAllergyForm
+    this.patientAllergyForm = this.fb.group({
+      patientId: ['', Validators.required],
+      allergyId: ['', Validators.required],
+      diagnosedDate: ['']
+    });
+
+    // Allergies Store selektori
+    this.allergies$ = this.store.select(selectAllAllergies);
+    this.isLoadingAllergies$ = this.store.select(selectAllergiesLoading);
+    this.allergiesError$ = this.store.select(selectAllergiesError);
+        
     // Setup autocomplete tokova 
     this.setupAutocomplete();
     this.setupRemoveAutocomplete();
   }
 
   ngOnInit() {
-  // Učitaj korisnike odmah
+  // Učitaj korisnike i alergije odmah
   this.store.dispatch(UsersActions.loadUsers());
+  this.store.dispatch(AllergiesActions.loadAllergies());
   
   zip(
     this.store.select(UsersSelectors.selectAllUsers).pipe(take(1)),
@@ -511,6 +533,135 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error loading appointments:', error);
           this.isLoadingAllAppointments = false;
+        }
+      });
+  }
+
+  openAddAllergyModal() {
+    this.allergyModalMode = 'add';
+    this.selectedAllergyForEdit = null;
+    this.allergyForm.reset();
+    this.showAllergyModal = true;
+  }
+
+  openEditAllergyModal(allergy: Allergy) {
+    this.allergyModalMode = 'edit';
+    this.selectedAllergyForEdit = allergy;
+    this.allergyForm.patchValue({ name: allergy.name });
+    this.showAllergyModal = true;
+  }
+
+  closeAllergyModal() {
+    this.showAllergyModal = false;
+    this.allergyForm.reset();
+    this.selectedAllergyForEdit = null;
+  }
+
+  submitAllergyForm() {
+    if (this.allergyForm.invalid) return;
+
+    this.isSubmittingAllergy = true;
+    const name = this.allergyForm.value.name.trim();
+
+    if (this.allergyModalMode === 'add') {
+      this.store.dispatch(AllergiesActions.addAllergy({ name }));
+    } else if (this.selectedAllergyForEdit) {
+      this.store.dispatch(AllergiesActions.updateAllergy({ 
+        id: this.selectedAllergyForEdit.id, 
+        name 
+      }));
+    }
+
+    // Sačekaj malo pa zatvori modal (daj vremena Store-u)
+    setTimeout(() => {
+      this.isSubmittingAllergy = false;
+      this.closeAllergyModal();
+    }, 500);
+  }
+
+  deleteAllergy(id: string, name: string) {
+    if (!confirm(`Da li ste sigurni da želite da obrišete alergiju "${name}"?`)) return;
+    this.store.dispatch(AllergiesActions.deleteAllergy({ id }));
+  }
+
+  onPatientSelected(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    this.selectedPatientId = select.value;
+    
+    if (!this.selectedPatientId) {
+      this.selectedPatientAllergies = [];
+      this.selectedPatientName = '';
+      return;
+    }
+
+    this.patients$.pipe(take(1)).subscribe(patients => {
+      const patient = patients.find(p => p.id === this.selectedPatientId);
+      this.selectedPatientName = patient ? `${patient.firstName} ${patient.lastName}` : '';
+    });
+
+    this.loadPatientAllergies(this.selectedPatientId);
+  }
+
+  loadPatientAllergies(patientId: string) {
+    this.isLoadingPatientAllergies = true;
+    this.patientAllergiesService.getByPatient(patientId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (allergies) => {
+          this.selectedPatientAllergies = allergies;
+          this.isLoadingPatientAllergies = false;
+        },
+        error: (err) => {
+          console.error('Greška pri učitavanju alergija pacijenta:', err);
+          alert('Greška pri učitavanju alergija pacijenta');
+          this.isLoadingPatientAllergies = false;
+        }
+      });
+  }
+
+  addPatientAllergy() {
+    if (this.patientAllergyForm.invalid) {
+      this.patientAllergyForm.markAllAsTouched();
+      return;
+    }
+
+    this.isAddingPatientAllergy = true;
+    const data = {
+      patientId: this.patientAllergyForm.value.patientId,
+      allergyId: this.patientAllergyForm.value.allergyId,
+      diagnosedDate: this.patientAllergyForm.value.diagnosedDate || undefined
+    };
+
+    this.patientAllergiesService.create(data)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          alert('Alergija uspešno dodata pacijentu!');
+          this.patientAllergyForm.patchValue({ allergyId: '', diagnosedDate: '' });
+          this.loadPatientAllergies(data.patientId);
+          this.isAddingPatientAllergy = false;
+        },
+        error: (err) => {
+          console.error('Greška pri dodavanju alergije:', err);
+          alert(err.error?.message || 'Greška pri dodavanju alergije pacijentu');
+          this.isAddingPatientAllergy = false;
+        }
+      });
+  }
+
+  removePatientAllergy(id: string) {
+    if (!confirm('Da li ste sigurni da želite da uklonite ovu alergiju pacijentu?')) return;
+
+    this.patientAllergiesService.delete(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          alert('Alergija uspešno uklonjena!');
+          this.loadPatientAllergies(this.selectedPatientId);
+        },
+        error: (err) => {
+          console.error('Greška pri uklanjanju alergije:', err);
+          alert('Greška pri uklanjanju alergije');
         }
       });
   }
@@ -1117,6 +1268,24 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   allPatientsForBlock$!: Observable<User[]>;
   availableStartTimes: string[] = [];
   isLoadingStartTimes: boolean = false;
+
+  // Alergije - CRUD i Patient Allergies
+  allergies$!: Observable<Allergy[]>;
+  isLoadingAllergies$!: Observable<boolean>;
+  allergiesError$!: Observable<string | null>;
+  showAllergyModal: boolean = false;
+  allergyModalMode: 'add' | 'edit' = 'add';
+  allergyForm!: FormGroup;
+  selectedAllergyForEdit: Allergy | null = null;
+  isSubmittingAllergy: boolean = false;
+  
+  // Patient Allergies
+  patientAllergyForm!: FormGroup;
+  isAddingPatientAllergy: boolean = false;
+  selectedPatientId: string = '';
+  selectedPatientName: string = '';
+  selectedPatientAllergies: PatientAllergy[] = [];
+  isLoadingPatientAllergies: boolean = false;
 
   openBlockAppointmentModal() {
     this.showBlockAppointmentModal = true;

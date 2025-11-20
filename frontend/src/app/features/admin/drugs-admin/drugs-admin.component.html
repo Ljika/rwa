@@ -36,6 +36,21 @@
     </select>
   </div>
 
+  <!-- SEKCIJA ZA ALERGIJE -->
+  <div class="form-group allergies-section">
+    <label>Alergije leka (opciono)</label>
+    <div class="allergies-checkboxes" *ngIf="(allergies$ | async) as allergies">
+      <div *ngFor="let allergy of allergies" class="checkbox-item">
+        <input 
+          type="checkbox" 
+          [id]="'allergy-' + allergy.id"
+          [checked]="isAllergySelected(allergy.id)"
+          (change)="toggleAllergySelection(allergy.id)">
+        <label [for]="'allergy-' + allergy.id">{{ allergy.name }}</label>
+      </div>
+    </div>
+  </div>
+
   <div class="form-actions">
     <button type="submit" class="btn-submit">{{ editLek ? 'Sačuvaj izmene' : 'Dodaj' }}</button>
     <button type="button" class="btn-cancel" (click)="cancelLekForm()">Otkaži</button>
@@ -60,6 +75,7 @@
       <td>{{ lek.description }}</td>
       <td>{{ lek.manufacturer?.name }}</td>
       <td>
+        <button class="btn-allergies" (click)="viewDrugAllergies(lek)">Alergije</button>
         <button class="btn-edit" (click)="startEditLek(lek)">Izmeni</button>
         <button class="btn-delete" (click)="deleteLek(lek)">Obriši</button>
       </td>
@@ -67,3 +83,24 @@
   </tbody>
 </table>
 <div *ngIf="lekovi.length === 0" class="empty">Nema lekova za prikaz.</div>
+
+<!-- MODAL ZA PRIKAZ ALERGIJA LEKA -->
+<div class="modal-overlay" *ngIf="showAllergiesModal" (click)="closeAllergiesModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Alergije leka: {{ selectedDrugForAllergies?.name }}</h3>
+      <button class="close-btn" (click)="closeAllergiesModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="isLoadingDrugAllergies" class="loading">Učitavanje...</div>
+      <div *ngIf="!isLoadingDrugAllergies && viewDrugAllergiesList.length === 0" class="empty-modal">
+        Ovaj lek nema dodeljenih alergija.
+      </div>
+      <div *ngIf="!isLoadingDrugAllergies && viewDrugAllergiesList.length > 0" class="allergies-list">
+        <div *ngFor="let da of viewDrugAllergiesList" class="allergy-item">
+          <span class="allergy-name">{{ da.allergy?.name }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
