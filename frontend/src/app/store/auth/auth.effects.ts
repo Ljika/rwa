@@ -188,7 +188,7 @@ export class AuthEffects {
             localStorage.removeItem('token');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('currentUser');
-            this.router.navigate(['/login']);
+            this.router.navigate(['/']);
             
             return of(AuthActions.refreshTokenFailure({ error: error.message }));
           })
@@ -197,7 +197,7 @@ export class AuthEffects {
     )
   );
 
-  // Logout Effect - čisti localStorage
+  // Logout Effect - čisti localStorage i vrati na home
   logout$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.logout),
@@ -205,7 +205,7 @@ export class AuthEffects {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('currentUser');
-        this.router.navigate(['/login']);
+        this.router.navigate(['/']); // Redirect na landing page
       })
     ),
     { dispatch: false }

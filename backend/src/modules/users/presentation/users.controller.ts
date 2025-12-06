@@ -9,13 +9,20 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { UserRole } from '../../../common/enums/user-role.enum';
 
 @ApiTags('Users')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('all-doctors')
+  @ApiOperation({ summary: 'Lista svih doktora - PUBLIC endpoint za landing page' })
+  @ApiResponse({ status: 200, description: 'Lista svih doktora' })
+  findAllDoctors() {
+    return this.usersService.findAllByRole(UserRole.Doctor);
+  }
+
   @Get()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Admin)
   @ApiOperation({ summary: 'Lista svih korisnika (Admin only)' })
   @ApiResponse({ status: 200, description: 'Lista korisnika' })
@@ -25,6 +32,8 @@ export class UsersController {
   }
 
   @Get('me')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({ summary: 'Profil trenutno ulogovanog korisnika' })
   @ApiResponse({ status: 200, description: 'Profil korisnika' })
   getProfile(@CurrentUser() user: any) {
@@ -32,6 +41,8 @@ export class UsersController {
   }
 
   @Get('all-patients')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Admin, UserRole.Doctor)
   @ApiOperation({ summary: 'Lista svih pacijenata u sistemu (Admin i Doctor)' })
   @ApiResponse({ status: 200, description: 'Lista svih pacijenata' })
@@ -41,6 +52,8 @@ export class UsersController {
   }
 
   @Get(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({ summary: 'Detalji korisnika po ID-u' })
   @ApiResponse({ status: 200, description: 'Detalji korisnika' })
   @ApiResponse({ status: 404, description: 'Korisnik nije pronađen' })
@@ -49,6 +62,8 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({ summary: 'Update korisnika (Admin ili sam korisnik)' })
   @ApiResponse({ status: 200, description: 'Korisnik uspešno ažuriran' })
   @ApiResponse({ status: 403, description: 'Nemate dozvolu' })
@@ -62,6 +77,8 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Admin)
   @ApiOperation({ summary: 'Soft delete korisnika (Admin only)' })
   @ApiResponse({ status: 200, description: 'Korisnik deaktiviran' })

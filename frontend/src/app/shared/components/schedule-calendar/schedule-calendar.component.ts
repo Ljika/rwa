@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -8,67 +8,128 @@ import { CommonModule } from '@angular/common';
   templateUrl: './schedule-calendar.component.html',
   styleUrl: './schedule-calendar.component.scss'
 })
-export class ScheduleCalendarComponent {
+export class ScheduleCalendarComponent implements OnInit, OnChanges {
   @Input() schedules: any[] = [];
-  @Input() loading: boolean = false;
   @Input() selectedMonth: string = '';
-  
   @Output() monthChange = new EventEmitter<string>();
 
-  onMonthChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    this.monthChange.emit(select.value);
-  }
+  currentMonth: number = new Date().getMonth();
+  currentYear: number = new Date().getFullYear();
   
-  getShiftLabel(shift: string): string {
+  daysInMonth: any[] = [];
+  
+  weekDays = ['Pon', 'Uto', 'Sre', 'Čet', 'Pet', 'Sub', 'Ned'];
+  
+  monthNames = ['Januar', 'Februar', 'Mart', 'April', 'Maj', 'Jun', 
+                'Jul', 'Avgust', 'Septembar', 'Oktobar', 'Novembar', 'Decembar'];
+
+  ngOnInit(): void {
+    console.log('Calendar ngOnInit - selectedMonth:', this.selectedMonth, 'schedules:', this.schedules);
+    // Set current month from selectedMonth input if provided
+    if (this.selectedMonth) {
+      const [year, month] = this.selectedMonth.split('-');
+      this.currentYear = parseInt(year);
+      this.currentMonth = parseInt(month) - 1;
+    }
+    this.generateCalendar();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log('Calendar ngOnChanges:', changes);
+    if (changes['schedules'] || changes['selectedMonth']) {
+      if (this.selectedMonth) {
+        const [year, month] = this.selectedMonth.split('-');
+        this.currentYear = parseInt(year);
+        this.currentMonth = parseInt(month) - 1;
+      }
+      this.generateCalendar();
+    }
+  }
+
+  generateCalendar(): void {
+    console.log('Generating calendar for:', this.currentYear, this.currentMonth, 'schedules count:', this.schedules.length);
+    const firstDay = new Date(this.currentYear, this.currentMonth, 1);
+    const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+    
+    let startDay = firstDay.getDay();
+    startDay = startDay === 0 ? 6 : startDay - 1;
+    
+    const daysInCurrentMonth = lastDay.getDate();
+    
+    this.daysInMonth = [];
+    
+    for (let i = 0; i < startDay; i++) {
+      this.daysInMonth.push({ day: null, shift: null });
+    }
+    
+    for (let day = 1; day <= daysInCurrentMonth; day++) {
+      const dateStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const schedule = this.schedules.find(s => s.date === dateStr);
+      
+      if (schedule) {
+        console.log('Found schedule for', dateStr, ':', schedule);
+      }
+      
+      this.daysInMonth.push({
+        day: day,
+        shift: schedule ? schedule.shift : null,
+        date: dateStr
+      });
+    }
+    console.log('Calendar generated, daysInMonth:', this.daysInMonth.length, 'days with shifts:', this.daysInMonth.filter(d => d.shift).length);
+  }
+
+  getShiftClass(shift: string | null): string {
+    if (!shift) return '';
+    
     switch(shift) {
-      case 'Morning': return 'Jutarnja (08:00-16:00)';
-      case 'Afternoon': return 'Popodnevna (16:00-00:00)';
-      case 'Night': return 'Noćna (00:00-08:00)';
-      default: return shift;
+      case 'Morning':
+        return 'shift-morning';
+      case 'Afternoon':
+        return 'shift-afternoon';
+      case 'Night':
+        return 'shift-night';
+      default:
+        return '';
     }
   }
-  
-  getCalendarDays(): any[] {
-    if (!this.selectedMonth) return [];
+
+  getShiftLabel(shift: string | null): string {
+    if (!shift) return '';
     
-    const [year, month] = this.selectedMonth.split('-').map(Number);
-    const firstDay = new Date(year, month - 1, 1);
-    const lastDay = new Date(year, month, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-    
-    const calendarDays: any[] = [];
-    
-    // Adjust so Monday is first day (0 = Monday, 6 = Sunday)
-    const adjustedStart = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1;
-    for (let i = 0; i < adjustedStart; i++) {
-      calendarDays.push({ day: null, schedule: null });
-    }
-    
-    // Add all days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const schedule = this.schedules.find(s => s.date.startsWith(dateStr));
-      calendarDays.push({ day, schedule });
-    }
-    
-    return calendarDays;
-  }
-  
-  getMonthYearLabel(): string {
-    if (!this.selectedMonth) return '';
-    const [year, month] = this.selectedMonth.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('sr-RS', { month: 'long', year: 'numeric' });
-  }
-  
-  getShiftClass(shift: string): string {
     switch(shift) {
-      case 'Morning': return 'shift-morning';
-      case 'Afternoon': return 'shift-afternoon';
-      case 'Night': return 'shift-night';
-      default: return '';
+      case 'Morning':
+        return 'J';
+      case 'Afternoon':
+        return 'P';
+      case 'Night':
+        return 'N';
+      default:
+        return '';
     }
+  }
+
+  previousMonth(): void {
+    this.currentMonth--;
+    if (this.currentMonth < 0) {
+      this.currentMonth = 11;
+      this.currentYear--;
+    }
+    const newMonth = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}`;
+    console.log('Previous month clicked, emitting:', newMonth);
+    this.monthChange.emit(newMonth);
+    this.generateCalendar();
+  }
+
+  nextMonth(): void {
+    this.currentMonth++;
+    if (this.currentMonth > 11) {
+      this.currentMonth = 0;
+      this.currentYear++;
+    }
+    const newMonth = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}`;
+    console.log('Next month clicked, emitting:', newMonth);
+    this.monthChange.emit(newMonth);
+    this.generateCalendar();
   }
 }

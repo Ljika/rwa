@@ -1,58 +1,46 @@
-<div class="schedule-calendar">
-  <div class="month-selector">
-    <label>Izaberi mesec:</label>
-    <input type="month" [value]="selectedMonth" (change)="onMonthChange($event)" class="form-control">
-  </div>
-  
-  <div *ngIf="loading" class="loading">
-    <p>Učitavanje smena...</p>
+﻿<div class="calendar-container">
+  <!-- Legend -->
+  <div class="calendar-legend">
+    <div class="legend-item">
+      <span class="legend-color morning"></span>
+      <span class="legend-text">Jutarnja smena (07:00 - 15:00)</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-color afternoon"></span>
+      <span class="legend-text">Popodnevna smena (15:00 - 23:00)</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-color night"></span>
+      <span class="legend-text">Noćna smena (23:00 - 07:00)</span>
+    </div>
   </div>
 
-  <div *ngIf="!loading" class="calendar-container">
-    <h6 class="calendar-month">{{ getMonthYearLabel() }}</h6>
-    
-    <!-- Legend -->
-    <div class="calendar-legend">
-      <div class="legend-item">
-        <span class="legend-color shift-morning"></span>
-        <span>Jutarnja (08:00-16:00)</span>
-      </div>
-      <div class="legend-item">
-        <span class="legend-color shift-afternoon"></span>
-        <span>Popodnevna (16:00-00:00)</span>
-      </div>
-      <div class="legend-item">
-        <span class="legend-color shift-night"></span>
-        <span>Noćna (00:00-08:00)</span>
-      </div>
+  <!-- Month Navigation -->
+  <div class="calendar-header">
+    <button class="btn-nav" (click)="previousMonth()">
+      <i class="material-icons">chevron_left</i>
+    </button>
+    <h3>{{ monthNames[currentMonth] }} {{ currentYear }}</h3>
+    <button class="btn-nav" (click)="nextMonth()">
+      <i class="material-icons">chevron_right</i>
+    </button>
+  </div>
+  
+  <!-- Calendar Grid -->
+  <div class="calendar-grid">
+    <div class="calendar-weekdays">
+      <div class="weekday" *ngFor="let day of weekDays">{{ day }}</div>
     </div>
     
-    <!-- Calendar -->
-    <div class="calendar">
-      <div class="calendar-header">
-        <div class="calendar-day-name">Pon</div>
-        <div class="calendar-day-name">Uto</div>
-        <div class="calendar-day-name">Sre</div>
-        <div class="calendar-day-name">Čet</div>
-        <div class="calendar-day-name">Pet</div>
-        <div class="calendar-day-name">Sub</div>
-        <div class="calendar-day-name">Ned</div>
-      </div>
-      <div class="calendar-grid">
-        <div *ngFor="let dayInfo of getCalendarDays()" 
-             class="calendar-cell"
-             [class.has-schedule]="dayInfo.schedule"
-             [ngClass]="dayInfo.schedule ? getShiftClass(dayInfo.schedule.shift) : ''">
-          <span class="day-number" *ngIf="dayInfo.day">{{ dayInfo.day }}</span>
-        </div>
+    <div class="calendar-days">
+      <div 
+        *ngFor="let dayData of daysInMonth" 
+        class="calendar-day" 
+        [class.empty]="!dayData.day"
+        [class.has-shift]="dayData.shift"
+        [ngClass]="getShiftClass(dayData.shift)">
+        <span class="day-number" *ngIf="dayData.day">{{ dayData.day }}</span>
       </div>
     </div>
-    
-    <p class="schedules-count" *ngIf="schedules.length > 0">
-      Ukupno smena: {{ schedules.length }}
-    </p>
-    <p class="empty-state" *ngIf="schedules.length === 0">
-      Nema smena za izabrani mesec.
-    </p>
   </div>
 </div>

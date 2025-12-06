@@ -1,39 +1,51 @@
-<div class="lekovi-header">
-  <h3>Lekovi</h3>
-  <button class="btn-add" (click)="showLekForm = true; editLek = null">Dodaj lek</button>
+<div class="drugs-header">
+  <h3 class="page-title">Lekovi</h3>
+  <button class="btn btn-success btn-add" (click)="showLekForm = true; editLek = null">
+    <i class="material-icons">add</i>
+    Dodaj Lek
+  </button>
 </div>
-<form *ngIf="showLekForm" class="lek-form" (ngSubmit)="submitLekForm()" [formGroup]="lekForm">
-  <h4>{{ editLek ? 'Izmeni lek' : 'Dodaj novi lek' }}</h4>
+<div *ngIf="showLekForm" class="card drug-form-card">
+  <div class="card-header card-header-success">
+    <h4 class="card-title">{{ editLek ? 'Izmeni Lek' : 'Dodaj Novi Lek' }}</h4>
+    <p class="card-category">Popunite osnovne informacije o leku</p>
+  </div>
+  <div class="card-body">
+    <form class="lek-form" (ngSubmit)="submitLekForm()" [formGroup]="lekForm">
   
-  <div class="form-group">
-    <label>Naziv leka *</label>
-    <input type="text" formControlName="name" placeholder="Naziv leka" required />
+  <div class="form-row">
+    <div class="form-group">
+      <label>Naziv leka *</label>
+      <input type="text" formControlName="name" placeholder="Naziv leka" required />
+    </div>
+
+    <div class="form-group">
+      <label>Tip leka *</label>
+      <select formControlName="type" required>
+        <option value="" disabled selected>Izaberi tip leka</option>
+        <option *ngFor="let t of drugTypes" [value]="t">{{ t }}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Doziranje *</label>
+      <input type="text" formControlName="dosage" placeholder="Doziranje" required />
+    </div>
   </div>
 
-  <div class="form-group">
-    <label>Tip leka *</label>
-    <select formControlName="type" required>
-      <option value="" disabled selected>Izaberi tip leka</option>
-      <option *ngFor="let t of drugTypes" [value]="t">{{ t }}</option>
-    </select>
-  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Proizvođač *</label>
+      <select formControlName="manufacturerId" required>
+        <option value="" disabled selected>Izaberi proizvođača</option>
+        <option *ngFor="let m of manufacturers" [value]="m.id">{{ m.name }}</option>
+      </select>
+    </div>
 
-  <div class="form-group">
-    <label>Doziranje *</label>
-    <input type="text" formControlName="dosage" placeholder="Doziranje" required />
-  </div>
-
-  <div class="form-group">
-    <label>Opis</label>
-    <input type="text" formControlName="description" placeholder="Opis (opciono)" />
-  </div>
-
-  <div class="form-group">
-    <label>Proizvođač *</label>
-    <select formControlName="manufacturerId" required>
-      <option value="" disabled selected>Izaberi proizvođača</option>
-      <option *ngFor="let m of manufacturers" [value]="m.id">{{ m.name }}</option>
-    </select>
+    <div class="form-group">
+      <label>Opis</label>
+      <input type="text" formControlName="description" placeholder="Opis (opciono)" />
+    </div>
   </div>
 
   <!-- SEKCIJA ZA ALERGIJE -->
@@ -51,38 +63,68 @@
     </div>
   </div>
 
-  <div class="form-actions">
-    <button type="submit" class="btn-submit">{{ editLek ? 'Sačuvaj izmene' : 'Dodaj' }}</button>
-    <button type="button" class="btn-cancel" (click)="cancelLekForm()">Otkaži</button>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success">
+          <i class="material-icons">save</i>
+          {{ editLek ? 'Sačuvaj Izmene' : 'Dodaj Lek' }}
+        </button>
+        <button type="button" class="btn btn-default" (click)="cancelLekForm()">
+          <i class="material-icons">close</i>
+          Otkaži
+        </button>
+      </div>
+    </form>
   </div>
-</form>
-<table class="lekovi-table">
-  <thead>
-    <tr>
-      <th>Naziv</th>
-      <th>Tip</th>
-      <th>Doziranje</th>
-      <th>Opis</th>
-      <th>Proizvođač</th>
-      <th>Akcije</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let lek of lekovi">
-      <td>{{ lek.name }}</td>
-      <td>{{ lek.type }}</td>
-      <td>{{ lek.dosage }}</td>
-      <td>{{ lek.description }}</td>
-      <td>{{ lek.manufacturer?.name }}</td>
-      <td>
-        <button class="btn-allergies" (click)="viewDrugAllergies(lek)">Alergije</button>
-        <button class="btn-edit" (click)="startEditLek(lek)">Izmeni</button>
-        <button class="btn-delete" (click)="deleteLek(lek)">Obriši</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<div *ngIf="lekovi.length === 0" class="empty">Nema lekova za prikaz.</div>
+</div>
+<div class="card">
+  <div class="card-header card-header-primary">
+    <h4 class="card-title">Svi Lekovi</h4>
+    <p class="card-category">Kompletna lista lekova u sistemu</p>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead class="text-primary">
+          <tr>
+            <th>Naziv</th>
+            <th>Tip</th>
+            <th>Doziranje</th>
+            <th>Opis</th>
+            <th>Proizvođač</th>
+            <th class="text-right">Akcije</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let lek of lekovi">
+            <td><strong>{{ lek.name }}</strong></td>
+            <td><span class="badge badge-pill badge-info">{{ lek.type }}</span></td>
+            <td>{{ lek.dosage }}</td>
+            <td>{{ lek.description || '-' }}</td>
+            <td>{{ lek.manufacturer?.name }}</td>
+            <td class="td-actions text-right">
+              <button type="button" class="btn btn-success btn-sm" (click)="viewDrugAllergies(lek)">
+                <i class="material-icons">warning</i>
+                Alergije
+              </button>
+              <button type="button" class="btn btn-info btn-sm" (click)="startEditLek(lek)">
+                <i class="material-icons">edit</i>
+                Izmeni
+              </button>
+              <button type="button" class="btn btn-danger btn-sm" (click)="deleteLek(lek)">
+                <i class="material-icons">close</i>
+                Obriši
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="lekovi.length === 0" class="empty-state">
+      <i class="material-icons">medication</i>
+      <p>Nema lekova za prikaz.</p>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL ZA PRIKAZ ALERGIJA LEKA -->
 <div class="modal-overlay" *ngIf="showAllergiesModal" (click)="closeAllergiesModal()">

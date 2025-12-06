@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AddDrugToTherapyDto {
   @ApiProperty({ example: 'uuid-leka', description: 'ID leka koji se dodaje' })
-  @IsUUID('4', { message: 'ID leka mora biti validan UUID' })
+  @IsUUID('all', { message: 'ID leka mora biti validan UUID' })
   @IsNotEmpty({ message: 'ID leka je obavezan' })
   drugId: string;
 

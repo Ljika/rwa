@@ -1,1 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
+
+// Import Material Dashboard Angular styles
+@import 'assets/scss/material-dashboard.scss';
+
+/* Global font sizing adjustments */
+body {
+	font-size: 15px;
+	line-height: 1.55;
+	font-weight: 400;
+	color: #263238;
+}
+
+h3, h4, h5 { font-weight: 600; }
+h3 { font-size: 1.6rem; }
+h4 { font-size: 1.3rem; }
+h5 { font-size: 1.15rem; }
+
+@media (max-width: 991.98px) {
+	body { font-size: 14px; }
+	h3 { font-size: 1.5rem; }
+}

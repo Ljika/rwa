@@ -52,6 +52,13 @@ export class PatientAllergiesService {
     return this.patientAllergyRepository.save(patientAllergy);
   }
 
+  async findAll(): Promise<PatientAllergy[]> {
+    return this.patientAllergyRepository.find({
+      relations: ['allergy', 'patient'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async findByPatient(patientId: string): Promise<PatientAllergy[]> {
     return this.patientAllergyRepository.find({
       where: { patientId },

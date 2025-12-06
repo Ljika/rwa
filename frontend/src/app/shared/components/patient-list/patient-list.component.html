@@ -8,35 +8,39 @@
   <p>Nema registrovanih pacijenata.</p>
 </div>
 
-<!-- Patients Table -->
-<div *ngIf="!loading && patients.length > 0" class="table-container">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>Ime i Prezime</th>
-        <th>Email</th>
-        <th>Telefon</th>
-        <th>Datum rođenja</th>
-        <th>Pol</th>
-        <th>Akcije</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let patient of patients">
-        <td>{{ patient.firstName }} {{ patient.lastName }}</td>
-        <td>{{ patient.email }}</td>
-        <td>{{ patient.phoneNumber || 'Nije uneto' }}</td>
-        <td>{{ patient.dateOfBirth || 'Nije uneto' }}</td>
-        <td>{{ patient.gender || 'Nije uneto' }}</td>
-        <td class="actions">
-          <button class="btn-edit" (click)="onEdit(patient)" title="Izmeni pacijenta">
-            Izmeni
-          </button>
-          <button class="btn-delete" (click)="onDelete(patient.id)" title="Obriši pacijenta">
-            Obriši
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<!-- Patients Cards Grid -->
+<div *ngIf="!loading && patients.length > 0" class="patients-cards-grid">
+  <div *ngFor="let patient of patients" class="card patient-card-item">
+    <div class="card-header card-header-info">
+      <h4 class="card-title">
+        <i class="material-icons">person</i>
+        {{ patient.firstName }} {{ patient.lastName }}
+      </h4>
+      <p class="card-category" *ngIf="patient.gender || patient.dateOfBirth">
+        <span *ngIf="patient.gender">{{ patient.gender === 'Male' ? 'Muški' : patient.gender === 'Female' ? 'Ženski' : patient.gender }}</span>
+        <span *ngIf="patient.dateOfBirth"> • Rođen/a: {{ patient.dateOfBirth }}</span>
+      </p>
+    </div>
+    <div class="card-body">
+      <div class="info-row">
+        <span class="label">Email:</span>
+        <span class="value">{{ patient.email }}</span>
+      </div>
+      <div class="info-row" *ngIf="patient.phoneNumber">
+        <span class="label">Telefon:</span>
+        <span class="value">{{ patient.phoneNumber }}</span>
+      </div>
+      
+      <div class="patient-actions">
+        <button class="btn-action btn-edit-card" (click)="onEdit(patient)">
+          <i class="material-icons">edit</i>
+          Izmeni
+        </button>
+        <button class="btn-action btn-delete-card" (click)="onDelete(patient.id)">
+          <i class="material-icons">delete</i>
+          Obriši
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

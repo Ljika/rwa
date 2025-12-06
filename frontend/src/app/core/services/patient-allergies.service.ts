@@ -12,6 +12,14 @@ export class PatientAllergiesService {
 
   constructor(private http: HttpClient) {}
 
+  getAll(): Observable<PatientAllergy[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.get<PatientAllergy[]>(this.apiUrl, { headers });
+  }
+
   getByPatient(patientId: string): Observable<PatientAllergy[]> {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({

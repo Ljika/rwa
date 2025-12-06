@@ -24,7 +24,7 @@ export class UsersService {
   async findAllByRole(role: UserRole): Promise<User[]> {
     return this.userRepository.find({
       where: { isActive: true, role },
-      select: ['id', 'email', 'firstName', 'lastName', 'role', 'phoneNumber', 'dateOfBirth', 'gender', 'isActive', 'createdAt'],
+      select: ['id', 'email', 'firstName', 'lastName', 'role', 'phoneNumber', 'dateOfBirth', 'gender', 'specialization', 'isActive', 'createdAt'],
       order: { lastName: 'ASC', firstName: 'ASC' },
     });
   }

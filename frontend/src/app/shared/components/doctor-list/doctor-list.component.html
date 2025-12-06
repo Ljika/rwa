@@ -8,120 +8,60 @@
   <p>Nema registrovanih doktora.</p>
 </div>
 
-<!-- Doctors Table -->
-<div *ngIf="!loading && doctors.length > 0" class="table-container">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>Ime i Prezime</th>
-        <th>Email</th>
-        <th>Telefon</th>
-        <th>Specijalizacija</th>
-        <th>Akcije</th>
-      </tr>
-    </thead>
-    <tbody>
-      <ng-container *ngFor="let doctor of doctors">
-        <!-- Main Row -->
-        <tr>
-          <td>{{ doctor.firstName }} {{ doctor.lastName }}</td>
-          <td>{{ doctor.email }}</td>
-          <td>{{ doctor.phoneNumber || 'Nije uneto' }}</td>
-          <td>{{ doctor.specialization || 'Nije uneto' }}</td>
-          <td class="actions">
-            <button class="btn-details" (click)="onToggleDetails(doctor.id)" 
-                    [title]="expandedDoctorId === doctor.id ? 'Sakrij detalje' : 'Prikaži detalje'">
-              {{ expandedDoctorId === doctor.id ? 'Sakrij' : 'Prikaži Detalje' }}
-            </button>
-            <button class="btn-edit" (click)="onEdit(doctor)" title="Izmeni doktora">
-              Izmeni
-            </button>
-            <button class="btn-delete" (click)="onDelete(doctor.id)" title="Obriši doktora">
-              Obriši
-            </button>
-          </td>
-        </tr>
+<!-- Doctors Cards Grid -->
+<div *ngIf="!loading && doctors.length > 0" class="doctors-cards-grid">
+  <div *ngFor="let doctor of doctors" class="card doctor-card-item">
+    <div class="card-header card-header-info">
+      <h4 class="card-title">
+        <i class="material-icons">medical_services</i>
+        {{ doctor.firstName }} {{ doctor.lastName }}
+      </h4>
+      <p class="card-category" *ngIf="doctor.specialization">
+        {{ doctor.specialization }}
+      </p>
+    </div>
+    <div class="card-body">
+      <div class="info-row">
+        <span class="label">Email:</span>
+        <span class="value">{{ doctor.email }}</span>
+      </div>
+      <div class="info-row" *ngIf="doctor.phoneNumber">
+        <span class="label">Telefon:</span>
+        <span class="value">{{ doctor.phoneNumber }}</span>
+      </div>
+      
+      <div class="doctor-actions">
+        <button class="btn-action btn-details-card" (click)="onToggleDetails(doctor.id)">
+          <i class="material-icons">{{ expandedDoctorId === doctor.id ? 'expand_less' : 'expand_more' }}</i>
+          {{ expandedDoctorId === doctor.id ? 'Sakrij' : 'Detalji' }}
+        </button>
+        <button class="btn-action btn-edit-card" (click)="onEdit(doctor)">
+          <i class="material-icons">edit</i>
+          Izmeni
+        </button>
+        <button class="btn-action btn-delete-card" (click)="onDelete(doctor.id)">
+          <i class="material-icons">delete</i>
+          Obriši
+        </button>
+      </div>
 
-        <!-- Expanded Details Row -->
-        <tr *ngIf="expandedDoctorId === doctor.id" class="details-row">
-          <td colspan="5">
-            <div class="doctor-details-panel">
-              <h4>Akcije za doktora {{ doctor.firstName }} {{ doctor.lastName }}</h4>
-              
-              <div class="details-actions">
-                <button class="btn-action" (click)="onViewPatients(doctor.id)">
-                  Pogledaj Pacijente
-                </button>
-                <button class="btn-action" (click)="onAddSchedule(doctor.id)">
-                  Dodaj Smene
-                </button>
-                <button class="btn-action" (click)="onViewSchedule(doctor.id)">
-                  Prikaži Smene
-                </button>
-              </div>
-
-              <!-- Doctor Patients Section -->
-              <div *ngIf="selectedDoctorAction === 'patients'" class="doctor-patients-section">
-                <h5>Pacijenti doktora {{ doctor.firstName }} {{ doctor.lastName }}</h5>
-                
-                <div *ngIf="loadingDoctorPatients" class="loading">
-                  <p>Učitavanje pacijenata...</p>
-                </div>
-
-                <div *ngIf="!loadingDoctorPatients && doctorPatients.length === 0" class="empty-state">
-                  <p>Ovaj doktor nema dodeljene pacijente.</p>
-                </div>
-
-                <div *ngIf="!loadingDoctorPatients && doctorPatients.length > 0" class="patients-list">
-                  <table class="mini-table">
-                    <thead>
-                      <tr>
-                        <th>Ime i Prezime</th>
-                        <th>Email</th>
-                        <th>Telefon</th>
-                        <th>Pol</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let patient of doctorPatients">
-                        <td>{{ patient.firstName }} {{ patient.lastName }}</td>
-                        <td>{{ patient.email }}</td>
-                        <td>{{ patient.phoneNumber || 'Nije uneto' }}</td>
-                        <td>{{ patient.gender || 'Nije uneto' }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <!-- Add Schedule Section -->
-              <div *ngIf="selectedDoctorAction === 'add-schedule' && selectedDoctorId === doctor.id" class="add-schedule-section">
-                <app-add-schedule-form
-                  [doctorId]="selectedDoctorId"
-                  [doctorName]="getSelectedDoctorName()"
-                  [successMessage]="scheduleSuccessMessage"
-                  [errorMessage]="scheduleErrorMessage"
-                  (submitSchedule)="onSubmitSchedule($event)"
-                  (cancel)="onCloseScheduleForm()">
-                </app-add-schedule-form>
-              </div>
-
-              <!-- View Schedules Section -->
-              <div *ngIf="selectedDoctorAction === 'schedule' && selectedDoctorId === doctor.id" class="doctor-schedules-section">
-                <h5>Smene doktora {{ doctor.firstName }} {{ doctor.lastName }}</h5>
-                
-                <app-schedule-calendar
-                  [schedules]="doctorSchedules"
-                  [loading]="loadingDoctorSchedules"
-                  [selectedMonth]="selectedMonth"
-                  (monthChange)="onMonthChange($event)">
-                </app-schedule-calendar>
-              </div>
-
-            </div>
-          </td>
-        </tr>
-      </ng-container>
-    </tbody>
-  </table>
+      <!-- Expanded Details Panel -->
+      <div *ngIf="expandedDoctorId === doctor.id" class="doctor-details-panel">
+        <div class="details-actions">
+          <button class="btn-action-detail" (click)="onViewPatients(doctor.id)">
+            <i class="material-icons">people</i>
+            Pacijenti
+          </button>
+          <button class="btn-action-detail" (click)="onAddSchedule(doctor.id)">
+            <i class="material-icons">add_circle</i>
+            Dodaj Smene
+          </button>
+          <button class="btn-action-detail" (click)="onViewSchedule(doctor.id)">
+            <i class="material-icons">calendar_today</i>
+            Prikaži Smene
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

@@ -1,9 +1,34 @@
 <div class="book-appointment-container">
-  <h2>Zakaži Termin</h2>
+  <h2>Zakaži pregled</h2>
 
   <!-- Instructions -->
   <div class="booking-instructions">
     Da biste zakazali termin prvo izaberite doktora, vrstu pregleda, datum i vreme.
+  </div>
+
+  
+
+  <!-- Steps Indicator -->
+  <div class="steps-indicator">
+    <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+      <div class="step-circle">1</div>
+      <div class="step-label">Doktor</div>
+    </div>
+    <div class="step-line" [class.completed]="currentStep > 1"></div>
+    <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+      <div class="step-circle">2</div>
+      <div class="step-label">Pregled</div>
+    </div>
+    <div class="step-line" [class.completed]="currentStep > 2"></div>
+    <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+      <div class="step-circle">3</div>
+      <div class="step-label">Datum</div>
+    </div>
+    <div class="step-line" [class.completed]="currentStep > 3"></div>
+    <div class="step" [class.active]="currentStep === 4" [class.completed]="currentStep > 4">
+      <div class="step-circle">4</div>
+      <div class="step-label">Termin</div>
+    </div>
   </div>
 
   <!-- Messages -->
@@ -15,170 +40,228 @@
   </div>
 
   <!-- Step 1: Select Doctor -->
-  <div class="step-content" *ngIf="currentStep === 1">
-    <h3>Izaberite Doktora</h3>
-    
-    <div class="loading" *ngIf="loadingDoctors">
-      Učitavanje doktora...
+  <div class="card step-card" *ngIf="currentStep === 1">
+    <div class="card-header card-header-info">
+      <h4 class="card-title">Izaberite Doktora</h4>
+      <p class="card-category">Vaši dodeljeni lekari</p>
     </div>
+    <div class="card-body">
+      <div class="loading" *ngIf="loadingDoctors">
+        Učitavanje doktora...
+      </div>
 
-    <div class="no-data" *ngIf="!loadingDoctors && myDoctors.length === 0">
-      Nemate dodeljenog doktora. Kontaktirajte administratora.
-    </div>
+      <div class="no-data" *ngIf="!loadingDoctors && myDoctors.length === 0">
+        Nemate dodeljenog doktora. Kontaktirajte administratora.
+      </div>
 
-    <div class="doctors-list" *ngIf="!loadingDoctors && myDoctors.length > 0">
-      <div 
-        class="doctor-card" 
-        *ngFor="let doctor of myDoctors"
-        (click)="selectDoctor(doctor)"
-      >
-        <div class="doctor-info">
-          <div class="doctor-name">Dr. {{ doctor.firstName }} {{ doctor.lastName }}</div>
-          <div class="doctor-specialization">{{ doctor.specialization }}</div>
-          <div class="doctor-contact" *ngIf="doctor.phoneNumber">
-            Telefon: {{ doctor.phoneNumber }}
+      <div class="doctors-list" *ngIf="!loadingDoctors && myDoctors.length > 0">
+        <div 
+          class="doctor-card" 
+          *ngFor="let doctor of myDoctors"
+          (click)="selectDoctor(doctor)"
+        >
+          <div class="doctor-info">
+            <div class="doctor-name">Dr. {{ doctor.firstName }} {{ doctor.lastName }}</div>
+            <div class="doctor-specialization">{{ doctor.specialization }}</div>
+            <div class="doctor-contact" *ngIf="doctor.phoneNumber">
+              Telefon: {{ doctor.phoneNumber }}
+            </div>
           </div>
+          <div class="select-arrow">→</div>
         </div>
-        <div class="select-arrow">→</div>
       </div>
     </div>
   </div>
 
   <!-- Step 2: Select Appointment Type -->
-  <div class="step-content" *ngIf="currentStep === 2">
-    <h3>Izaberite Vrstu Pregleda</h3>
-    
-    <div class="selected-info">
-      <strong>Doktor:</strong> Dr. {{ selectedDoctor?.firstName }} {{ selectedDoctor?.lastName }}
-      <br>
-      <strong>Specijalnost:</strong> {{ selectedDoctor?.specialization }}
+  <div class="card step-card" *ngIf="currentStep === 2">
+    <div class="card-header card-header-info">
+      <h4 class="card-title">Izaberite Vrstu Pregleda</h4>
+      <p class="card-category">Preporučene vrste pregleda</p>
     </div>
-
-    <div class="loading" *ngIf="loadingAppointmentTypes">
-      Učitavanje vrsta pregleda...
-    </div>
-
-    <div class="no-data" *ngIf="!loadingAppointmentTypes && availableAppointmentTypes.length === 0">
-      Nema dostupnih vrsta pregleda za ovu specijalnost.
-    </div>
-
-    <div class="appointment-types-list" *ngIf="!loadingAppointmentTypes && availableAppointmentTypes.length > 0">
-      <div 
-        class="appointment-type-card" 
-        *ngFor="let type of availableAppointmentTypes"
-        (click)="selectAppointmentType(type)"
-      >
-        <div class="type-info">
-          <div class="type-name">{{ type.name }}</div>
-          <div class="type-description" *ngIf="type.description">{{ type.description }}</div>
-          <div class="type-details">
-            <span class="type-price">{{ type.price }} RSD</span>
-            <span class="type-duration">{{ type.durationMinutes }} minuta</span>
+    <div class="card-body">
+      <div class="selected-summary" *ngIf="selectedDoctor">
+        <div class="doctor-card readonly">
+          <div class="doctor-info">
+            <div class="doctor-name">Dr. {{ selectedDoctor.firstName }} {{ selectedDoctor.lastName }}</div>
+            <div class="doctor-specialization">{{ selectedDoctor.specialization }}</div>
+            <div class="doctor-contact" *ngIf="selectedDoctor.phoneNumber">
+              Telefon: {{ selectedDoctor.phoneNumber }}
+            </div>
           </div>
         </div>
-        <div class="select-arrow">→</div>
       </div>
-    </div>
 
-    <div class="actions">
-      <button class="btn btn-secondary" (click)="goBack()">Nazad</button>
+      <div class="loading" *ngIf="loadingAppointmentTypes">
+        Učitavanje vrsta pregleda...
+      </div>
+
+      <div class="no-data" *ngIf="!loadingAppointmentTypes && availableAppointmentTypes.length === 0">
+        Nema dostupnih vrsta pregleda za ovu specijalnost.
+      </div>
+
+      <div class="appointment-types-list" *ngIf="!loadingAppointmentTypes && availableAppointmentTypes.length > 0">
+        <div 
+          class="appointment-type-card" 
+          *ngFor="let type of availableAppointmentTypes"
+          (click)="selectAppointmentType(type)"
+        >
+          <div class="type-info">
+            <div class="type-name">{{ type.name }}</div>
+            <div class="type-description" *ngIf="type.description">{{ type.description }}</div>
+            <div class="type-details">
+              <span class="type-price">{{ type.price }} RSD</span>
+              <span class="type-duration">{{ type.durationMinutes }} minuta</span>
+            </div>
+          </div>
+          <div class="select-arrow">→</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" (click)="goBack()">Nazad</button>
+      </div>
     </div>
   </div>
 
   <!-- Step 3: Select Date -->
-  <div class="step-content" *ngIf="currentStep === 3">
-    <h3>Izaberite Datum</h3>
-    
-    <div class="selected-info">
-      <strong>Doktor:</strong> Dr. {{ selectedDoctor?.firstName }} {{ selectedDoctor?.lastName }}
-      <br>
-      <strong>Vrsta pregleda:</strong> {{ selectedAppointmentType?.name }} ({{ selectedAppointmentType?.price }} RSD, {{ selectedAppointmentType?.durationMinutes }} min)
+  <div class="card step-card" *ngIf="currentStep === 3">
+    <div class="card-header card-header-info">
+      <h4 class="card-title">Izaberite Datum</h4>
+      <p class="card-category">Izbor datuma</p>
     </div>
+    <div class="card-body">
+      <div class="selected-summary">
+        <div class="doctor-card readonly" *ngIf="selectedDoctor">
+          <div class="doctor-info">
+            <div class="doctor-name">Dr. {{ selectedDoctor.firstName }} {{ selectedDoctor.lastName }}</div>
+            <div class="doctor-specialization">{{ selectedDoctor.specialization }}</div>
+            <div class="doctor-contact" *ngIf="selectedDoctor.phoneNumber">
+              Telefon: {{ selectedDoctor.phoneNumber }}
+            </div>
+          </div>
+        </div>
+        <div class="appointment-type-card readonly" *ngIf="selectedAppointmentType">
+          <div class="type-info">
+            <div class="type-name">{{ selectedAppointmentType.name }}</div>
+            <div class="type-description" *ngIf="selectedAppointmentType.description">{{ selectedAppointmentType.description }}</div>
+            <div class="type-details">
+              <span class="type-price">{{ selectedAppointmentType.price }} RSD</span>
+              <span class="type-duration">{{ selectedAppointmentType.durationMinutes }} minuta</span>
+            </div>
+          </div>
+        </div>
+        <div class="selected-date" *ngIf="selectedDate">
+          <strong>Datum:</strong> {{ selectedDate }}
+        </div>
+      </div>
 
-    <div class="date-selector">
-      <label for="appointment-date">Datum:</label>
-      <input 
-        type="date" 
-        id="appointment-date"
-        [min]="getTodayDate()"
-        (change)="selectDate($event)"
-        class="date-input"
-      >
-    </div>
+      <div class="date-selector">
+        <label for="appointment-date">Datum:</label>
+        <input 
+          type="date" 
+          id="appointment-date"
+          [min]="getTodayDate()"
+          (change)="selectDate($event)"
+          class="date-input"
+        >
+      </div>
 
-    <div class="loading" *ngIf="loadingSlots">
-      Učitavanje slobodnih termina...
-    </div>
+      <div class="loading" *ngIf="loadingSlots">
+        Učitavanje slobodnih termina...
+      </div>
 
-    <div class="actions">
-      <button class="btn btn-secondary" (click)="goBack()">Nazad</button>
+      <div class="actions">
+        <button class="btn btn-secondary" (click)="goBack()">Nazad</button>
+      </div>
     </div>
   </div>
 
   <!-- Step 4: Select Time Slot -->
-  <div class="step-content" *ngIf="currentStep === 4">
-    <h3>Izaberite Termin</h3>
-    
-    <div class="selected-info">
-      <strong>Doktor:</strong> Dr. {{ selectedDoctor?.firstName }} {{ selectedDoctor?.lastName }}
-      <br>
-      <strong>Vrsta pregleda:</strong> {{ selectedAppointmentType?.name }} ({{ selectedAppointmentType?.price }} RSD)
-      <br>
-      <strong>Datum:</strong> {{ selectedDate }}
+  <div class="card step-card" *ngIf="currentStep === 4">
+    <div class="card-header card-header-info">
+      <h4 class="card-title">Izaberite Termin</h4>
+      <p class="card-category">Dostupni termini</p>
     </div>
-
-    <div class="no-data" *ngIf="availableSlots.length === 0">
-      Nema slobodnih termina za izabrani datum.
-    </div>
-
-    <div class="time-slots-grid" *ngIf="availableSlots.length > 0">
-      <div 
-        class="time-slot" 
-        *ngFor="let slot of availableSlots"
-        [class.selected]="selectedTimeSlot === slot"
-        (click)="selectTimeSlot(slot)"
-      >
-        {{ formatTimeSlot(slot) }}
+    <div class="card-body">
+      <div class="selected-summary">
+        <div class="doctor-card readonly" *ngIf="selectedDoctor">
+          <div class="doctor-info">
+            <div class="doctor-name">Dr. {{ selectedDoctor.firstName }} {{ selectedDoctor.lastName }}</div>
+            <div class="doctor-specialization">{{ selectedDoctor.specialization }}</div>
+            <div class="doctor-contact" *ngIf="selectedDoctor.phoneNumber">
+              Telefon: {{ selectedDoctor.phoneNumber }}
+            </div>
+          </div>
+        </div>
+        <div class="appointment-type-card readonly" *ngIf="selectedAppointmentType">
+          <div class="type-info">
+            <div class="type-name">{{ selectedAppointmentType.name }}</div>
+            <div class="type-description" *ngIf="selectedAppointmentType.description">{{ selectedAppointmentType.description }}</div>
+            <div class="type-details">
+              <span class="type-price">{{ selectedAppointmentType.price }} RSD</span>
+              <span class="type-duration">{{ selectedAppointmentType.durationMinutes }} minuta</span>
+            </div>
+          </div>
+        </div>
+        <div class="selected-date" *ngIf="selectedDate">
+          <strong>Datum:</strong> {{ selectedDate }}
+        </div>
       </div>
-    </div>
 
-    <div class="booking-form" *ngIf="selectedTimeSlot">
-      <form [formGroup]="bookingForm">
-        <div class="form-group">
-          <label for="reason">Razlog posete (opciono):</label>
-          <input 
-            type="text" 
-            id="reason" 
-            formControlName="reason"
-            placeholder="npr. Kontrolni pregled"
-            class="form-control"
-          >
+      <div class="no-data" *ngIf="availableSlots.length === 0">
+        Nema slobodnih termina za izabrani datum.
+      </div>
+
+      <div class="time-slots-grid" *ngIf="availableSlots.length > 0">
+        <div 
+          class="time-slot" 
+          *ngFor="let slot of availableSlots"
+          [class.selected]="selectedTimeSlot === slot"
+          (click)="selectTimeSlot(slot)"
+        >
+          {{ formatTimeSlot(slot) }}
         </div>
+      </div>
 
-        <div class="form-group">
-          <label for="notes">Napomene (opciono):</label>
-          <textarea 
-            id="notes" 
-            formControlName="notes"
-            placeholder="Dodatne informacije..."
-            rows="3"
-            class="form-control"
-          ></textarea>
-        </div>
-      </form>
-    </div>
+      <div class="booking-form" *ngIf="selectedTimeSlot">
+        <form [formGroup]="bookingForm">
+          <div class="form-group">
+            <label for="reason">Razlog posete (opciono):</label>
+            <input 
+              type="text" 
+              id="reason" 
+              formControlName="reason"
+              placeholder="npr. Kontrolni pregled"
+              class="form-control"
+            >
+          </div>
 
-    <div class="actions">
-      <button class="btn btn-secondary" (click)="goBack()" [disabled]="isBooking">
-        Nazad
-      </button>
-      <button 
-        class="btn btn-primary" 
-        (click)="bookAppointment()"
-        [disabled]="!selectedTimeSlot || isBooking"
-      >
-        {{ isBooking ? 'Zakazivanje...' : 'Zakaži Termin' }}
-      </button>
+          <div class="form-group">
+            <label for="notes">Napomene (opciono):</label>
+            <textarea 
+              id="notes" 
+              formControlName="notes"
+              placeholder="Dodatne informacije..."
+              rows="3"
+              class="form-control"
+            ></textarea>
+          </div>
+        </form>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" (click)="goBack()" [disabled]="isBooking">
+          Nazad
+        </button>
+        <button 
+          class="btn btn-primary" 
+          (click)="bookAppointment()"
+          [disabled]="!selectedTimeSlot || isBooking"
+        >
+          {{ isBooking ? 'Zakazivanje...' : 'Zakaži Termin' }}
+        </button>
+      </div>
     </div>
   </div>
 </div>

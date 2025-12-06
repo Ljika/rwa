@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 
 export class TherapyDrugDto {
   @ApiProperty({ example: 'uuid-leka', description: 'ID leka' })
-  @IsUUID('4', { message: 'ID leka mora biti validan UUID' })
+  @IsUUID('all', { message: 'ID leka mora biti validan UUID' })
   @IsNotEmpty({ message: 'ID leka je obavezan' })
   drugId: string;
 
@@ -28,7 +28,7 @@ export class TherapyDrugDto {
 
 export class CreateTherapyDto {
   @ApiProperty({ example: 'uuid-termina', description: 'ID završenog termina (Completed)' })
-  @IsUUID('4', { message: 'ID termina mora biti validan UUID' })
+  @IsUUID('all', { message: 'ID termina mora biti validan UUID' })
   @IsNotEmpty({ message: 'ID termina je obavezan' })
   appointmentId: string;
 

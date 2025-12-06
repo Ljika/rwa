@@ -1,0 +1,311 @@
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg bg-primary fixed-top navbar-transparent">
+  <div class="container">
+    <div class="navbar-translate">
+      <a class="navbar-brand" href="#">
+        <i class="now-ui-icons healthcare_ambulance"></i>
+        MediSync
+      </a>
+      <button class="navbar-toggler" type="button">
+        <span class="navbar-toggler-bar top-bar"></span>
+        <span class="navbar-toggler-bar middle-bar"></span>
+        <span class="navbar-toggler-bar bottom-bar"></span>
+      </button>
+    </div>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#doctors">
+            <i class="now-ui-icons users_circle-08"></i>
+            <p>Lekari</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#services">
+            <i class="now-ui-icons health_ambulance"></i>
+            <p>Pregledi</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" (click)="scrollToLogin()" style="cursor: pointer;">
+            <i class="now-ui-icons users_single-02"></i>
+            <p>Prijavi se</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/register">
+            <i class="now-ui-icons ui-1_simple-add"></i>
+            <p>Registruj se</p>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<div class="page-header clear-filter" filter-color="turquoise">
+  <div class="page-header-image" style="background-image: url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop');"></div>
+  <div class="container">
+    <div class="content-center brand">
+      <img class="n-logo" src="assets/img/now-logo.png" alt="" style="display: none;">
+      <h1 class="h1-seo">MediSync.</h1>
+      <h3>Vaš digitalni partner u zdravlju</h3>
+      <p class="hero-description">
+        Zakažite preglede online, pristupite svojoj medicinskoj dokumentaciji i komunicirajte sa svojim lekarima - sve na jednom mestu.
+      </p>
+      <div class="hero-buttons">
+        <button class="btn btn-primary btn-lg" routerLink="/register">
+          <i class="now-ui-icons ui-1_simple-add"></i>
+          REGISTRUJ SE
+        </button>
+        <button class="btn btn-neutral btn-lg" (click)="scrollToLogin()">
+          <i class="now-ui-icons arrows-1_minimal-right"></i>
+          PRIJAVI SE
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Features Section -->
+<div class="section section-about-us">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 ml-auto mr-auto text-center">
+        <h2 class="title">Zašto MediSync?</h2>
+        <h5 class="description">Moderno rešenje za upravljanje zdravljem koje štedi vaše vreme i pojednostavljuje pristup medicinskoj nezi.</h5>
+      </div>
+    </div>
+    <div class="separator separator-primary"></div>
+    <div class="section-story-overview">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="info info-hover">
+            <div class="icon icon-primary icon-circle">
+              <i class="now-ui-icons ui-1_calendar-60"></i>
+            </div>
+            <h4 class="info-title">Online Zakazivanje</h4>
+            <p class="description">Zakažite pregled u nekoliko klikova, bez čekanja i telefonskih poziva. Dostupno 24/7.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="info info-hover">
+            <div class="icon icon-success icon-circle">
+              <i class="now-ui-icons files_paper"></i>
+            </div>
+            <h4 class="info-title">Digitalna Dokumentacija</h4>
+            <p class="description">Pristupite svojoj medicinskoj istoriji, nalazima i terapijama bilo kada i bilo gde.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="info info-hover">
+            <div class="icon icon-info icon-circle">
+              <i class="now-ui-icons ui-2_chat-round"></i>
+            </div>
+            <h4 class="info-title">Direktna Komunikacija</h4>
+            <p class="description">Komunicirajte sa svojim lekarom putem chat-a i dobijajte brze odgovore na svoja pitanja.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Doctors Section -->
+<div class="section section-team text-center" id="doctors">
+  <div class="container">
+    <h2 class="title">Naši Stručnjaci</h2>
+    <div class="team">
+      <ng-container *ngIf="doctorsBySpecialization$ | async as doctorsBySpec">
+        <div *ngFor="let spec of getSpecializationKeys(doctorsBySpec)" class="specialization-card">
+          <div class="card">
+            <div class="card-header card-header-primary">
+              <h4 class="card-title">
+                <i class="material-icons">local_hospital</i>
+                {{ getSpecializationDisplayName(spec) }}
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th class="levo">Ime i Prezime</th>
+                      <th class="desno">Specijalnost</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let doctor of doctorsBySpec[spec]">
+                      <td>
+                        <div class="doctor-name">
+                          <i class="material-icons">person</i>
+                          Dr. {{ doctor.firstName }} {{ doctor.lastName }}
+                        </div>
+                      </td>
+                      <td>{{ getSpecializationDisplayName(doctor?.specialization || '') }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      
+      <div *ngIf="!(doctorsBySpecialization$ | async)" class="text-center">
+        <i class="material-icons spin">hourglass_empty</i>
+        <p>Učitavanje lekara...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Services/Appointment Types Section -->
+<div class="section section-services" id="services">
+  <div class="container">
+    <h2 class="title text-center">Naše Usluge</h2>
+    <h5 class="description text-center">Pružamo širok spektar medicinskih usluga prilagođenih vašim potrebama</h5>
+    
+    <ng-container *ngIf="appointmentTypes$ | async as types">
+      <div class="specialization-card">
+        <div class="card">
+          <div class="card-header card-header-primary">
+            <h4 class="card-title">
+              <i class="material-icons">medical_services</i>
+              Tipovi Pregleda
+            </h4>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Specijalnost</th>
+                    <th>Naziv Pregleda</th>
+                    <th>Opis</th>
+                    <th class="text-center">Trajanje</th>
+                    <th class="text-right">Cena</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let type of types">
+                    <td>
+                      <strong>{{ getSpecializationDisplayName(type.specialization) }}</strong>
+                    </td>
+                    <td>
+                      <div class="service-name">
+                        <i class="material-icons">local_hospital</i>
+                        {{ type.name }}
+                      </div>
+                    </td>
+                    <td>{{ type.description || 'N/A' }}</td>
+                    <td class="text-center">
+                      <span class="badge badge-info">{{ type.durationMinutes }} min</span>
+                    </td>
+                    <td class="text-right">
+                      <strong>{{ type.price }} RSD</strong>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="!(appointmentTypes$ | async)" class="text-center">
+      <i class="material-icons spin">hourglass_empty</i>
+      <p>Učitavanje usluga...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Login Section -->
+<div class="section section-login" id="login-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-5 ml-auto mr-auto">
+        <div class="card card-login card-plain">
+          <div class="card-body">
+            <h4 class="card-title text-center">Prijavi se</h4>
+            
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">
+                    <i class="now-ui-icons ui-1_email-85"></i>
+                  </span>
+                </div>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  placeholder="Email..." 
+                  formControlName="email"
+                  [class.is-invalid]="email?.invalid && email?.touched"
+                />
+              </div>
+              <div class="invalid-feedback d-block" *ngIf="email?.invalid && email?.touched">
+                <span *ngIf="email?.errors?.['required']">Email je obavezan</span>
+                <span *ngIf="email?.errors?.['email']">Unesite validnu email adresu</span>
+              </div>
+
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">
+                    <i class="now-ui-icons ui-1_lock-circle-open"></i>
+                  </span>
+                </div>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  placeholder="Lozinka..." 
+                  formControlName="password"
+                  [class.is-invalid]="password?.invalid && password?.touched"
+                />
+              </div>
+              <div class="invalid-feedback d-block" *ngIf="password?.invalid && password?.touched">
+                <span *ngIf="password?.errors?.['required']">Lozinka je obavezna</span>
+                <span *ngIf="password?.errors?.['minlength']">Lozinka mora imati najmanje 6 karaktera</span>
+              </div>
+
+              <div class="alert alert-danger" *ngIf="error$ | async as error">
+                {{ error }}
+              </div>
+
+              <div class="card-footer text-center">
+                <button 
+                  type="submit" 
+                  class="btn btn-primary btn-round btn-lg btn-block"
+                  [disabled]="isLoading$ | async"
+                >
+                  <span *ngIf="!(isLoading$ | async)">Prijavi se</span>
+                  <span *ngIf="isLoading$ | async">
+                    <i class="now-ui-icons loader_refresh spin"></i>
+                    Učitavanje...
+                  </span>
+                </button>
+              </div>
+
+              <div class="pull-left">
+                <h6>
+                  <a routerLink="/register" class="link">Registruj se</a>
+                </h6>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" data-background-color="turquoise">
+  <div class="container">
+    <div class="copyright">
+      &copy; {{ currentYear }}, MediSync - Dizajnirano i razvijeno za bolju zdravstvenu negu.
+    </div>
+  </div>
+</footer>

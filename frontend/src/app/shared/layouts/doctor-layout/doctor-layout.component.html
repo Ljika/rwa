@@ -1,0 +1,87 @@
+<div class="wrapper">
+  <div class="sidebar" data-color="azure" data-background-color="white">
+    <div class="logo">
+      <a href="#" class="simple-text logo-normal">
+        MediSync Doktor
+      </a>
+    </div>
+    <div class="sidebar-wrapper">
+      <ul class="nav">
+        <li class="nav-item" [class.active]="activeTab === 'profil'">
+          <a class="nav-link" (click)="selectTab('profil')">
+            <i class="material-icons">person</i>
+            <p>Profil</p>
+          </a>
+        </li>
+        <li class="nav-item" [class.active]="activeTab === 'pacijenti'">
+          <a class="nav-link" (click)="selectTab('pacijenti')">
+            <i class="material-icons">people</i>
+            <p>Moji Pacijenti</p>
+          </a>
+        </li>
+        <li class="nav-item" [class.active]="activeTab === 'termini'">
+          <a class="nav-link" (click)="selectTab('termini')">
+            <i class="material-icons">event</i>
+            <p>Termini</p>
+          </a>
+        </li>
+        <li class="nav-item" [class.active]="activeTab === 'smene'">
+          <a class="nav-link" (click)="selectTab('smene')">
+            <i class="material-icons">schedule</i>
+            <p>Smene</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" (click)="logout()">
+            <i class="material-icons">exit_to_app</i>
+            <p>Odjavi se</p>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="main-panel">
+    <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" (click)="sidebarToggle()">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="navbar-toggler-icon icon-bar"></span>
+          <span class="navbar-toggler-icon icon-bar"></span>
+          <span class="navbar-toggler-icon icon-bar"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end">
+          <ul class="navbar-nav" *ngIf="currentUser$ | async as currentUser">
+            <li class="nav-item dropdown">
+              <a class="nav-link" href="javascript:void(0)" id="navbarDropdownProfile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="material-icons">person</i>
+                <p class="d-lg-none d-md-block">
+                  Account
+                </p>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownProfile">
+                <a class="dropdown-item">Dr. {{ currentUser.firstName }} {{ currentUser.lastName }}</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" (click)="logout()">Odjavi se</a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    
+    <div class="content">
+      <div class="container-fluid">
+        <ng-content></ng-content>
+      </div>
+    </div>
+    
+    <footer class="footer">
+      <div class="container-fluid">
+        <div class="copyright float-right">
+         <!-- &copy; {{currentYear}}, made with <i class="material-icons">favorite</i> by MediSync Team-->
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>

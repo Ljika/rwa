@@ -1,9 +1,16 @@
+.steps-text {
+  text-align: center;
+  color: #455a64;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
 .book-appointment-container {
   padding: 0;
 
   h2 {
     color: #333;
     margin-bottom: 20px;
+    margin-left: 12px; /* nudge title slightly to the right */
   }
 
   h3 {
@@ -43,12 +50,12 @@
 }
 
 // Step Content
-.step-content {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+/* Card wrapper for steps */
+.step-card {
+  margin-bottom: 20px;
 }
+/* Adjust body padding inside Material card */
+.step-card .card-body { padding: 20px; }
 
 // Loading & No Data
 .loading, .no-data {
@@ -64,12 +71,13 @@
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 20px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #1e88e5;
 }
 
 // Doctors List
 .doctors-list {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 15px;
 
   .doctor-card {
@@ -83,10 +91,10 @@
     transition: all 0.3s ease;
 
     &:hover {
-      border-color: #667eea;
-      background: #f8f9ff;
+      border-color: #1e88e5;
+      background: #e3f2fd;
       transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+      box-shadow: 0 4px 15px rgba(30, 136, 229, 0.25);
     }
 
     .doctor-info {
@@ -98,7 +106,7 @@
       }
 
       .doctor-specialization {
-        color: #667eea;
+        color: #1e88e5;
         font-weight: 500;
         margin-bottom: 5px;
       }
@@ -111,7 +119,7 @@
 
     .select-arrow {
       font-size: 24px;
-      color: #667eea;
+      color: #1e88e5;
       font-weight: bold;
     }
   }
@@ -120,6 +128,7 @@
 // Appointment Types List
 .appointment-types-list {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 15px;
 
   .appointment-type-card {
@@ -133,10 +142,10 @@
     transition: all 0.3s ease;
 
     &:hover {
-      border-color: #667eea;
-      background: #f8f9ff;
+      border-color: #1e88e5;
+      background: #e3f2fd;
       transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+      box-shadow: 0 4px 15px rgba(30, 136, 229, 0.25);
     }
 
     .type-info {
@@ -167,7 +176,7 @@
         }
 
         .type-duration {
-          color: #667eea;
+          color: #1e88e5;
           font-weight: 500;
           font-size: 14px;
         }
@@ -176,7 +185,7 @@
 
     .select-arrow {
       font-size: 24px;
-      color: #667eea;
+      color: #1e88e5;
       font-weight: bold;
     }
   }
@@ -203,7 +212,7 @@
 
     &:focus {
       outline: none;
-      border-color: #667eea;
+      border-color: #1e88e5;
     }
   }
 }
@@ -226,15 +235,15 @@
     background: white;
 
     &:hover {
-      border-color: #667eea;
-      background: #f8f9ff;
+      border-color: #1e88e5;
+      background: #e3f2fd;
     }
 
     &.selected {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(60deg, #26c6da, #00acc1);
       color: white;
-      border-color: #667eea;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      border-color: #00acc1;
+      box-shadow: 0 4px 15px rgba(0, 172, 193, 0.4);
     }
   }
 }
@@ -265,7 +274,7 @@
 
       &:focus {
         outline: none;
-        border-color: #667eea;
+        border-color: #1e88e5;
       }
     }
 
@@ -299,12 +308,12 @@
     }
 
     &.btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(60deg, #26c6da, #00acc1); /* cyan/teal */
       color: white;
 
       &:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 15px rgba(0, 172, 193, 0.4);
       }
     }
 
@@ -322,13 +331,9 @@
 // Responsive
 @media (max-width: 768px) {
   .steps-indicator {
-    .step-label {
-      font-size: 10px;
-    }
-
-    .step-line {
-      width: 50px;
-    }
+    gap: 8px;
+    .step-label { font-size: 11px; }
+    .step-line { width: 40px; }
   }
 
   .time-slots-grid {
@@ -337,5 +342,132 @@
 
   .actions {
     flex-direction: column;
+  }
+}
+
+/* Steps indicator styles */
+.steps-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.steps-indicator .step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.steps-indicator .step-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #00acc1;
+  background: #e0f7fa; /* light teal */
+  border: 2px solid #00acc1;
+}
+.steps-indicator .step-label {
+  font-weight: 600;
+  color: #546e7a;
+}
+.steps-indicator .step.active .step-circle {
+  color: #fff;
+  background: linear-gradient(60deg, #26c6da, #00acc1);
+  border-color: #00acc1;
+  box-shadow: 0 4px 10px rgba(0,172,193,0.3);
+}
+.steps-indicator .step.completed .step-circle {
+  color: #fff;
+  background: linear-gradient(60deg, #26c6da, #00acc1);
+  border-color: #00acc1;
+}
+.steps-indicator .step-line {
+  height: 2px;
+  width: 60px;
+  background: #cfd8dc;
+  border-radius: 2px;
+}
+.steps-indicator .step-line.completed {
+  background: #00acc1;
+}
+
+/* Selected summary cards show same look as lists but are read-only */
+.selected-summary {
+  /* Arrange selected items in four equal columns */
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: stretch;
+}
+.selected-summary .doctor-card,
+.selected-summary .appointment-type-card {
+  pointer-events: none;
+}
+.doctor-card.readonly:hover,
+.appointment-type-card.readonly:hover {
+  transform: none;
+  box-shadow: none;
+  background: white;
+  border-color: #e0e0e0;
+}
+.selected-summary .doctor-card.readonly,
+.selected-summary .appointment-type-card.readonly,
+.selected-summary .selected-date {
+  /* Cyan-blue chip style for doctor, type, and date */
+  border: 2px solid #00acc1; /* cyan border */
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #e0f7fa; /* light teal background */
+  box-shadow: 0 0 0 4px rgba(0, 172, 193, 0.12);
+  color: #006064; /* deep teal text */
+}
+/* Tweak inner text colors inside the readonly cards to match chip style */
+.selected-summary .doctor-card.readonly .doctor-name,
+.selected-summary .doctor-card.readonly .doctor-specialization,
+.selected-summary .doctor-card.readonly .doctor-contact {
+  color: #006064;
+  font-weight: 700; /* bold all doctor lines */
+}
+.selected-summary .appointment-type-card.readonly .type-name,
+.selected-summary .appointment-type-card.readonly .type-description {
+  color: #006064;
+  font-weight: 700; /* bold name & description */
+}
+/* Bold price and duration as well */
+.selected-summary .appointment-type-card.readonly .type-details,
+.selected-summary .appointment-type-card.readonly .type-price,
+.selected-summary .appointment-type-card.readonly .type-duration {
+  font-weight: 700;
+}
+.selected-summary .select-arrow { display: none; }
+.selected-date {
+  display: block;
+  font-weight: 600;
+}
+
+/* Ensure price is on a new line for selected summary type card */
+.selected-summary .appointment-type-card .type-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.selected-summary .appointment-type-card .type-price {
+  display: block;
+}
+
+/* Responsive columns for summary chips */
+@media (max-width: 1200px) {
+  .selected-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .selected-summary {
+    grid-template-columns: 1fr;
   }
 }

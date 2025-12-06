@@ -9,4 +9,9 @@ export interface PatientAllergy {
     id: string;
     name: string;
   };
+  patient?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
 }

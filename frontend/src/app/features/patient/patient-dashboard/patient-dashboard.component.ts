@@ -14,11 +14,19 @@ import { PatientAllergy } from '../../../core/models/patient-allergy.model';
 import { loadMyTherapies } from '../../../store/therapies/therapies.actions';
 import { selectAllTherapies, selectTherapiesLoading, selectTherapiesError } from '../../../store/therapies/therapies.selectors';
 import { ChatComponent } from '../../../shared/components/chat/chat.component';
+import { PatientLayoutComponent } from '../../../shared/layouts/patient-layout/patient-layout.component';
 
 @Component({
   selector: 'app-patient-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BookAppointmentComponent, MyAppointmentsComponent, ChatComponent],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    BookAppointmentComponent, 
+    MyAppointmentsComponent, 
+    ChatComponent,
+    PatientLayoutComponent
+  ],
   templateUrl: './patient-dashboard.component.html',
   styleUrl: './patient-dashboard.component.scss'
 })
@@ -111,6 +119,20 @@ export class PatientDashboardComponent implements OnInit {
         dateOfBirth: currentUser?.dateOfBirth || '',
         gender: currentUser?.gender || ''
       });
+    }
+  }
+
+  editProfile() {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.editProfileForm.patchValue({
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        phoneNumber: currentUser.phoneNumber,
+        dateOfBirth: currentUser.dateOfBirth,
+        gender: currentUser.gender
+      });
+      this.isEditMode = true;
     }
   }
 

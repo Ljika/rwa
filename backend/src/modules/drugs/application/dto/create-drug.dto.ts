@@ -24,7 +24,7 @@ export class CreateDrugDto {
   description?: string;
 
   @ApiProperty({ example: 'uuid-proizvođača', description: 'ID proizvođača leka' })
-  @IsUUID('4', { message: 'ID proizvođača mora biti validan UUID' })
+  @IsUUID('all', { message: 'ID proizvođača mora biti validan UUID' })
   @IsNotEmpty({ message: 'ID proizvođača je obavezan' })
   manufacturerId: string;
 }

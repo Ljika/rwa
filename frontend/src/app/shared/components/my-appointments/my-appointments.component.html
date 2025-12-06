@@ -9,111 +9,42 @@
     {{ errorMessage }}
   </div>
 
-  <!-- Tab Navigation -->
-  <div class="tabs">
-    <button 
-      class="tab-btn" 
-      [class.active]="activeTab === 'requests'"
-      (click)="selectTab('requests')">
-      Zahtevi za Termine ({{ requestAppointments.length }})
-    </button>
-    <button 
-      class="tab-btn" 
-      [class.active]="activeTab === 'scheduled'"
-      (click)="selectTab('scheduled')">
-      Zakazani Termini ({{ scheduledAppointments.length }})
-    </button>
-    <button 
-      class="tab-btn" 
-      [class.active]="activeTab === 'completed'"
-      (click)="selectTab('completed')">
-      Završeni Termini ({{ completedAppointments.length }})
-    </button>
-    <button 
-      class="tab-btn" 
-      [class.active]="activeTab === 'cancelled'"
-      (click)="selectTab('cancelled')">
-      Otkazani Termini ({{ cancelledAppointments.length }})
-    </button>
-  </div>
+  <!-- All categories shown at once -->
+  <div class="categories-grid">
 
   <!-- Loading -->
   <div class="loading" *ngIf="isLoading">
     Učitavanje termina...
   </div>
 
-  <!-- Zahtevi za Termine Tab -->
-  <div class="tab-content" *ngIf="!isLoading && activeTab === 'requests'">
+  <!-- Zahtevi za Termine -->
+  <div class="card category-card" *ngIf="!isLoading">
+    <div class="card-header category-header pending">
+      <h4 class="card-title">Zahtevi za Termine ({{ requestAppointments.length }})</h4>
+      <p class="card-category">Status: Na čekanju</p>
+    </div>
+    <div class="card-body">
     <div class="no-data" *ngIf="requestAppointments.length === 0">
       Nemate aktivnih zahteva za termine.
     </div>
 
-    <div class="appointments-list" *ngIf="requestAppointments.length > 0">
-      <div class="appointment-card" *ngFor="let appointment of requestAppointments">
-        <div class="card-header">
-          <div class="doctor-info">
-            <h3>Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}<span *ngIf="appointment.doctor?.specialization"> - {{ appointment.doctor.specialization }}</span></h3>
-          </div>
-          <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
-            {{ getStatusText(appointment.status) }}
-          </span>
-        </div>
+        <div class="appointments-list" *ngIf="requestAppointments.length > 0">
+         <div class="appointment-card" *ngFor="let appointment of requestAppointments">
+           <div class="card-header">
+             <div class="line line1">Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}</div>
+             <div class="line line2" *ngIf="appointment.doctor?.specialization">{{ appointment.doctor.specialization }}</div>
+             <div class="line line3">
+               <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+                 {{ getStatusText(appointment.status) }}
+               </span>
+             </div>
+           </div>
 
         <div class="card-body">
           <p>Datum: {{ formatDate(appointment.date) }}</p>
           <p>Vreme: {{ formatTime(appointment.timeSlot) }}</p>
-          <p *ngIf="appointment.appointmentType" class="appointment-type-info">
-            📋 Tip pregleda: <strong>{{ appointment.appointmentType.name }}</strong> 
-            ({{ appointment.appointmentType.price }} RSD, {{ appointment.appointmentType.durationMinutes }} min)
-          </p>
-          <p *ngIf="appointment.reason">Razlog: {{ appointment.reason }}</p>
-          <p *ngIf="appointment.notes">Napomene: {{ appointment.notes }}</p>
           <p>Kontakt doktora: {{ appointment.doctor?.email }}</p>
           <p *ngIf="appointment.doctor?.phoneNumber">Telefon doktora: {{ appointment.doctor.phoneNumber }}</p>
-        </div>
-
-        <div class="card-actions">
-          <button 
-            class="btn btn-cancel"
-            (click)="cancelAppointment(appointment.id)">
-            Otkaži Zahtev
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Zakazani Termini Tab -->
-  <div class="tab-content" *ngIf="!isLoading && activeTab === 'scheduled'">
-    <div class="no-data" *ngIf="scheduledAppointments.length === 0">
-      Nemate zakazanih termina.
-    </div>
-
-    <div class="appointments-list" *ngIf="scheduledAppointments.length > 0">
-      <div class="appointment-card" *ngFor="let appointment of scheduledAppointments">
-        <div class="card-header">
-          <div class="doctor-info">
-            <h3>Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}<span *ngIf="appointment.doctor?.specialization"> - {{ appointment.doctor.specialization }}</span></h3>
-          </div>
-          <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
-            {{ getStatusText(appointment.status) }}
-          </span>
-        </div>
-
-        <div class="card-body">
-          <p>Datum: {{ formatDate(appointment.date) }}</p>
-          <p>Vreme: {{ formatTime(appointment.timeSlot) }}</p>
-          <p *ngIf="appointment.appointmentType" class="appointment-type-info">
-            📋 Tip pregleda: <strong>{{ appointment.appointmentType.name }}</strong> 
-            ({{ appointment.appointmentType.price }} RSD, {{ appointment.appointmentType.durationMinutes }} min)
-          </p>
-          <p *ngIf="appointment.reason">Razlog: {{ appointment.reason }}</p>
-          <p *ngIf="appointment.notes">Napomene: {{ appointment.notes }}</p>
-          <p>Kontakt doktora: {{ appointment.doctor?.email }}</p>
-          <p *ngIf="appointment.doctor?.phoneNumber">Telefon doktora: {{ appointment.doctor.phoneNumber }}</p>
-        </div>
-
-        <div class="card-actions" *ngIf="appointment.status === 'Approved'">
           <button 
             class="btn btn-cancel"
             (click)="cancelAppointment(appointment.id)">
@@ -122,71 +53,114 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 
-  <!-- Završeni Termini Tab -->
-  <div class="tab-content" *ngIf="!isLoading && activeTab === 'completed'">
+  <!-- Zakazani Termini -->
+  <div class="card category-card" *ngIf="!isLoading">
+    <div class="card-header category-header approved">
+      <h4 class="card-title">Zakazani Termini ({{ scheduledAppointments.length }})</h4>
+      <p class="card-category">Status: Odobreni</p>
+    </div>
+    <div class="card-body">
+    <div class="no-data" *ngIf="scheduledAppointments.length === 0">
+      Nemate zakazanih termina.
+    </div>
+
+        <div class="appointments-list" *ngIf="scheduledAppointments.length > 0">
+         <div class="appointment-card" *ngFor="let appointment of scheduledAppointments">
+           <div class="card-header">
+             <div class="line line1">Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}</div>
+             <div class="line line2" *ngIf="appointment.doctor?.specialization">{{ appointment.doctor.specialization }}</div>
+             <div class="line line3">
+               <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+                 {{ getStatusText(appointment.status) }}
+               </span>
+             </div>
+           </div>
+
+        <div class="card-body">
+          <p>Datum: {{ formatDate(appointment.date) }}</p>
+          <p>Vreme: {{ formatTime(appointment.timeSlot) }}</p>
+          <p>Kontakt doktora: {{ appointment.doctor?.email }}</p>
+          <p *ngIf="appointment.doctor?.phoneNumber">Telefon doktora: {{ appointment.doctor.phoneNumber }}</p>
+          <button 
+            class="btn btn-cancel"
+            (click)="cancelAppointment(appointment.id)">
+            Otkaži Termin
+          </button>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Završeni Termini -->
+  <div class="card category-card" *ngIf="!isLoading">
+    <div class="card-header category-header completed">
+      <h4 class="card-title">Završeni Termini ({{ completedAppointments.length }})</h4>
+      <p class="card-category">Status: Završen</p>
+    </div>
+    <div class="card-body">
     <div class="no-data" *ngIf="completedAppointments.length === 0">
       Nemate završenih termina.
     </div>
 
-    <div class="appointments-list" *ngIf="completedAppointments.length > 0">
-      <div class="appointment-card" *ngFor="let appointment of completedAppointments">
-        <div class="card-header">
-          <div class="doctor-info">
-            <h3>Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}<span *ngIf="appointment.doctor?.specialization"> - {{ appointment.doctor.specialization }}</span></h3>
-          </div>
-          <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
-            {{ getStatusText(appointment.status) }}
-          </span>
-        </div>
+        <div class="appointments-list" *ngIf="completedAppointments.length > 0">
+         <div class="appointment-card" *ngFor="let appointment of completedAppointments">
+           <div class="card-header">
+             <div class="line line1">Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}</div>
+             <div class="line line2" *ngIf="appointment.doctor?.specialization">{{ appointment.doctor.specialization }}</div>
+             <div class="line line3">
+               <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+                 {{ getStatusText(appointment.status) }}
+               </span>
+             </div>
+           </div>
 
         <div class="card-body">
           <p>Datum: {{ formatDate(appointment.date) }}</p>
           <p>Vreme: {{ formatTime(appointment.timeSlot) }}</p>
-          <p *ngIf="appointment.appointmentType" class="appointment-type-info">
-            📋 Tip pregleda: <strong>{{ appointment.appointmentType.name }}</strong> 
-            ({{ appointment.appointmentType.price }} RSD, {{ appointment.appointmentType.durationMinutes }} min)
-          </p>
-          <p *ngIf="appointment.reason">Razlog: {{ appointment.reason }}</p>
-          <p *ngIf="appointment.notes">Napomene: {{ appointment.notes }}</p>
           <p>Kontakt doktora: {{ appointment.doctor?.email }}</p>
           <p *ngIf="appointment.doctor?.phoneNumber">Telefon doktora: {{ appointment.doctor.phoneNumber }}</p>
         </div>
       </div>
     </div>
+    </div>
   </div>
 
-  <!-- Otkazani Termini Tab -->
-  <div class="tab-content" *ngIf="!isLoading && activeTab === 'cancelled'">
+  <!-- Otkazani Termini -->
+  <div class="card category-card" *ngIf="!isLoading">
+    <div class="card-header category-header cancelled">
+      <h4 class="card-title">Otkazani Termini ({{ cancelledAppointments.length }})</h4>
+      <p class="card-category">Status: Otkazan/Odbijen</p>
+    </div>
+    <div class="card-body">
     <div class="no-data" *ngIf="cancelledAppointments.length === 0">
       Nemate otkazanih termina.
     </div>
 
-    <div class="appointments-list" *ngIf="cancelledAppointments.length > 0">
-      <div class="appointment-card" *ngFor="let appointment of cancelledAppointments">
-        <div class="card-header">
-          <div class="doctor-info">
-            <h3>Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}<span *ngIf="appointment.doctor?.specialization"> - {{ appointment.doctor.specialization }}</span></h3>
-          </div>
-          <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
-            {{ getStatusText(appointment.status) }}
-          </span>
-        </div>
+        <div class="appointments-list" *ngIf="cancelledAppointments.length > 0">
+         <div class="appointment-card" *ngFor="let appointment of cancelledAppointments">
+           <div class="card-header">
+             <div class="line line1">Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}</div>
+             <div class="line line2" *ngIf="appointment.doctor?.specialization">{{ appointment.doctor.specialization }}</div>
+             <div class="line line3">
+               <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+                 {{ getStatusText(appointment.status) }}
+               </span>
+             </div>
+           </div>
 
         <div class="card-body">
           <p>Datum: {{ formatDate(appointment.date) }}</p>
           <p>Vreme: {{ formatTime(appointment.timeSlot) }}</p>
-          <p *ngIf="appointment.appointmentType" class="appointment-type-info">
-            📋 Tip pregleda: <strong>{{ appointment.appointmentType.name }}</strong> 
-            ({{ appointment.appointmentType.price }} RSD, {{ appointment.appointmentType.durationMinutes }} min)
-          </p>
-          <p *ngIf="appointment.reason">Razlog: {{ appointment.reason }}</p>
-          <p *ngIf="appointment.notes">Napomene: {{ appointment.notes }}</p>
           <p>Kontakt doktora: {{ appointment.doctor?.email }}</p>
           <p *ngIf="appointment.doctor?.phoneNumber">Telefon doktora: {{ appointment.doctor.phoneNumber }}</p>
         </div>
       </div>
     </div>
+    </div>
+  </div>
   </div>
 </div>

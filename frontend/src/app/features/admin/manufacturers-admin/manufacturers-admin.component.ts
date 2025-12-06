@@ -29,6 +29,12 @@ export class ManufacturersAdminComponent {
     this.manufacturersService.getAll().subscribe(manu => this.manufacturers = manu);
   }
 
+  openAddModal() {
+    this.editManufacturer = null;
+    this.showForm = true;
+    this.manufacturerForm.reset();
+  }
+
   startEdit(manufacturer: Manufacturer) {
     this.editManufacturer = manufacturer;
     this.showForm = true;
@@ -39,10 +45,14 @@ export class ManufacturersAdminComponent {
     });
   }
 
-  cancelForm() {
+  closeModal() {
     this.showForm = false;
     this.editManufacturer = null;
     this.manufacturerForm.reset();
+  }
+
+  cancelForm() {
+    this.closeModal();
   }
 
   submitForm() {
@@ -55,13 +65,21 @@ export class ManufacturersAdminComponent {
     if (this.editManufacturer) {
       // Update
       this.manufacturersService.update(this.editManufacturer.id, value).subscribe({
-        next: () => { this.loadManufacturers(); this.cancelForm(); },
+        next: () => { 
+          alert('Proizvođač uspešno izmenjen!');
+          this.loadManufacturers(); 
+          this.closeModal(); 
+        },
         error: () => alert('Greška pri izmeni proizvođača')
       });
     } else {
       // Create
       this.manufacturersService.create(value).subscribe({
-        next: () => { this.loadManufacturers(); this.cancelForm(); },
+        next: () => { 
+          alert('Proizvođač uspešno dodat!');
+          this.loadManufacturers(); 
+          this.closeModal(); 
+        },
         error: () => alert('Greška pri dodavanju proizvođača')
       });
     }

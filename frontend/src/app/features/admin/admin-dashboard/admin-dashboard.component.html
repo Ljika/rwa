@@ -1,93 +1,9 @@
-<div class="dashboard-container" *ngIf="currentUser$ | async as currentUser">
-  <!-- Navbar -->
-  <header class="navbar">
-    <div class="logo">
-      <h2>MediSync - Admin Panel</h2>
-    </div>
-    <div class="user-info">
-      <span>Dobrodošli, {{ currentUser.firstName }} {{ currentUser.lastName }}</span>
-      <button class="btn-logout" (click)="logout()">Odjavi se</button>
-    </div>
-  </header>
-
-  <!-- Tab Navigation -->
-  <nav class="tabs">
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'profil'" 
-      (click)="selectTab('profil')">
-       Profil
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'pacijenti'" 
-      (click)="selectTab('pacijenti')">
-       Pacijenti
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'doktori'" 
-      (click)="selectTab('doktori')">
-       Doktori
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'administratori'" 
-      (click)="selectTab('administratori')">
-       Administratori
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'lekovi'" 
-      (click)="selectTab('lekovi')">
-       Lekovi
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'proizvodjaci'" 
-      (click)="selectTab('proizvodjaci')">
-       Proizvođači
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'alergije'" 
-      (click)="selectTab('alergije')">
-       Alergije
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'tipovi-pregleda'" 
-      (click)="selectTab('tipovi-pregleda')">
-       Tipovi Pregleda
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'povezi'" 
-      (click)="selectTab('povezi')">
-      Poveži doktora i pacijenta
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'ukloni'" 
-      (click)="selectTab('ukloni')">
-       Ukloni pacijenta doktoru
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'blok-termini'" 
-      (click)="selectTab('blok-termini')">
-       Blok Termini
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'termini'" 
-      (click)="selectTab('termini')">
-       Svi Termini
-    </button>
-  </nav>
+<app-admin-layout [activeTab]="activeTab" (tabChanged)="selectTab($event)">
+  <div *ngIf="currentUser$ | async as currentUser">
 
   <!-- Content Area -->
-  <div class="content">
+  <div class="admin-content">
+
     <!-- Lekovi Tab -->
     <div *ngIf="activeTab === 'lekovi'" class="tab-content">
       <app-drugs-admin></app-drugs-admin>
@@ -99,115 +15,109 @@
 
     <!-- Alergije Tab -->
     <div *ngIf="activeTab === 'alergije'" class="tab-content">
-      <h3>Upravljanje Alergijama</h3>
-      
-      <div class="allergies-section">
-        <!-- CRUD Master Lista Alergija -->
-        <div class="allergies-crud">
-          <div class="section-header">
-            <h4>Master Lista Alergija</h4>
-            <button class="btn-add" (click)="openAddAllergyModal()">+ Dodaj Alergiju</button>
+      <div class="allergies-two-columns">
+        <!-- Leva Kartica - Master Lista Alergija -->
+        <div class="allergies-card left-card">
+          <div class="allergies-header">
+            <h3 class="page-title">Alergije</h3>
+            <button class="btn btn-success btn-add" (click)="openAddAllergyModal()">
+              <i class="material-icons">add</i>
+              Dodaj Alergiju
+            </button>
           </div>
 
-          <div *ngIf="isLoadingAllergies$ | async" class="loading">Učitavanje alergija...</div>
-          <div *ngIf="allergiesError$ | async as error" class="error-message">{{ error }}</div>
+          <div class="card">
+            <div class="card-header card-header-primary">
+              <h4 class="card-title">Sve Alergije</h4>
+              <p class="card-category">Kompletna lista alergija u sistemu</p>
+            </div>
+            <div class="card-body">
+              <div *ngIf="isLoadingAllergies$ | async" class="loading-state">Učitavanje alergija...</div>
+              <div *ngIf="allergiesError$ | async as error" class="error-message">{{ error }}</div>
 
-          <table class="allergies-table" *ngIf="(allergies$ | async) as allergies">
-            <thead>
-              <tr>
-                <th>Naziv Alergije</th>
-                <th>Datum Kreiranja</th>
-                <th>Akcije</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let allergy of allergies">
-                <td>{{ allergy.name }}</td>
-                <td>{{ allergy.createdAt | date:'dd.MM.yyyy' }}</td>
-                <td>
-                  <button class="btn-edit-small" (click)="openEditAllergyModal(allergy)">Izmeni</button>
-                  <button class="btn-delete-small" (click)="deleteAllergy(allergy.id, allergy.name)">Obriši</button>
-                </td>
-              </tr>
-              <tr *ngIf="allergies.length === 0">
-                <td colspan="3" class="no-data">Nema alergija u sistemu</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Dodavanje Alergija Pacijentima -->
-        <div class="patient-allergies-section">
-          <div class="section-header">
-            <h4>Dodaj Alergiju Pacijentu</h4>
-          </div>
-
-          <form [formGroup]="patientAllergyForm" (ngSubmit)="addPatientAllergy()" class="patient-allergy-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="patientSelect">Pacijent *</label>
-                <select id="patientSelect" formControlName="patientId" (change)="onPatientSelected($event)">
-                  <option value="">-- Izaberi pacijenta --</option>
-                  <option *ngFor="let patient of (patients$ | async)" [value]="patient.id">
-                    {{ patient.firstName }} {{ patient.lastName }}
-                  </option>
-                </select>
-                <div class="error" *ngIf="patientAllergyForm.get('patientId')?.invalid && patientAllergyForm.get('patientId')?.touched">
-                  Pacijent je obavezan
-                </div>
+              <div class="table-responsive">
+                <table class="table table-hover" *ngIf="(allergies$ | async) as allergies">
+                  <thead class="text-primary">
+                    <tr>
+                      <th>Naziv Alergije</th>
+                      <th>Datum Kreiranja</th>
+                      <th class="text-right">Akcije</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let allergy of allergies">
+                      <td><strong>{{ allergy.name }}</strong></td>
+                      <td>{{ allergy.createdAt | date:'dd.MM.yyyy' }}</td>
+                      <td class="td-actions text-right">
+                        <button type="button" class="btn btn-info btn-sm" (click)="openEditAllergyModal(allergy)">
+                          <i class="material-icons">edit</i>
+                          Izmeni
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" (click)="deleteAllergy(allergy.id, allergy.name)">
+                          <i class="material-icons">close</i>
+                          Obriši
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-
-              <div class="form-group">
-                <label for="allergySelect">Alergija *</label>
-                <select id="allergySelect" formControlName="allergyId">
-                  <option value="">-- Izaberi alergiju --</option>
-                  <option *ngFor="let allergy of (allergies$ | async)" [value]="allergy.id">
-                    {{ allergy.name }}
-                  </option>
-                </select>
-                <div class="error" *ngIf="patientAllergyForm.get('allergyId')?.invalid && patientAllergyForm.get('allergyId')?.touched">
-                  Alergija je obavezna
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="diagnosedDate">Datum Dijagnoze</label>
-                <input type="date" id="diagnosedDate" formControlName="diagnosedDate">
-              </div>
-
-              <div class="form-group-button">
-                <button type="submit" class="btn-primary" [disabled]="patientAllergyForm.invalid || isAddingPatientAllergy">
-                  {{ isAddingPatientAllergy ? 'Dodavanje...' : 'Dodaj' }}
-                </button>
+              <div *ngIf="(allergies$ | async)?.length === 0" class="empty-state">
+                <i class="material-icons">warning</i>
+                <p>Nema alergija u sistemu.</p>
               </div>
             </div>
-          </form>
+          </div>
+        </div>
 
-          <!-- Lista alergija selektovanog pacijenta -->
-          <div *ngIf="selectedPatientId" class="selected-patient-allergies">
-            <h5>Alergije pacijenta: {{ selectedPatientName }}</h5>
-            <div *ngIf="isLoadingPatientAllergies" class="loading">Učitavanje...</div>
-            <table class="patient-allergies-table" *ngIf="!isLoadingPatientAllergies && selectedPatientAllergies.length > 0">
-              <thead>
-                <tr>
-                  <th>Alergija</th>
-                  <th>Datum Dijagnoze</th>
-                  <th>Akcije</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let pa of selectedPatientAllergies">
-                  <td>{{ pa.allergy?.name }}</td>
-                  <td>{{ pa.diagnosedDate ? (pa.diagnosedDate | date:'dd.MM.yyyy') : 'N/A' }}</td>
-                  <td>
-                    <button class="btn-delete-small" (click)="removePatientAllergy(pa.id)">Ukloni</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p *ngIf="!isLoadingPatientAllergies && selectedPatientAllergies.length === 0" class="no-data">
-              Pacijent nema evidentirane alergije
-            </p>
+        <!-- Desna Kartica - Alergije Pacijenata -->
+        <div class="allergies-card right-card">
+          <div class="patient-allergies-header">
+            <h3 class="page-title">Alergije Pacijenata</h3>
+            <button class="btn btn-success btn-add" (click)="openAddPatientAllergyModal()">
+              <i class="material-icons">add</i>
+              Dodaj Alergiju Pacijentu
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-header card-header-purple">
+              <h4 class="card-title">Sve Alergije Pacijenata</h4>
+              <p class="card-category">Pregled svih dodeljenih alergija</p>
+            </div>
+            <div class="card-body">
+              <div *ngIf="isLoadingAllPatientAllergies" class="loading-state">Učitavanje...</div>
+
+              <div class="table-responsive">
+                <table class="table table-hover" *ngIf="!isLoadingAllPatientAllergies && allPatientAllergies.length > 0">
+                  <thead class="text-purple">
+                    <tr>
+                      <th>Pacijent</th>
+                      <th>Alergija</th>
+                      <th>Datum Dijagnoze</th>
+                      <th class="text-right">Akcije</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let pa of allPatientAllergies">
+                      <td><strong>{{ pa.patient?.firstName }} {{ pa.patient?.lastName }}</strong></td>
+                      <td>{{ pa.allergy?.name }}</td>
+                      <td>{{ pa.diagnosedDate ? (pa.diagnosedDate | date:'dd.MM.yyyy') : 'N/A' }}</td>
+                      <td class="td-actions text-right">
+                        <button type="button" class="btn btn-danger btn-sm" (click)="removePatientAllergy(pa.id)">
+                          <i class="material-icons">close</i>
+                          Ukloni
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div *ngIf="!isLoadingAllPatientAllergies && allPatientAllergies.length === 0" class="empty-state">
+                <i class="material-icons">warning</i>
+                <p>Nema dodeljenih alergija pacijentima.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -215,118 +125,114 @@
 
     <!-- Profil Tab -->
     <div *ngIf="activeTab === 'profil'" class="tab-content">
-      <div class="profile-header">
-        <h3>Moj Profil</h3>
-        <button 
-          *ngIf="!isEditMode" 
-          class="btn-edit" 
-          (click)="toggleEditMode()">
-           Izmeni Profil
-        </button>
-      </div>
+      <!-- Profile Card -->
+      <div class="profile-card-container">
+        <div class="card profile-card">
+          <div class="card-header card-header-info">
+            <h4 class="card-title">Moj Profil</h4>
+            <p class="card-category">Administratorski nalog</p>
+          </div>
+          <div class="card-body profile-card-body">
+            <div class="info-row">
+              <span class="label">Ime:</span>
+              <span class="value">{{ currentUser.firstName }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Prezime:</span>
+              <span class="value">{{ currentUser.lastName }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Email:</span>
+              <span class="value">{{ currentUser.email }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Telefon:</span>
+              <span class="value">{{ currentUser.phoneNumber || 'Nije uneto' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Datum rođenja:</span>
+              <span class="value">{{ currentUser.dateOfBirth || 'Nije uneto' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Pol:</span>
+              <span class="value">{{ currentUser.gender || 'Nije uneto' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Uloga:</span>
+              <span class="value admin-role">Administrator</span>
+            </div>
 
-      <!-- View Mode -->
-      <div *ngIf="!isEditMode" class="profile-info">
-        <div class="info-section">
-          <h5>Lični podaci</h5>
-          <div class="info-row">
-            <span class="label">Ime:</span>
-            <span class="value">{{ currentUser.firstName }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Prezime:</span>
-            <span class="value">{{ currentUser.lastName }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Email:</span>
-            <span class="value">{{ currentUser.email }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Telefon:</span>
-            <span class="value">{{ currentUser.phoneNumber || 'Nije uneto' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Datum rođenja:</span>
-            <span class="value">{{ currentUser.dateOfBirth || 'Nije uneto' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Pol:</span>
-            <span class="value">{{ currentUser.gender || 'Nije uneto' }}</span>
-          </div>
-        </div>
-
-        <div class="info-section">
-          <h5>Administratorski pristup</h5>
-          <div class="info-row">
-            <span class="label">Uloga:</span>
-            <span class="value admin-role">Administrator</span>
+            <div class="profile-actions">
+              <button class="btn-edit" (click)="toggleEditMode()">
+                <i class="material-icons">edit</i>
+                Izmeni Profil
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Edit Mode -->
-      <div *ngIf="isEditMode" class="edit-profile-form">
-        <form [formGroup]="editProfileForm" (ngSubmit)="saveProfile()">
-          <div class="form-section">
-            <h5>Lični podaci</h5>
+      <!-- Modal za Izmenu Profila -->
+      <div class="modal-overlay" *ngIf="isEditMode" (click)="cancelEdit()">
+        <div class="modal-content edit-profile-modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3 class="klasabelo">Izmeni Profil</h3>
+            <button class="btn-close" (click)="cancelEdit()">×</button>
+          </div>
+          <form [formGroup]="editProfileForm" (ngSubmit)="saveProfile()">
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Ime *</label>
+                <input type="text" formControlName="firstName" class="form-control">
+                <div class="error" *ngIf="editProfileForm.get('firstName')?.invalid && editProfileForm.get('firstName')?.touched">
+                  Ime je obavezno
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Prezime *</label>
+                <input type="text" formControlName="lastName" class="form-control">
+                <div class="error" *ngIf="editProfileForm.get('lastName')?.invalid && editProfileForm.get('lastName')?.touched">
+                  Prezime je obavezno
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Telefon</label>
+                <input type="text" formControlName="phoneNumber" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label>Datum rođenja</label>
+                <input type="date" formControlName="dateOfBirth" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label>Pol</label>
+                <select formControlName="gender" class="form-control">
+                  <option value="">Izaberi pol</option>
+                  <option value="Male">Muški</option>
+                  <option value="Female">Ženski</option>
+                </select>
+              </div>
+            </div>
             
-            <div class="form-group">
-              <label>Ime:</label>
-              <input type="text" formControlName="firstName" class="form-control">
-              <div class="error" *ngIf="editProfileForm.get('firstName')?.invalid && editProfileForm.get('firstName')?.touched">
-                Ime je obavezno
-              </div>
+            <div class="modal-footer">
+              <button type="button" class="btn-cancel-modal" (click)="cancelEdit()">
+                Otkaži
+              </button>
+              <button type="submit" class="btn-submit-therapy" [disabled]="editProfileForm.invalid || (isUpdating$ | async)">
+                {{ (isUpdating$ | async) ? 'Čuvanje...' : 'Sačuvaj' }}
+              </button>
             </div>
-
-            <div class="form-group">
-              <label>Prezime:</label>
-              <input type="text" formControlName="lastName" class="form-control">
-              <div class="error" *ngIf="editProfileForm.get('lastName')?.invalid && editProfileForm.get('lastName')?.touched">
-                Prezime je obavezno
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Telefon:</label>
-              <input type="text" formControlName="phoneNumber" class="form-control">
-            </div>
-
-            <div class="form-group">
-              <label>Datum rođenja:</label>
-              <input type="date" formControlName="dateOfBirth" class="form-control">
-            </div>
-
-            <div class="form-group">
-              <label>Pol:</label>
-              <select formControlName="gender" class="form-control">
-                <option value="">Izaberi pol</option>
-                <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button 
-              type="submit" 
-              class="btn-save" 
-              [disabled]="editProfileForm.invalid || (isUpdating$ | async)">
-              {{ (isUpdating$ | async) ? 'Čuvanje...' : ' Sačuvaj' }}
-            </button>
-            <button 
-              type="button" 
-              class="btn-cancel" 
-              (click)="cancelEdit()"
-              [disabled]="isUpdating$ | async">
-               Otkaži
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
 
     <!-- Pacijenti Tab -->
     <div *ngIf="activeTab === 'pacijenti'" class="tab-content">
-      <h3>Upravljanje Pacijentima</h3>
+      <h3>Pacijenti</h3>
       
       <!-- PatientListComponent sa @Input i @Output -->
       <app-patient-list
@@ -340,18 +246,12 @@
     <!-- Doktori Tab -->
     <div *ngIf="activeTab === 'doktori'" class="tab-content">
       <div class="tab-header">
-        <h3>Upravljanje Doktorima</h3>
-        <button class="btn-add-doctor" (click)="toggleAddDoctorForm()">
-          {{ showAddDoctorForm ? ' Zatvori' : ' Dodaj Doktora' }}
+        <h3>Doktori</h3>
+        <button class="btn-add-doctor" (click)="openAddDoctorModal()">
+          <i class="material-icons">add</i>
+          Dodaj Doktora
         </button>
       </div>
-
-      <!-- Add Doctor Form Component -->
-      <app-add-doctor-form
-        *ngIf="showAddDoctorForm"
-        (submitForm)="handleSubmitDoctorForm($event)"
-        (cancel)="handleCancelDoctorForm()">
-      </app-add-doctor-form>
 
       <!-- Doctor List Component -->
       <app-doctor-list
@@ -382,18 +282,12 @@
     <!-- Administratori Tab -->
     <div *ngIf="activeTab === 'administratori'" class="tab-content">
       <div class="tab-header">
-        <h3>Upravljanje Administratorima</h3>
-        <button class="btn-add-admin" (click)="toggleAddAdminForm()">
-          {{ showAddAdminForm ? ' Zatvori' : ' Dodaj Administratora' }}
+        <h3>Administratori</h3>
+        <button class="btn-add-admin" (click)="openAddAdminModal()">
+          <i class="material-icons">add</i>
+          Dodaj Administratora
         </button>
       </div>
-
-      <!-- Add Admin Form Component -->
-      <app-add-admin-form
-        *ngIf="showAddAdminForm"
-        (submitForm)="handleSubmitAdminForm($event)"
-        (cancel)="handleCancelAdminForm()">
-      </app-add-admin-form>
 
       <!-- Admin List Component -->
       <app-admin-list
@@ -406,276 +300,252 @@
 
     <!-- Tipovi Pregleda Tab -->
     <div *ngIf="activeTab === 'tipovi-pregleda'" class="tab-content">
-      <h3>Upravljanje Tipovima Pregleda</h3>
-      
-      <div class="section-header">
-        <button class="btn-add" (click)="openAddAppointmentTypeModal()">+ Dodaj Tip Pregleda</button>
+      <div class="appointment-types-header">
+        <h3 class="page-title">Tipovi Pregleda</h3>
+        <button class="btn btn-primary btn-add" (click)="openAddAppointmentTypeModal()">
+          <i class="material-icons">add</i>
+          Dodaj Tip Pregleda
+        </button>
       </div>
 
-      <div *ngIf="isLoadingAppointmentTypes$ | async" class="loading">Učitavanje tipova pregleda...</div>
-      <div *ngIf="appointmentTypesError$ | async as error" class="error-message">{{ error }}</div>
-
-      <table class="appointment-types-table" *ngIf="(appointmentTypes$ | async) as appointmentTypes">
-        <thead>
-          <tr>
-            <th>Naziv</th>
-            <th>Specijalizacija</th>
-            <th>Cena (RSD)</th>
-            <th>Trajanje (min)</th>
-            <th>Status</th>
-            <th>Akcije</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let type of appointmentTypes">
-            <td>{{ type.name }}</td>
-            <td>{{ type.specialization }}</td>
-            <td>{{ type.price | number:'1.0-0' }}</td>
-            <td>{{ type.durationMinutes }}</td>
-            <td>
-              <span class="status-badge" [class.active]="type.isActive" [class.inactive]="!type.isActive">
-                {{ type.isActive ? 'Aktivan' : 'Neaktivan' }}
-              </span>
-            </td>
-            <td>
-              <button class="btn-edit-small" (click)="openEditAppointmentTypeModal(type)">Izmeni</button>
-              <button 
-                class="btn-delete-small" 
-                *ngIf="type.isActive"
-                (click)="deactivateAppointmentType(type.id, type.name)">
-                Deaktiviraj
-              </button>
-              <button 
-                class="btn-activate-small" 
-                *ngIf="!type.isActive"
-                (click)="activateAppointmentType(type.id, type.name)">
-                Aktiviraj
-              </button>
-            </td>
-          </tr>
-          <tr *ngIf="appointmentTypes.length === 0">
-            <td colspan="6" class="no-data">Nema tipova pregleda u sistemu</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Poveži Tab -->
-    <div *ngIf="activeTab === 'povezi'" class="tab-content">
-      <h3> Poveži doktora i pacijenta</h3>
-      <p style="color: #64748b; margin-bottom: 2rem; text-align: center;">
-        Izaberi pacijenta i doktora da bi ih povezao u sistem
-      </p>
-      
-      <div class="assign-form">
-        <!-- Pacijent Autocomplete -->
-        <div class="form-group autocomplete-container">
-          <label> Pacijent</label>
-          
-          <!-- Izabrani pacijent -->
-          <div *ngIf="selectedPatient" class="selected-user">
-            <div class="user-card">
-              <div class="user-info">
-                <strong>{{ selectedPatient.firstName }} {{ selectedPatient.lastName }}</strong>
-                <span>{{ selectedPatient.email }}</span>
-              </div>
-              <button class="btn-clear" (click)="clearPatient()">✕</button>
-            </div>
-          </div>
-
-          <!-- Search input -->
-          <div *ngIf="!selectedPatient">
-            <input 
-              type="text" 
-              class="form-control"
-              placeholder="Kucaj ime, prezime ili email pacijenta..."
-              (input)="onPatientSearchChange($any($event.target).value)"
-            />
-            
-            <!-- Autocomplete dropdown -->
-            <div class="autocomplete-dropdown" *ngIf="showPatientDropdown && (filteredPatients$ | async) as patients">
-              <div 
-                *ngFor="let patient of patients" 
-                class="autocomplete-item"
-                (mousedown)="selectPatient(patient)">
-                <div class="user-icon"></div>
-                <div class="user-details">
-                  <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
-                  <span>{{ patient.email }}</span>
-                </div>
-              </div>
-              <div *ngIf="patients.length === 0" class="no-results">
-                Nema rezultata
-              </div>
-            </div>
-          </div>
+      <div class="card">
+        <div class="card-header card-header-primary">
+          <h4 class="card-title">Svi Tipovi Pregleda</h4>
+          <p class="card-category">Kompletna lista tipova pregleda u sistemu</p>
         </div>
+        <div class="card-body">
+          <div *ngIf="isLoadingAppointmentTypes$ | async" class="loading-state">Učitavanje tipova pregleda...</div>
+          <div *ngIf="appointmentTypesError$ | async as error" class="error-message">{{ error }}</div>
 
-        <!-- Doktor Autocomplete -->
-        <div class="form-group autocomplete-container">
-          <label> Doktor</label>
-          
-          <!-- Izabrani doktor -->
-          <div *ngIf="selectedDoctor" class="selected-user">
-            <div class="user-card">
-              <div class="user-info">
-                <strong>Dr. {{ selectedDoctor.firstName }} {{ selectedDoctor.lastName }}</strong>
-                <span>{{ selectedDoctor.email }}</span>
-                <span class="specialization" *ngIf="selectedDoctor.specialization">
-                  {{ selectedDoctor.specialization }}
-                </span>
-              </div>
-              <button class="btn-clear" (click)="clearDoctor()">✕</button>
-            </div>
+          <div class="table-responsive">
+            <table class="table table-hover" *ngIf="(appointmentTypes$ | async) as appointmentTypes">
+              <thead class="text-primary">
+                <tr>
+                  <th>Naziv</th>
+                  <th>Specijalizacija</th>
+                  <th>Cena (RSD)</th>
+                  <th>Trajanje (min)</th>
+                  <th>Status</th>
+                  <th class="text-right">Akcije</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let type of appointmentTypes">
+                  <td><strong>{{ type.name }}</strong></td>
+                  <td>{{ type.specialization }}</td>
+                  <td>{{ type.price | number:'1.0-0' }} RSD</td>
+                  <td>{{ type.durationMinutes }} min</td>
+                  <td>
+                    <span class="status-badge" [class.active]="type.isActive" [class.inactive]="!type.isActive">
+                      {{ type.isActive ? 'Aktivan' : 'Neaktivan' }}
+                    </span>
+                  </td>
+                  <td class="td-actions text-right">
+                    <button type="button" class="btn btn-info btn-sm" (click)="openEditAppointmentTypeModal(type)">
+                      <i class="material-icons">edit</i>
+                      Izmeni
+                    </button>
+                    <button 
+                      type="button"
+                      class="btn btn-danger btn-sm" 
+                      *ngIf="type.isActive"
+                      (click)="deactivateAppointmentType(type.id, type.name)">
+                      <i class="material-icons">block</i>
+                      Deaktiviraj
+                    </button>
+                    <button 
+                      type="button"
+                      class="btn btn-success btn-sm" 
+                      *ngIf="!type.isActive"
+                      (click)="activateAppointmentType(type.id, type.name)">
+                      <i class="material-icons">check_circle</i>
+                      Aktiviraj
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-
-          <!-- Search input -->
-          <div *ngIf="!selectedDoctor">
-            <input 
-              type="text" 
-              class="form-control"
-              placeholder="Kucaj ime, prezime ili email doktora..."
-              (input)="onDoctorSearchChange($any($event.target).value)"
-            />
-            
-            <!-- Autocomplete dropdown -->
-            <div class="autocomplete-dropdown" *ngIf="showDoctorDropdown && (filteredDoctors$ | async) as doctors">
-              <div 
-                *ngFor="let doctor of doctors" 
-                class="autocomplete-item"
-                (mousedown)="selectDoctor(doctor)">
-                <div class="user-icon"></div>
-                <div class="user-details">
-                  <strong>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</strong>
-                  <span>{{ doctor.email }}</span>
-                  <span class="spec" *ngIf="doctor.specialization">{{ doctor.specialization }}</span>
-                </div>
-              </div>
-              <div *ngIf="doctors.length === 0" class="no-results">
-                Nema rezultata
-              </div>
-            </div>
+          <div *ngIf="(appointmentTypes$ | async)?.length === 0" class="empty-state">
+            <i class="material-icons">event_note</i>
+            <p>Nema tipova pregleda za prikaz.</p>
           </div>
-        </div>
-
-        <!-- Submit Button -->
-        <div class="form-actions">
-          <button 
-            class="btn-assign"
-            [disabled]="!selectedPatient || !selectedDoctor"
-            (click)="assignDoctorToPatient()">
-             Dodeli doktora pacijentu
-          </button>
         </div>
       </div>
     </div>
 
-    <!-- Ukloni Tab -->
-    <div *ngIf="activeTab === 'ukloni'" class="tab-content">
-      <h3> Ukloni Pacijenta Doktoru</h3>
-      <p style="color: #64748b; margin-bottom: 2rem; text-align: center;">
-        Prvo izaberi doktora, pa onda pacijenta koji treba da se ukloni
-      </p>
-      
-      <div class="assign-form">
-        <!-- Doktor Autocomplete -->
-        <div class="form-group autocomplete-container">
-          <label> Doktor</label>
-          
-          <!-- Izabrani doktor -->
-          <div *ngIf="selectedRemoveDoctor" class="selected-user">
-            <div class="user-card">
-              <div class="user-info">
-                <strong>Dr. {{ selectedRemoveDoctor.firstName }} {{ selectedRemoveDoctor.lastName }}</strong>
-                <span>{{ selectedRemoveDoctor.email }}</span>
-                <span class="specialization" *ngIf="selectedRemoveDoctor.specialization">
-                  {{ selectedRemoveDoctor.specialization }}
-                </span>
-              </div>
-              <button class="btn-clear" (click)="clearRemoveDoctor()">✕</button>
+    <!-- Pacijent-Doktor Tab (spojeni povezi i ukloni) -->
+    <div *ngIf="activeTab === 'pacijent-doktor'" class="tab-content">
+      <div class="patient-doctor-two-columns">
+        <!-- Leva Kartica - Dodeli Doktora -->
+        <div class="patient-doctor-card left-card">
+          <div class="card">
+            <div class="card-header card-header-success">
+              <h4 class="card-title">
+                <i class="material-icons">person_add</i>
+                Dodeli Doktora Pacijentu
+              </h4>
+              <p class="card-category">Poveži pacijenta sa doktorom</p>
             </div>
-          </div>
-
-          <!-- Search input -->
-          <div *ngIf="!selectedRemoveDoctor">
-            <input 
-              type="text" 
-              class="form-control"
-              placeholder="Kucaj ime, prezime ili email doktora..."
-              (input)="onRemoveDoctorSearchChange($any($event.target).value)"
-            />
-            
-            <!-- Autocomplete dropdown -->
-            <div class="autocomplete-dropdown" *ngIf="showRemoveDoctorDropdown && (filteredRemoveDoctors$ | async) as doctors">
-              <div 
-                *ngFor="let doctor of doctors" 
-                class="autocomplete-item"
-                (mousedown)="selectRemoveDoctor(doctor)">
-                <div class="user-icon"></div>
-                <div class="user-details">
-                  <strong>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</strong>
-                  <span>{{ doctor.email }}</span>
-                  <span class="spec" *ngIf="doctor.specialization">{{ doctor.specialization }}</span>
+            <div class="card-body">
+              <div class="assign-form-compact">
+                <!-- Pacijent Input -->
+                <div class="form-group">
+                  <label>Pacijent *</label>
+                  <div *ngIf="selectedPatient" class="selected-user-chip">
+                    <span>{{ selectedPatient.firstName }} {{ selectedPatient.lastName }}</span>
+                    <button class="chip-close" (click)="clearPatient()">×</button>
+                  </div>
+                  <div *ngIf="!selectedPatient" class="autocomplete-wrapper">
+                    <input 
+                      type="text" 
+                      class="form-control"
+                      placeholder="Pretraži pacijenta..."
+                      (input)="onPatientSearchChange($any($event.target).value)"
+                      (focus)="showPatientDropdown = true"
+                    />
+                    <div class="autocomplete-dropdown" *ngIf="showPatientDropdown && (filteredPatients$ | async) as patients">
+                      <div 
+                        *ngFor="let patient of patients" 
+                        class="autocomplete-item"
+                        (mousedown)="selectPatient(patient)">
+                        <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
+                        <span>{{ patient.email }}</span>
+                      </div>
+                      <div *ngIf="patients.length === 0" class="no-results">
+                        Nema rezultata
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div *ngIf="doctors.length === 0" class="no-results">
-                Nema rezultata
+
+                <!-- Doktor Input -->
+                <div class="form-group">
+                  <label>Doktor *</label>
+                  <div *ngIf="selectedDoctor" class="selected-user-chip">
+                    <span>Dr. {{ selectedDoctor.firstName }} {{ selectedDoctor.lastName }}</span>
+                    <button class="chip-close" (click)="clearDoctor()">×</button>
+                  </div>
+                  <div *ngIf="!selectedDoctor" class="autocomplete-wrapper">
+                    <input 
+                      type="text" 
+                      class="form-control"
+                      placeholder="Pretraži doktora..."
+                      (input)="onDoctorSearchChange($any($event.target).value)"
+                      (focus)="showDoctorDropdown = true"
+                    />
+                    <div class="autocomplete-dropdown" *ngIf="showDoctorDropdown && (filteredDoctors$ | async) as doctors">
+                      <div 
+                        *ngFor="let doctor of doctors" 
+                        class="autocomplete-item"
+                        (mousedown)="selectDoctor(doctor)">
+                        <strong>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</strong>
+                        <span>{{ doctor.specialization || doctor.email }}</span>
+                      </div>
+                      <div *ngIf="doctors.length === 0" class="no-results">
+                        Nema rezultata
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                  class="btn btn-success btn-block"
+                  [disabled]="!selectedPatient || !selectedDoctor"
+                  (click)="assignDoctorToPatient()">
+                  <i class="material-icons">check</i>
+                  Dodeli
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Pacijent Autocomplete - prikazuje se samo ako je doktor izabran -->
-        <div class="form-group autocomplete-container" *ngIf="selectedRemoveDoctor">
-          <label> Pacijent</label>
-          
-          <!-- Izabrani pacijent -->
-          <div *ngIf="selectedRemovePatient" class="selected-user">
-            <div class="user-card">
-              <div class="user-info">
-                <strong>{{ selectedRemovePatient.firstName }} {{ selectedRemovePatient.lastName }}</strong>
-                <span>{{ selectedRemovePatient.email }}</span>
-              </div>
-              <button class="btn-clear" (click)="clearRemovePatient()">✕</button>
+        <!-- Desna Kartica - Ukloni Doktora -->
+        <div class="patient-doctor-card right-card">
+          <div class="card">
+            <div class="card-header card-header-danger">
+              <h4 class="card-title">
+                <i class="material-icons">person_remove</i>
+                Ukloni Doktora Pacijentu
+              </h4>
+              <p class="card-category">Prekini vezu između pacijenta i doktora</p>
             </div>
-          </div>
-
-          <!-- Search input -->
-          <div *ngIf="!selectedRemovePatient">
-            <input 
-              type="text" 
-              class="form-control"
-              placeholder="Kucaj ime, prezime ili email pacijenta..."
-              (input)="onRemovePatientSearchChange($any($event.target).value)"
-            />
-            
-            <!-- Autocomplete dropdown -->
-            <div class="autocomplete-dropdown" *ngIf="showRemovePatientDropdown && (filteredRemovePatients$ | async) as patients">
-              <div 
-                *ngFor="let patient of patients" 
-                class="autocomplete-item"
-                (mousedown)="selectRemovePatient(patient)">
-                <div class="user-icon"></div>
-                <div class="user-details">
-                  <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
-                  <span>{{ patient.email }}</span>
+            <div class="card-body">
+              <div class="assign-form-compact">
+                <!-- Doktor Input -->
+                <div class="form-group">
+                  <label>Doktor *</label>
+                  <div *ngIf="selectedRemoveDoctor" class="selected-user-chip">
+                    <span>Dr. {{ selectedRemoveDoctor.firstName }} {{ selectedRemoveDoctor.lastName }}</span>
+                    <button class="chip-close" (click)="clearRemoveDoctor()">×</button>
+                  </div>
+                  <div *ngIf="!selectedRemoveDoctor" class="autocomplete-wrapper">
+                    <input 
+                      type="text" 
+                      class="form-control"
+                      placeholder="Pretraži doktora..."
+                      (input)="onRemoveDoctorSearchChange($any($event.target).value)"
+                      (focus)="showRemoveDoctorDropdown = true"
+                    />
+                    <div class="autocomplete-dropdown" *ngIf="showRemoveDoctorDropdown && (filteredRemoveDoctors$ | async) as doctors">
+                      <div 
+                        *ngFor="let doctor of doctors" 
+                        class="autocomplete-item"
+                        (mousedown)="selectRemoveDoctor(doctor)">
+                        <strong>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</strong>
+                        <span>{{ doctor.specialization || doctor.email }}</span>
+                      </div>
+                      <div *ngIf="doctors.length === 0" class="no-results">
+                        Nema rezultata
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div *ngIf="patients.length === 0" class="no-results">
-                Nema pacijenata za ovog doktora
+
+                <!-- Pacijent Input -->
+                <div class="form-group">
+                  <label>Pacijent *</label>
+                  <div *ngIf="selectedRemovePatient" class="selected-user-chip">
+                    <span>{{ selectedRemovePatient.firstName }} {{ selectedRemovePatient.lastName }}</span>
+                    <button class="chip-close" (click)="clearRemovePatient()">×</button>
+                  </div>
+                  <div *ngIf="!selectedRemovePatient" class="autocomplete-wrapper">
+                    <input 
+                      type="text" 
+                      class="form-control"
+                      placeholder="Pretraži pacijenta..."
+                      (input)="onRemovePatientSearchChange($any($event.target).value)"
+                      (focus)="showRemovePatientDropdown = true"
+                      [disabled]="!selectedRemoveDoctor"
+                    />
+                    <div class="autocomplete-dropdown" *ngIf="showRemovePatientDropdown && (filteredRemovePatients$ | async) as patients">
+                      <div 
+                        *ngFor="let patient of patients" 
+                        class="autocomplete-item"
+                        (mousedown)="selectRemovePatient(patient)">
+                        <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
+                        <span>{{ patient.email }}</span>
+                      </div>
+                      <div *ngIf="patients.length === 0" class="no-results">
+                        Nema pacijenata za ovog doktora
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                  class="btn btn-danger btn-block"
+                  [disabled]="!selectedRemovePatient || !selectedRemoveDoctor"
+                  (click)="removePatientFromDoctor()">
+                  <i class="material-icons">delete</i>
+                  Ukloni
+                </button>
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Submit Button -->
-        <div class="form-actions" *ngIf="selectedRemoveDoctor">
-          <button 
-            class="btn-remove"
-            [disabled]="!selectedRemovePatient || !selectedRemoveDoctor"
-            (click)="removePatientFromDoctor()">
-             Ukloni Pacijenta od Doktora
-          </button>
         </div>
       </div>
     </div>
@@ -695,161 +565,247 @@
 
     <!-- Svi Termini Tab -->
     <div *ngIf="activeTab === 'termini'" class="tab-content">
-      <div class="section-header">
-        <h3> Svi Termini</h3>
-        <p class="section-description">
-          Pregled svih termina sa mogućnošću filtriranja po datumu, doktoru i pacijentu.
-        </p>
+      <div class="appointments-header-section">
+        <div class="header-left">
+          <h3 class="page-title">Svi Termini</h3>
+          <p class="section-description">
+            Pregled svih termina u sistemu
+          </p>
+        </div>
+        <div class="header-buttons">
+          <button class="btn btn-info btn-stats" (click)="openStatsModal()">
+            <i class="material-icons">bar_chart</i>
+            Prikaži Statistiku
+          </button>
+          <button class="btn btn-primary btn-add-block" (click)="openBlockAppointmentModal()">
+            <i class="material-icons">event_busy</i>
+            Dodaj Blok Termin
+          </button>
+        </div>
       </div>
 
-      <!-- Filter Form - REACTIVE sa combineLatest -->
-      <div class="filter-container">
-        <div class="filter-row">
-          <div class="filter-field">
-            <label for="filterDateFrom">Datum od</label>
-            <input 
-              type="date" 
-              id="filterDateFrom" 
-              [(ngModel)]="appointmentDateFromFilter">
-          </div>
+      <!-- Filters Card -->
+      <div class="card filters-card">
+        <div class="card-header card-header-primary">
+          <h4 class="card-title">
+            <i class="material-icons">filter_list</i>
+            Filteri
+          </h4>
+        </div>
+        <div class="card-body">
+          <div class="filters-grid-single-row">
+            <div class="filter-field">
+              <label for="filterDateFrom">Datum od</label>
+              <input 
+                type="date" 
+                class="form-control"
+                id="filterDateFrom" 
+                [(ngModel)]="appointmentDateFromFilter">
+            </div>
 
-          <div class="filter-field">
-            <label for="filterDateTo">Datum do</label>
-            <input 
-              type="date" 
-              id="filterDateTo" 
-              [(ngModel)]="appointmentDateToFilter">
-          </div>
+            <div class="filter-field">
+              <label for="filterDateTo">Datum do</label>
+              <input 
+                type="date" 
+                class="form-control"
+                id="filterDateTo" 
+                [(ngModel)]="appointmentDateToFilter">
+            </div>
 
-          <div class="filter-field">
-            <label for="filterDoctor">Doktor</label>
-            <select id="filterDoctor" [(ngModel)]="appointmentDoctorFilter">
-              <option value="">-- Svi doktori --</option>
-              <option *ngFor="let doctor of allDoctorsForBlock$ | async" [value]="doctor.id">
-                Dr. {{ doctor.firstName }} {{ doctor.lastName }}
-              </option>
-            </select>
-          </div>
+            <div class="filter-field">
+              <label for="filterDoctor">Doktor</label>
+              <select class="form-control" id="filterDoctor" [(ngModel)]="appointmentDoctorFilter">
+                <option value="">Svi doktori</option>
+                <option *ngFor="let doctor of allDoctorsForBlock$ | async" [value]="doctor.id">
+                  Dr. {{ doctor.firstName }} {{ doctor.lastName }}
+                </option>
+              </select>
+            </div>
 
-          <div class="filter-field">
-            <label for="filterPatient">Pacijent</label>
-            <select id="filterPatient" [(ngModel)]="appointmentPatientFilter">
-              <option value="">-- Svi pacijenti --</option>
-              <option *ngFor="let patient of allPatientsForBlock$ | async" [value]="patient.id">
-                {{ patient.firstName }} {{ patient.lastName }}
-              </option>
-            </select>
-          </div>
+            <div class="filter-field">
+              <label for="filterPatient">Pacijent</label>
+              <select class="form-control" id="filterPatient" [(ngModel)]="appointmentPatientFilter">
+                <option value="">Svi pacijenti</option>
+                <option *ngFor="let patient of allPatientsForBlock$ | async" [value]="patient.id">
+                  {{ patient.firstName }} {{ patient.lastName }}
+                </option>
+              </select>
+            </div>
 
-          <div class="filter-field">
-            <label for="filterStatus">Status</label>
-            <select id="filterStatus" [(ngModel)]="appointmentStatusFilter">
-              <option value="">-- Svi statusi --</option>
-              <option value="Pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
+            <div class="filter-field">
+              <label for="filterStatus">Status</label>
+              <select class="form-control" id="filterStatus" [(ngModel)]="appointmentStatusFilter">
+                <option value="">Svi statusi</option>
+                <option value="Pending">Na čekanju</option>
+                <option value="Approved">Odobren</option>
+                <option value="Completed">Završen</option>
+                <option value="Cancelled">Otkazan</option>
+                <option value="Rejected">Odbijen</option>
+              </select>
+            </div>
 
-          <div class="filter-actions">
-            <button 
-              class="btn-clear-filter" 
-              (click)="resetAppointmentFilters()">
-               Resetuj filtere
-            </button>
+            <div class="filter-actions">
+              <button 
+                class="btn btn-default btn-reset" 
+                (click)="resetAppointmentFilters()">
+                <i class="material-icons">clear</i>
+                Resetuj
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Loading State -->
       <div *ngIf="isLoadingAllAppointments" class="loading-state">
-         Učitavanje termina...
+        <i class="material-icons spin">hourglass_empty</i>
+        Učitavanje termina...
       </div>
 
-      <!-- Appointments List - REACTIVE sa async pipe -->
+      <!-- Appointments List -->
       <ng-container *ngIf="!isLoadingAllAppointments && (filteredAppointments$ | async) as filteredAppointments">
         <div *ngIf="filteredAppointments.length === 0" class="empty-state">
-           Nema termina prema zadatim filterima
+          <i class="material-icons">event_busy</i>
+          <p>Nema termina prema zadatim filterima</p>
         </div>
 
-        <div *ngIf="filteredAppointments.length > 0" class="appointments-grid">
-          <div class="appointment-card" 
-               *ngFor="let appointment of filteredAppointments"
-               [ngClass]="{'block-appointment-card': appointment.isBlockAppointment}">
-          
-          <div class="appointment-header">
-            <span class="appointment-date"> {{ appointment.date | date:'dd.MM.yyyy' }}</span>
-            <span class="appointment-time">
-               {{ appointment.startTime }}
-              <span *ngIf="appointment.isBlockAppointment"> - {{ appointment.endTime }}</span>
-            </span>
-            <span class="appointment-status" [ngClass]="'status-' + appointment.status.toLowerCase()">
-              {{ appointment.status }}
-            </span>
-          </div>
+        <div *ngIf="filteredAppointments.length > 0" class="appointments-cards-list">
+          <div *ngFor="let apt of filteredAppointments" 
+               class="card appointment-card" 
+               [ngClass]="{
+                 'block-card-pending': apt.isBlockAppointment && apt.status === 'Pending',
+                 'block-card-approved': apt.isBlockAppointment && apt.status === 'Approved',
+                 'block-card-completed': apt.isBlockAppointment && apt.status === 'Completed',
+                 'block-card-cancelled': apt.isBlockAppointment && apt.status === 'Cancelled',
+                 'block-card-rejected': apt.isBlockAppointment && apt.status === 'Rejected'
+               }">
+            <div class="card-header card-header-info" [ngClass]="{
+              'header-pending': apt.status === 'Pending',
+              'header-approved': apt.status === 'Approved',
+              'header-completed': apt.status === 'Completed',
+              'header-cancelled': apt.status === 'Cancelled',
+              'header-rejected': apt.status === 'Rejected'
+            }">
+              <h4 class="card-title">
+                <i class="material-icons">person</i>
+                {{ apt.patient?.firstName || 'N/A' }} {{ apt.patient?.lastName || '' }}
+                <span *ngIf="!apt.patientId" class="no-patient-badge">(Bez pacijenta)</span>
+              </h4>
+              <p class="card-category">
+                {{ apt.date }} • {{ apt.startTime }}<span *ngIf="apt.isBlockAppointment"> - {{ apt.endTime }}</span>
+                <span *ngIf="apt.appointmentType"> • {{ apt.appointmentType.name }}</span>
+              </p>
+            </div>
+            <div class="card-body">
+              <div class="appointment-details">
+                <!-- Doktor -->
+                <div class="info-row">
+                  <span class="label">Doktor:</span>
+                  <span class="value">Dr. {{ apt.doctor?.firstName }} {{ apt.doctor?.lastName }}</span>
+                </div>
 
-          <!-- Block Appointment Badge -->
-          <div *ngIf="appointment.isBlockAppointment" class="block-badge">
-             BLOK TERMIN - {{ appointment.duration }} min ({{ appointment.blockSize }} slotova)
-          </div>
-          
-          <div class="appointment-body">
-            <div class="appointment-field">
-              <strong> Doktor:</strong> 
-              Dr. {{ appointment.doctor?.firstName }} {{ appointment.doctor?.lastName }}
-            </div>
-            
-            <div class="appointment-field">
-              <strong> Pacijent:</strong> 
-              <span *ngIf="appointment.patient">
-                {{ appointment.patient.firstName }} {{ appointment.patient.lastName }}
-              </span>
-              <span *ngIf="!appointment.patient" class="text-muted">Nije dodeljen</span>
-            </div>
-            
-            <div class="appointment-field">
-              <strong> Razlog:</strong> 
-              {{ appointment.reason }}
-            </div>
-            
-            <div class="appointment-field" *ngIf="appointment.appointmentType">
-              <strong>📋 Tip pregleda:</strong> 
-              <span class="appointment-type-badge">
-                {{ appointment.appointmentType.name }} ({{ appointment.appointmentType.price }} RSD, {{ appointment.appointmentType.durationMinutes }} min)
-              </span>
-            </div>
-            
-            <div class="appointment-field" *ngIf="appointment.notes">
-              <strong> Napomena:</strong> 
-              {{ appointment.notes }}
+                <!-- Tip pregleda -->
+                <div class="info-row" *ngIf="apt.appointmentType">
+                  <span class="label">Tip pregleda:</span>
+                  <span class="value">{{ apt.appointmentType.name }} ({{ apt.appointmentType.price }} RSD, {{ apt.appointmentType.durationMinutes }} min)</span>
+                </div>
+                
+                <!-- Status -->
+                <div class="info-row">
+                  <span class="label">Status:</span>
+                  <span class="appointment-status-badge" 
+                        [class.status-pending]="apt.status === 'Pending'"
+                        [class.status-approved]="apt.status === 'Approved'"
+                        [class.status-completed]="apt.status === 'Completed'"
+                        [class.status-cancelled]="apt.status === 'Cancelled'"
+                        [class.status-rejected]="apt.status === 'Rejected'">
+                    {{ apt.status === 'Pending' ? 'Na čekanju' : 
+                      apt.status === 'Approved' ? 'Odobren' : 
+                      apt.status === 'Completed' ? 'Završen' : 
+                      apt.status === 'Cancelled' ? 'Otkazan' : 
+                      apt.status === 'Rejected' ? 'Odbijen' : apt.status }}
+                  </span>
+                </div>
+                
+                <!-- Razlog -->
+                <div class="info-row" *ngIf="apt.reason">
+                  <span class="label">Razlog:</span>
+                  <span class="value reason-text">{{ apt.reason }}</span>
+                </div>
+
+                <!-- Napomena -->
+                <div class="info-row" *ngIf="apt.notes">
+                  <span class="label">Napomena:</span>
+                  <span class="value">{{ apt.notes }}</span>
+                </div>
+
+                <!-- Blok Termin Info -->
+                <div class="info-row" *ngIf="apt.isBlockAppointment">
+                  <span class="label">Blok termin:</span>
+                  <span class="value block-info">{{ apt.duration }} min</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        </div>
 
-        <!-- Results Counter - sa REDUCE operatorom -->
-        <div class="results-counter">
-           Prikazano termina: 
-          <strong>{{ filteredAppointments.length }}</strong> 
-          od 
-          <strong>{{ totalAppointmentsCount$ | async }}</strong>
-          <span class="counter-note"></span>
-        </div>
-
-        <!-- Statistika sa REDUCE operatorom -->
-        <div class="stats-container" *ngIf="(appointmentStats$ | async) as stats">
-          <h4> Statistika po statusu:</h4>
-          <div class="stats-grid">
-            <div class="stat-card" *ngFor="let stat of stats">
-              <div class="stat-status">{{ stat.status }}</div>
-              <div class="stat-count">{{ stat.count }} termina</div>
-              <div class="stat-percentage">{{ stat.percentage }}%</div>
-            </div>
-          </div>
+        <!-- Results Counter -->
+        <div class="results-summary">
+          <p>Prikazano <strong>{{ filteredAppointments.length }}</strong> od <strong>{{ totalAppointmentsCount$ | async }}</strong> termina</p>
         </div>
       </ng-container>
+    </div>
+  </div>
+  </div> <!-- admin-content -->
+
+  <!-- Statistics Modal -->
+  <div *ngIf="showStatsModal" class="modal-overlay" (click)="closeStatsModal()">
+    <div class="modal-content stats-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="material-icons">bar_chart</i>
+          Statistika Termina
+        </h3>
+        <button class="btn-close" (click)="closeStatsModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <ng-container *ngIf="appointmentStats$ | async as stats">
+          <div *ngIf="stats.length === 0" class="empty-stats">
+            <i class="material-icons">info</i>
+            <p>Nema termina za prikaz statistike</p>
+          </div>
+          
+          <div *ngIf="stats.length > 0" class="stats-list">
+            <div *ngFor="let stat of stats" class="stat-item" [ngClass]="{
+              'stat-pending': stat.status === 'Pending',
+              'stat-approved': stat.status === 'Approved',
+              'stat-completed': stat.status === 'Completed',
+              'stat-cancelled': stat.status === 'Cancelled',
+              'stat-rejected': stat.status === 'Rejected'
+            }">
+              <div class="stat-header">
+                <span class="stat-label">
+                  {{ stat.status === 'Pending' ? 'Na čekanju' : 
+                     stat.status === 'Approved' ? 'Odobreni' : 
+                     stat.status === 'Completed' ? 'Završeni' : 
+                     stat.status === 'Cancelled' ? 'Otkazani' : 
+                     stat.status === 'Rejected' ? 'Odbijeni' : stat.status }}
+                </span>
+                <span class="stat-count">{{ stat.count }}</span>
+              </div>
+              <div class="stat-bar-container">
+                <div class="stat-bar" [style.width.%]="stat.percentage"></div>
+              </div>
+              <div class="stat-percentage">{{ stat.percentage }}%</div>
+            </div>
+            
+            <div class="stats-total">
+              <strong>Ukupno termina:</strong> {{ (totalAppointmentsCount$ | async) }}
+            </div>
+          </div>
+        </ng-container>
+      </div>
     </div>
   </div>
 
@@ -981,28 +937,38 @@
 
   <!-- Allergy Modal (Add/Edit) -->
   <div *ngIf="showAllergyModal" class="modal-overlay" (click)="closeAllergyModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-content allergy-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>{{ allergyModalMode === 'add' ? 'Dodaj Novu Alergiju' : 'Izmeni Alergiju' }}</h3>
-        <button class="btn-close" (click)="closeAllergyModal()">✕</button>
+        <h3>
+          <i class="material-icons">warning</i>
+          {{ allergyModalMode === 'add' ? 'Dodaj Novu Alergiju' : 'Izmeni Alergiju' }}
+        </h3>
+        <button class="close-btn" (click)="closeAllergyModal()">×</button>
       </div>
       
-      <form [formGroup]="allergyForm" (ngSubmit)="submitAllergyForm()" class="modal-body">
-        <div class="form-group">
-          <label for="allergyName">Naziv Alergije *</label>
-          <input 
-            type="text" 
-            id="allergyName" 
-            formControlName="name"
-            placeholder="Npr: Penicilin, Kikiriki, Polen...">
-          <div class="error" *ngIf="allergyForm.get('name')?.invalid && allergyForm.get('name')?.touched">
-            Naziv alergije je obavezan (min 2 karaktera)
+      <form [formGroup]="allergyForm" (ngSubmit)="submitAllergyForm()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="allergyName">Naziv Alergije *</label>
+            <input 
+              type="text" 
+              class="form-control"
+              id="allergyName" 
+              formControlName="name"
+              placeholder="Npr: Penicilin, Kikiriki, Polen...">
+            <div class="error" *ngIf="allergyForm.get('name')?.invalid && allergyForm.get('name')?.touched">
+              Naziv alergije je obavezan (min 2 karaktera)
+            </div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn-cancel" (click)="closeAllergyModal()">Otkaži</button>
-          <button type="submit" class="btn-save" [disabled]="allergyForm.invalid || isSubmittingAllergy">
+          <button type="button" class="btn btn-default" (click)="closeAllergyModal()">
+            <i class="material-icons">close</i>
+            Otkaži
+          </button>
+          <button type="submit" class="btn btn-success" [disabled]="allergyForm.invalid || isSubmittingAllergy">
+            <i class="material-icons">save</i>
             {{ isSubmittingAllergy ? 'Čuvanje...' : 'Sačuvaj' }}
           </button>
         </div>
@@ -1010,78 +976,269 @@
     </div>
   </div>
 
-  <!-- AppointmentType Modal (Add/Edit) -->
-  <div *ngIf="showAppointmentTypeModal" class="modal-overlay" (click)="closeAppointmentTypeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+  <!-- Patient Allergy Modal -->
+  <div *ngIf="showPatientAllergyModal" class="modal-overlay" (click)="closePatientAllergyModal()">
+    <div class="modal-content patient-allergy-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>{{ appointmentTypeModalMode === 'add' ? 'Dodaj Novi Tip Pregleda' : 'Izmeni Tip Pregleda' }}</h3>
-        <button class="btn-close" (click)="closeAppointmentTypeModal()">✕</button>
+        <h3>
+          <i class="material-icons">person_add</i>
+          Dodaj Alergiju Pacijentu
+        </h3>
+        <button class="close-btn" (click)="closePatientAllergyModal()">×</button>
       </div>
       
-      <form [formGroup]="appointmentTypeForm" (ngSubmit)="submitAppointmentTypeForm()" class="modal-body">
-        <div class="form-group">
-          <label for="appointmentTypeName">Naziv Tipa Pregleda *</label>
-          <input 
-            type="text" 
-            id="appointmentTypeName" 
-            formControlName="name"
-            placeholder="Npr: Kontrolni pregled, EKG, Ultrazvuk...">
-          <div class="error" *ngIf="appointmentTypeForm.get('name')?.invalid && appointmentTypeForm.get('name')?.touched">
-            Naziv je obavezan
+      <form [formGroup]="patientAllergyForm" (ngSubmit)="addPatientAllergy()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="patientSelectModal">Pacijent *</label>
+            <select class="form-control" id="patientSelectModal" formControlName="patientId">
+              <option value="">-- Izaberi pacijenta --</option>
+              <option *ngFor="let patient of (patients$ | async)" [value]="patient.id">
+                {{ patient.firstName }} {{ patient.lastName }}
+              </option>
+            </select>
+            <div class="error" *ngIf="patientAllergyForm.get('patientId')?.invalid && patientAllergyForm.get('patientId')?.touched">
+              Pacijent je obavezan
+            </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label for="appointmentTypeDescription">Opis</label>
-          <textarea 
-            id="appointmentTypeDescription" 
-            formControlName="description"
-            rows="3"
-            placeholder="Detaljan opis pregleda..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="appointmentTypeSpecialization">Specijalizacija *</label>
-          <select id="appointmentTypeSpecialization" formControlName="specialization">
-            <option value="">-- Izaberi specijalizaciju --</option>
-            <option *ngFor="let spec of specializations" [value]="spec">{{ spec }}</option>
-          </select>
-          <div class="error" *ngIf="appointmentTypeForm.get('specialization')?.invalid && appointmentTypeForm.get('specialization')?.touched">
-            Specijalizacija je obavezna
+          <div class="form-group">
+            <label for="allergySelectModal">Alergija *</label>
+            <select class="form-control" id="allergySelectModal" formControlName="allergyId">
+              <option value="">-- Izaberi alergiju --</option>
+              <option *ngFor="let allergy of (allergies$ | async)" [value]="allergy.id">
+                {{ allergy.name }}
+              </option>
+            </select>
+            <div class="error" *ngIf="patientAllergyForm.get('allergyId')?.invalid && patientAllergyForm.get('allergyId')?.touched">
+              Alergija je obavezna
+            </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label for="appointmentTypePrice">Cena (RSD) *</label>
-          <input 
-            type="number" 
-            id="appointmentTypePrice" 
-            formControlName="price"
-            placeholder="2500"
-            min="0">
-          <div class="error" *ngIf="appointmentTypeForm.get('price')?.invalid && appointmentTypeForm.get('price')?.touched">
-            Cena mora biti pozitivan broj
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="appointmentTypeDuration">Trajanje (minuta) *</label>
-          <select id="appointmentTypeDuration" formControlName="durationMinutes">
-            <option [value]="30">30 minuta</option>
-            <option [value]="60">60 minuta</option>
-          </select>
-          <div class="error" *ngIf="appointmentTypeForm.get('durationMinutes')?.invalid && appointmentTypeForm.get('durationMinutes')?.touched">
-            Trajanje je obavezno
+          <div class="form-group">
+            <label for="diagnosedDateModal">Datum Dijagnoze</label>
+            <input type="date" class="form-control" id="diagnosedDateModal" formControlName="diagnosedDate">
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn-cancel" (click)="closeAppointmentTypeModal()">Otkaži</button>
-          <button type="submit" class="btn-save" [disabled]="appointmentTypeForm.invalid || isSubmittingAppointmentType">
+          <button type="button" class="btn btn-default" (click)="closePatientAllergyModal()">
+            <i class="material-icons">close</i>
+            Otkaži
+          </button>
+          <button type="submit" class="btn btn-success" [disabled]="patientAllergyForm.invalid || isAddingPatientAllergy">
+            <i class="material-icons">save</i>
+            {{ isAddingPatientAllergy ? 'Dodavanje...' : 'Dodaj' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- AppointmentType Modal (Add/Edit) -->
+  <!-- Appointment Type Modal -->
+  <div *ngIf="showAppointmentTypeModal" class="modal-overlay" (click)="closeAppointmentTypeModal()">
+    <div class="modal-content appointment-type-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="klasabelo">
+          <i class="material-icons">event_note</i>
+          {{ appointmentTypeModalMode === 'add' ? 'Dodaj Novi Tip Pregleda' : 'Izmeni Tip Pregleda' }}
+        </h3>
+        <button class="close-btn" (click)="closeAppointmentTypeModal()">×</button>
+      </div>
+      
+      <form [formGroup]="appointmentTypeForm" (ngSubmit)="submitAppointmentTypeForm()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="appointmentTypeName">Naziv Tipa Pregleda *</label>
+            <input 
+              type="text"
+              class="form-control"
+              id="appointmentTypeName" 
+              formControlName="name"
+              placeholder="Npr: Kontrolni pregled, EKG, Ultrazvuk...">
+            <div class="error" *ngIf="appointmentTypeForm.get('name')?.invalid && appointmentTypeForm.get('name')?.touched">
+              Naziv je obavezan
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="appointmentTypeDescription">Opis</label>
+            <textarea 
+              class="form-control"
+              id="appointmentTypeDescription" 
+              formControlName="description"
+              rows="3"
+              placeholder="Detaljan opis pregleda..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="appointmentTypeSpecialization">Specijalizacija *</label>
+            <select class="form-control" id="appointmentTypeSpecialization" formControlName="specialization">
+              <option value="">-- Izaberi specijalizaciju --</option>
+              <option *ngFor="let spec of specializations" [value]="spec">{{ spec }}</option>
+            </select>
+            <div class="error" *ngIf="appointmentTypeForm.get('specialization')?.invalid && appointmentTypeForm.get('specialization')?.touched">
+              Specijalizacija je obavezna
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="appointmentTypePrice">Cena (RSD) *</label>
+              <input 
+                type="number"
+                class="form-control"
+                id="appointmentTypePrice" 
+                formControlName="price"
+                placeholder="2500"
+                min="0">
+              <div class="error" *ngIf="appointmentTypeForm.get('price')?.invalid && appointmentTypeForm.get('price')?.touched">
+                Cena mora biti pozitivan broj
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="appointmentTypeDuration">Trajanje (minuta) *</label>
+              <select class="form-control" id="appointmentTypeDuration" formControlName="durationMinutes">
+                <option [value]="30">30 minuta</option>
+                <option [value]="60">60 minuta</option>
+              </select>
+              <div class="error" *ngIf="appointmentTypeForm.get('durationMinutes')?.invalid && appointmentTypeForm.get('durationMinutes')?.touched">
+                Trajanje je obavezno
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" (click)="closeAppointmentTypeModal()">
+            <i class="material-icons">close</i>
+            Otkaži
+          </button>
+          <button type="submit" class="btn btn-success" [disabled]="appointmentTypeForm.invalid || isSubmittingAppointmentType">
+            <i class="material-icons">save</i>
             {{ isSubmittingAppointmentType ? 'Čuvanje...' : 'Sačuvaj' }}
           </button>
         </div>
       </form>
     </div>
   </div>
-</div>
+
+  <!-- Add Doctor Modal -->
+  <div class="modal-overlay" *ngIf="showAddDoctorModal">
+    <div class="modal-content add-doctor-modal">
+      <div class="modal-header">
+        <h3 class="klasabelo"><i class="material-icons">medical_services</i> Dodaj Novog Doktora</h3>
+        <button class="btn-close" (click)="closeAddDoctorModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <app-add-doctor-form
+          (submitForm)="handleSubmitDoctorForm($event)"
+          (cancel)="closeAddDoctorModal()">
+        </app-add-doctor-form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Admin Modal -->
+  <div class="modal-overlay" *ngIf="showAddAdminModal">
+    <div class="modal-content add-admin-modal">
+      <div class="modal-header">
+        <h3 class="klasabelo"><i class="material-icons">admin_panel_settings</i> Dodaj Novog Administratora</h3>
+        <button class="btn-close" (click)="closeAddAdminModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <app-add-admin-form
+          (submitForm)="handleSubmitAdminForm($event)"
+          (cancel)="closeAddAdminModal()">
+        </app-add-admin-form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Schedule Modal -->
+  <div class="modal-overlay" *ngIf="showAddScheduleModal && selectedDoctorId">
+    <div class="modal-content add-schedule-modal">
+      <div class="modal-header">
+        <h3 class="klasabelo"><i class="material-icons">event</i> Dodaj Smene</h3>
+        <button class="btn-close" (click)="closeAddScheduleModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <app-add-schedule-form
+          [doctorId]="selectedDoctorId!"
+          [doctorName]="getSelectedDoctorName()"
+          [successMessage]="scheduleSuccessMessage"
+          [errorMessage]="scheduleErrorMessage"
+          (submitSchedule)="handleSubmitSchedule($event)"
+          (cancel)="closeAddScheduleModal()">
+        </app-add-schedule-form>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Doctor Patients Modal -->
+  <div class="modal-overlay" *ngIf="showDoctorPatientsModal">
+    <div class="modal-content doctor-patients-modal">
+      <div class="modal-header">
+        <h3 class="klasabelo"><i class="material-icons">people</i> Pacijenti Doktora</h3>
+        <button class="btn-close" (click)="closeDoctorPatientsModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="loadingDoctorPatients" class="loading-state">
+          <p>Učitavanje pacijenata...</p>
+        </div>
+
+        <div *ngIf="!loadingDoctorPatients && doctorPatients.length === 0" class="empty-state">
+          <p>Ovaj doktor nema dodeljene pacijente.</p>
+        </div>
+
+        <div *ngIf="!loadingDoctorPatients && doctorPatients.length > 0" class="patients-grid">
+          <div *ngFor="let patient of doctorPatients" class="patient-card-mini">
+            <div class="patient-header">
+              <i class="material-icons">person</i>
+              <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
+            </div>
+            <div class="patient-details">
+              <div class="detail-row">
+                <span class="label">Email:</span>
+                <span class="value">{{ patient.email }}</span>
+              </div>
+              <div class="detail-row" *ngIf="patient.phoneNumber">
+                <span class="label">Telefon:</span>
+                <span class="value">{{ patient.phoneNumber }}</span>
+              </div>
+              <div class="detail-row" *ngIf="patient.gender">
+                <span class="label">Pol:</span>
+                <span class="value">{{ patient.gender === 'Male' ? 'Muški' : patient.gender === 'Female' ? 'Ženski' : patient.gender }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeDoctorPatientsModal()">Zatvori</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Doctor Schedule Modal -->
+  <div class="modal-overlay" *ngIf="showDoctorScheduleModal">
+    <div class="modal-content doctor-schedule-modal">
+      <div class="modal-header">
+        <h3 class="klasabelo"><i class="material-icons">calendar_month</i> Smene Doktora</h3>
+        <button class="btn-close" (click)="closeDoctorScheduleModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <app-schedule-calendar
+          [schedules]="doctorSchedules"
+          [selectedMonth]="selectedMonth"
+          (monthChange)="onMonthChange($event)">
+        </app-schedule-calendar>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeDoctorScheduleModal()">Zatvori</button>
+      </div>
+    </div>
+  </div>
+</app-admin-layout>

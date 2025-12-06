@@ -4,7 +4,7 @@ import { Shift } from '../../../../common/enums/shift.enum';
 
 export class CreateDoctorScheduleDto {
   @ApiProperty({ example: 'uuid-doktora', description: 'ID doktora' })
-  @IsUUID('4', { message: 'ID doktora mora biti validan UUID' })
+  @IsUUID('all', { message: 'ID doktora mora biti validan UUID' })
   @IsNotEmpty({ message: 'ID doktora je obavezan' })
   doctorId: string;
 

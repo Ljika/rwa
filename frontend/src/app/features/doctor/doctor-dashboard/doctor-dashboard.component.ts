@@ -8,11 +8,11 @@ import { DoctorPatientService } from '../../../core/services/doctor-patient.serv
 import { DoctorSchedulesService } from '../../../core/services/doctor-schedules.service';
 import { PatientAllergiesService } from '../../../core/services/patient-allergies.service';
 import { DrugAllergiesService } from '../../../core/services/drug-allergies.service';
+import { AllergiesService } from '../../../core/services/allergies.service';
 import { Gender, User } from '../../../shared/models/user.model';
 import { AppointmentsService } from '../../../core/services/appointments.service';
 import { TherapiesService } from '../../../core/services/therapies.service';
 import { UsersService } from '../../../core/services/users.service';
-import { ScheduleCalendarComponent } from '../../../shared/components/schedule-calendar/schedule-calendar.component';
 import { FilterByDatePipe } from './filter-by-date.pipe';
 import { selectAllDrugs } from '../../../store/drugs/drugs.selectors';
 import { loadDrugs } from '../../../store/drugs/drugs.actions';
@@ -20,11 +20,13 @@ import { Drug } from '../../../core/models/drug.model';
 import { PatientAllergy } from '../../../core/models/patient-allergy.model';
 import { addTherapy } from '../../../store/therapies/therapies.actions';
 import { ChatComponent } from '../../../shared/components/chat/chat.component';
+import { DoctorLayoutComponent } from '../../../shared/layouts/doctor-layout/doctor-layout.component';
+import { ScheduleCalendarComponent } from '../../../shared/components/schedule-calendar/schedule-calendar.component';
 
 @Component({
   selector: 'app-doctor-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, ScheduleCalendarComponent, FilterByDatePipe, ChatComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, FilterByDatePipe, ChatComponent, DoctorLayoutComponent, ScheduleCalendarComponent],
   templateUrl: './doctor-dashboard.component.html',
   styleUrl: './doctor-dashboard.component.scss'
 })
@@ -59,11 +61,15 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   selectedPatientForAllergies: any = null;
   patientAllergiesList: PatientAllergy[] = [];
   isLoadingPatientAllergies: boolean = false;
+  showAddAllergyToPatientModal: boolean = false;
+  addAllergyForm!: FormGroup;
+  availableAllergies$!: Observable<any[]>;
+  isAddingAllergy: boolean = false;
   
   // Smene tab data
   mySchedules: any[] = [];
   isLoadingSchedules: boolean = false;
-  selectedMonth: string = '';
+  selectedMonth: string = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
 
   // Termini tab data
   myAppointments: any[] = [];
@@ -129,6 +135,7 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
     private therapiesService: TherapiesService,
     private patientAllergiesService: PatientAllergiesService,
     private drugAllergiesService: DrugAllergiesService,
+    private allergiesService: AllergiesService,
     private fb: FormBuilder,
     private store: Store,
     private usersService: UsersService
@@ -165,6 +172,15 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
       notes: ['']
     });
 
+    // Inicijalizuj add allergy formu
+    this.addAllergyForm = this.fb.group({
+      allergyId: ['', Validators.required],
+      diagnosedDate: ['']
+    });
+
+    // Učitaj sve alergije za dropdown
+    this.availableAllergies$ = this.allergiesService.getAll();
+
     // Postavi minimum datum za kontrolni pregled (sutra)
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -174,13 +190,12 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Učitaj pacijente odmah
     this.loadMyPatients();
-    
-    // Set default month to current month
-    const now = new Date();
-    this.selectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
     // Učitaj termine za doktora
     this.loadMyAppointments();
+    
+    // Učitaj smene za doktora
+    this.loadMySchedules();
     
     // Setup reactive filtering
     this.setupAppointmentFiltering();
@@ -407,12 +422,16 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser?.id) return;
     
-    this.isLoadingSchedules = true;
+    setTimeout(() => {
+      this.isLoadingSchedules = true;
+    });
     
     this.doctorSchedulesService.getDoctorSchedules(currentUser.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (schedules: any[]) => {
+          console.log('Loaded schedules from backend:', schedules);
+          console.log('Selected month:', this.selectedMonth);
           // Filter by selected month
           if (this.selectedMonth) {
             const [year, month] = this.selectedMonth.split('-');
@@ -424,6 +443,7 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
           } else {
             this.mySchedules = schedules;
           }
+          console.log('Filtered schedules for calendar:', this.mySchedules);
           this.isLoadingSchedules = false;
         },
         error: (error: any) => {
@@ -435,6 +455,7 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   }
   
   onMonthChange(yearMonth: string) {
+    console.log('Doctor dashboard onMonthChange called with:', yearMonth);
     this.selectedMonth = yearMonth;
     this.loadMySchedules();
   }
@@ -897,6 +918,68 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
     this.showPatientAllergiesModal = false;
     this.selectedPatientForAllergies = null;
     this.patientAllergiesList = [];
+  }
+
+  openAddAllergyToPatientModal() {
+    this.showAddAllergyToPatientModal = true;
+    this.addAllergyForm.reset();
+  }
+
+  closeAddAllergyToPatientModal() {
+    this.showAddAllergyToPatientModal = false;
+    this.addAllergyForm.reset();
+  }
+
+  submitAddAllergyToPatient() {
+    if (this.addAllergyForm.invalid || !this.selectedPatientForAllergies) {
+      return;
+    }
+
+    this.isAddingAllergy = true;
+    const formData = {
+      patientId: this.selectedPatientForAllergies.id,
+      allergyId: this.addAllergyForm.value.allergyId,
+      diagnosedDate: this.addAllergyForm.value.diagnosedDate || null
+    };
+
+    this.patientAllergiesService.create(formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          alert('Alergija uspešno dodata pacijentu!');
+          this.closeAddAllergyToPatientModal();
+          // Osvež listu alergija
+          this.viewPatientAllergies(this.selectedPatientForAllergies);
+          this.isAddingAllergy = false;
+        },
+        error: (error: any) => {
+          console.error('Greška pri dodavanju alergije:', error);
+          alert('Greška pri dodavanju alergije pacijentu');
+          this.isAddingAllergy = false;
+        }
+      });
+  }
+
+  removePatientAllergy(patientAllergyId: string, allergyName: string | undefined) {
+    if (!confirm(`Da li ste sigurni da želite da uklonite alergiju "${allergyName}" ovom pacijentu?`)) {
+      return;
+    }
+
+    this.patientAllergiesService.delete(patientAllergyId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          alert('Alergija uspešno uklonjena!');
+          // Osvež listu alergija
+          if (this.selectedPatientForAllergies) {
+            this.viewPatientAllergies(this.selectedPatientForAllergies);
+          }
+        },
+        error: (error: any) => {
+          console.error('Greška pri uklanjanju alergije:', error);
+          alert('Greška pri uklanjanju alergije');
+        }
+      });
   }
 
   loadPatientAllergicDrugs(patientId: string) {

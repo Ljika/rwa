@@ -4,17 +4,17 @@ import { TimeSlot } from '../../../../common/enums/time-slot.enum';
 
 export class CreateAppointmentDto {
   @ApiProperty({ example: 'uuid-doktora', description: 'ID doktora kod koga se zakazuje termin' })
-  @IsUUID('4', { message: 'ID doktora mora biti validan UUID' })
+  @IsUUID('all', { message: 'ID doktora mora biti validan UUID' })
   @IsNotEmpty({ message: 'ID doktora je obavezan' })
   doctorId: string;
 
   @ApiPropertyOptional({ example: 'uuid-pacijenta', description: 'ID pacijenta (opciono, koristi se kada doktor zakažuje termin)' })
-  @IsUUID('4', { message: 'ID pacijenta mora biti validan UUID' })
+  @IsUUID('all', { message: 'ID pacijenta mora biti validan UUID' })
   @IsOptional()
   patientId?: string;
 
   @ApiPropertyOptional({ example: 'uuid-tipa-pregleda', description: 'ID tipa pregleda (opciono)' })
-  @IsUUID('4', { message: 'ID tipa pregleda mora biti validan UUID' })
+  @IsUUID('all', { message: 'ID tipa pregleda mora biti validan UUID' })
   @IsOptional()
   appointmentTypeId?: string;
 

@@ -1,783 +1,832 @@
-<div class="dashboard-container" *ngIf="currentUser$ | async as currentUser">
-  <!-- Navbar -->
-  <header class="navbar">
-    <div class="logo">
-      <h2>MediSync - Doktor</h2>
-    </div>
-    <div class="user-info">
-      <span>Dobrodošli, Dr. {{ currentUser.firstName }} {{ currentUser.lastName }}</span>
-      <button class="btn-logout" (click)="logout()">Odjavi se</button>
-    </div>
-  </header>
-
-  <!-- Tab Navigation -->
-  <nav class="tabs">
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'profil'" 
-      (click)="selectTab('profil')">
-      Profil
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'pacijenti'" 
-      (click)="selectTab('pacijenti')">
-      Pacijenti
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'termini'" 
-      (click)="selectTab('termini')">
-      Termini
-    </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'smene'" 
-      (click)="selectTab('smene')">
-      Smene
-    </button>
-  </nav>
-
-  <!-- Content Area -->
-  <div class="content">
-    <!-- Profil Tab -->
-    <div *ngIf="activeTab === 'profil'" class="tab-content">
-      <div class="profile-header">
-        <h3>Moj Profil</h3>
-        <button 
-          *ngIf="!isEditMode" 
-          class="btn-edit" 
-          (click)="toggleEditMode()">
-          Izmeni Profil
-        </button>
-      </div>
-
-      <!-- View Mode -->
-      <div *ngIf="!isEditMode" class="profile-info">
-        <div class="info-section">
-          <h5>Lični podaci</h5>
-          <div class="info-row">
-            <span class="label">Ime:</span>
-            <span class="value">{{ currentUser.firstName }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Prezime:</span>
-            <span class="value">{{ currentUser.lastName }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Email:</span>
-            <span class="value">{{ currentUser.email }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Telefon:</span>
-            <span class="value">{{ currentUser.phoneNumber || 'Nije uneto' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Datum rođenja:</span>
-            <span class="value">{{ currentUser.dateOfBirth || 'Nije uneto' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Pol:</span>
-            <span class="value">{{ currentUser.gender || 'Nije uneto' }}</span>
-          </div>
-        </div>
-
-        <div class="info-section">
-          <h5>Profesionalni podaci</h5>
-          <div class="info-row">
-            <span class="label">Specijalizacija:</span>
-            <span class="value">{{ currentUser.specialization || 'Nije uneto' }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Edit Mode -->
-      <div *ngIf="isEditMode" class="edit-profile-form">
-        <form [formGroup]="editProfileForm" (ngSubmit)="saveProfile()">
-          <div class="form-section">
-            <h5>Lični podaci</h5>
+<app-doctor-layout [activeTab]="activeTab" (tabChanged)="selectTab($event)">
+        <div *ngIf="currentUser$ | async as currentUser">
+          <!-- Profil Tab -->
+          <div *ngIf="activeTab === 'profil'" class="profile-tab">
+            <h3 class="karton-heading">Moj Profil</h3>
             
-            <div class="form-group">
-              <label>Ime:</label>
-              <input type="text" formControlName="firstName" class="form-control">
-              <div class="error" *ngIf="editProfileForm.get('firstName')?.invalid && editProfileForm.get('firstName')?.touched">
-                Ime je obavezno
+            <div class="card profile-card">
+              <div class="card-header card-header-info">
+                <h4 class="card-title">Lični i Profesionalni podaci</h4>
+                <p class="card-category">Vaše informacije</p>
               </div>
-            </div>
-
-            <div class="form-group">
-              <label>Prezime:</label>
-              <input type="text" formControlName="lastName" class="form-control">
-              <div class="error" *ngIf="editProfileForm.get('lastName')?.invalid && editProfileForm.get('lastName')?.touched">
-                Prezime je obavezno
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Telefon:</label>
-              <input type="text" formControlName="phoneNumber" class="form-control">
-            </div>
-
-            <div class="form-group">
-              <label>Datum rođenja:</label>
-              <input type="date" formControlName="dateOfBirth" class="form-control">
-            </div>
-
-            <div class="form-group">
-              <label>Pol:</label>
-              <select formControlName="gender" class="form-control">
-                <option value="">Izaberi pol</option>
-                <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h5>Profesionalni podaci</h5>
-            
-            <div class="form-group">
-              <label>Specijalizacija:</label>
-              <input type="text" formControlName="specialization" class="form-control" placeholder="npr. Kardiologija">
-              <div class="info-message">
-                Za promenu specijalizacije obratite se administratoru
-              </div>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button 
-              type="submit" 
-              class="btn-save" 
-              [disabled]="editProfileForm.invalid || (isUpdating$ | async)">
-              {{ (isUpdating$ | async) ? 'Čuvanje...' : 'Sačuvaj' }}
-            </button>
-            <button 
-              type="button" 
-              class="btn-cancel" 
-              (click)="cancelEdit()"
-              [disabled]="isUpdating$ | async">
-              Otkaži
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Pacijenti Tab -->
-    <div *ngIf="activeTab === 'pacijenti'" class="tab-content">
-      <h3>Moji Pacijenti</h3>
-
-      <!-- Loading state -->
-      <div *ngIf="isLoadingPatients" class="loading">
-        <p>Učitavanje pacijenata...</p>
-      </div>
-
-      <!-- Empty state -->
-      <div *ngIf="!isLoadingPatients && myPatients.length === 0" class="empty-state">
-        <p>Nemate dodeljenih pacijenata.</p>
-      </div>
-
-      <!-- Patients Grid -->
-      <div *ngIf="!isLoadingPatients && myPatients.length > 0" class="patients-grid">
-        <div *ngFor="let patient of myPatients" class="patient-card">
-          <div class="patient-info">
-            <h5>{{ patient.firstName }} {{ patient.lastName }}</h5>
-            <p class="patient-detail">Email: {{ patient.email }}</p>
-            <p class="patient-detail" *ngIf="patient.phoneNumber">Telefon: {{ patient.phoneNumber }}</p>
-            <p class="patient-detail" *ngIf="patient.dateOfBirth">
-              Rođen/a: {{ patient.dateOfBirth }}
-            </p>
-            <p class="patient-detail" *ngIf="patient.gender">
-              {{ patient.gender === 'Male' ? 'Muški' : patient.gender === 'Female' ? 'Ženski' : patient.gender }}
-            </p>
-          </div>
-          <div class="patient-actions">
-            <button class="btn-allergies" (click)="viewPatientAllergies(patient)">
-              Alergije
-            </button>
-            <button class="btn-view-details" (click)="viewPatientDetails(patient)">
-              Pogledaj preglede i terapije
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Termini Tab -->
-    <div *ngIf="activeTab === 'termini'" class="tab-content">
-      <div class="tab-header">
-        <h3>Termini i Zakazivanja</h3>
-        <button class="btn-add-block" (click)="openBlockAppointmentModal()">
-          📅 Kreiraj Blok Termin
-        </button>
-      </div>
-      
-      <!-- Filteri -->
-      <div class="filters-row">
-        <div class="filter-group">
-          <label for="dateFromFilter">Datum od:</label>
-          <input 
-            id="dateFromFilter" 
-            type="date" 
-            [(ngModel)]="appointmentDateFromFilter"
-            (ngModelChange)="appointmentDateFrom = $event">
-        </div>
-        
-        <div class="filter-group">
-          <label for="dateToFilter">Datum do:</label>
-          <input 
-            id="dateToFilter" 
-            type="date" 
-            [(ngModel)]="appointmentDateToFilter"
-            (ngModelChange)="appointmentDateTo = $event">
-        </div>
-        
-        <div class="filter-group">
-          <label for="statusFilter">Status:</label>
-          <select 
-            id="statusFilter" 
-            [(ngModel)]="appointmentStatusFilter"
-            (ngModelChange)="appointmentStatus = $event">
-            <option value="">Svi</option>
-            <option value="Pending">Na čekanju</option>
-            <option value="Approved">Odobren</option>
-            <option value="Completed">Završen</option>
-            <option value="Cancelled">Otkazan</option>
-            <option value="Rejected">Odbijen</option>
-          </select>
-        </div>
-        
-        <div class="filter-group">
-          <label for="patientFilter">Pacijent:</label>
-          <select 
-            id="patientFilter" 
-            [(ngModel)]="appointmentPatientFilter"
-            (ngModelChange)="appointmentPatient = $event">
-            <option value="">Svi</option>
-            <option *ngFor="let patient of myPatients" [value]="patient.id">
-              {{ patient.firstName }} {{ patient.lastName }}
-            </option>
-          </select>
-        </div>
-        
-        <button class="btn-reset" (click)="resetAppointmentFilters()">Resetuj filtere</button>
-      </div>
-      
-      <div *ngIf="isLoadingAppointments" class="loading">Učitavanje termina...</div>
-      
-      <!-- Prikaz filtriranih termina -->
-      <div *ngIf="!isLoadingAppointments && (filteredAppointments$ | async) as appointments">
-        <div *ngIf="appointments.length === 0" class="empty">
-          Nema termina koji odgovaraju filterima.
-        </div>
-        
-        <div *ngIf="appointments.length > 0" class="appointments-list">
-          <div *ngFor="let apt of appointments" class="appointment-item" [class.block-appointment]="apt.isBlockAppointment">
-            <div class="appointment-row">
-              <div class="appointment-info">
-                <span class="patient-name">
-                  {{ apt.patient?.firstName }} {{ apt.patient?.lastName }}
-                  <span *ngIf="!apt.patientId" class="no-patient">(Bez pacijenta)</span>
-                </span>
-                
-                <!-- Vreme - prikaži opseg za blok termine -->
-                <span class="appointment-time">
-                  {{ apt.startTime }}
-                  <span *ngIf="apt.isBlockAppointment"> - {{ apt.endTime }}</span>
-                </span>
-                
-                <span class="appointment-date">{{ apt.date }}</span>
-                
-                <!-- Tip pregleda -->
-                <span class="appointment-type" *ngIf="apt.appointmentType">
-                  📋 {{ apt.appointmentType.name }} ({{ apt.appointmentType.price }} RSD, {{ apt.appointmentType.durationMinutes }} min)
-                </span>
-                <span class="appointment-type-missing" *ngIf="!apt.appointmentType && !apt.isBlockAppointment">
-                  ℹ️ Tip pregleda nije definisan
-                </span>
-                
-                <span class="appointment-status" 
-                      [class.status-pending]="apt.status === 'Pending'"
-                      [class.status-approved]="apt.status === 'Approved'"
-                      [class.status-completed]="apt.status === 'Completed'"
-                      [class.status-cancelled]="apt.status === 'Cancelled'"
-                      [class.status-rejected]="apt.status === 'Rejected'">
-                  {{ apt.status === 'Pending' ? 'Na čekanju' : 
-                     apt.status === 'Approved' ? 'Odobren' : 
-                     apt.status === 'Completed' ? 'Završen' : 
-                     apt.status === 'Cancelled' ? 'Otkazan' : 
-                     apt.status === 'Rejected' ? 'Odbijen' : apt.status }}
-                </span>
-                <span class="appointment-reason" *ngIf="apt.reason">
-                  {{ apt.reason }}
-                </span>
-              </div>
-              <div class="appointment-actions">
-                <!-- Pending termine možeš samo odobriti ili odbiti -->
-                <button class="btn-approve" *ngIf="apt.status === 'Pending'" (click)="approveAppointment(apt.id)">Odobri</button>
-                <button class="btn-reject" *ngIf="apt.status === 'Pending'" (click)="rejectAppointment(apt.id)">Odbij</button>
-                
-                <!-- Approved termine možeš otkazati ili završiti -->
-                <button class="btn-cancel" *ngIf="apt.status === 'Approved'" (click)="cancelAppointment(apt.id)">Otkaži</button>
-                <button class="btn-complete" *ngIf="apt.status === 'Approved'" (click)="finishAppointment(apt.id)">Završi</button>
-                
-                <!-- Completed termine - samo terapija -->
-                <button class="btn-therapy" *ngIf="apt.status === 'Completed'" (click)="openTherapyModal(apt)">Dodaj terapiju</button>
-                <button class="btn-follow-up" *ngIf="apt.status === 'Completed'" (click)="openFollowUpModal(apt)">Kontrolni pregled</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Stari prikaz - može se obrisati -->
-      <div *ngIf="false">
-        <!-- Zahtevi za termine -->
-        <section>
-          <h4>Zahtevi za termine</h4>
-          <div *ngIf="pendingAppointments.length === 0" class="empty">Nema zahteva za termine.</div>
-          <div *ngIf="pendingAppointments.length > 0" class="appointments-list">
-            <div *ngFor="let apt of pendingAppointments" class="appointment-item">
-              <div class="appointment-row">
-                <div class="appointment-info">
-                  <span class="patient-name">{{ apt.patient?.firstName }} {{ apt.patient?.lastName }}</span>
-                  <span class="appointment-time">{{ apt.timeSlot }}</span>
-                  <span class="appointment-date">{{ apt.date }}</span>
-                  <span class="appointment-status status-pending">Na čekanju</span>
+              <div class="card-body">
+                <div class="info-row">
+                  <span class="label">Ime:</span>
+                  <span class="value">{{ currentUser.firstName }}</span>
                 </div>
-                <div class="appointment-actions">
-                  <button class="btn-approve" (click)="approveAppointment(apt.id)">Odobri</button>
-                  <button class="btn-reject" (click)="rejectAppointment(apt.id)">Odbij</button>
+                <div class="info-row">
+                  <span class="label">Prezime:</span>
+                  <span class="value">{{ currentUser.lastName }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Email:</span>
+                  <span class="value">{{ currentUser.email }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Telefon:</span>
+                  <span class="value">{{ currentUser.phoneNumber || 'Nije uneto' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Datum rođenja:</span>
+                  <span class="value">{{ currentUser.dateOfBirth || 'Nije uneto' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Pol:</span>
+                  <span class="value">{{ currentUser.gender || 'Nije uneto' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Specijalizacija:</span>
+                  <span class="value">{{ currentUser.specialization || 'Nije uneto' }}</span>
+                </div>
+                
+                <div class="profile-actions">
+                  <button class="btn-edit" (click)="toggleEditMode()">
+                    <i class="material-icons">edit</i>
+                    Izmeni Profil
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-        </section>
-        <hr />
-        <!-- Zakazani termini -->
-        <section>
-          <h4>Zakazani termini</h4>
-          <label for="scheduled-date-picker">Izaberi datum:</label>
-          <input id="scheduled-date-picker" type="date" (change)="onScheduledDateChange($event)" [value]="selectedScheduledDate" />
-          <button *ngIf="selectedScheduledDate" (click)="selectedScheduledDate = ''">Prikaži sve</button>
-          <div *ngIf="(scheduledAppointments | filterByDate:selectedScheduledDate).length === 0" class="empty">
-            Nema zakazanih termina.
+
+          <!-- Pacijenti Tab -->
+          <div *ngIf="activeTab === 'pacijenti'" class="patients-tab">
+            <h3 class="karton-heading">Moji Pacijenti</h3>
+
+            <!-- Loading state -->
+            <div *ngIf="isLoadingPatients" class="loading">
+              Učitavanje pacijenata...
+            </div>
+
+            <!-- Empty state -->
+            <div *ngIf="!isLoadingPatients && myPatients.length === 0" class="empty-state">
+              Nemate dodeljenih pacijenata.
+            </div>
+
+            <!-- Patients Grid -->
+            <div *ngIf="!isLoadingPatients && myPatients.length > 0" class="patients-cards-grid">
+              <div *ngFor="let patient of myPatients" class="card patient-card-item">
+                <div class="card-header card-header-info">
+                  <h4 class="card-title">
+                    <i class="material-icons">person</i>
+                    {{ patient.firstName }} {{ patient.lastName }}
+                  </h4>
+                  <p class="card-category" *ngIf="patient.gender">
+                    {{ patient.gender === 'Male' ? 'Muški' : patient.gender === 'Female' ? 'Ženski' : patient.gender }}
+                    <span *ngIf="patient.dateOfBirth"> • Rođen/a: {{ patient.dateOfBirth | date:'dd.MM.yyyy' }}</span>
+                  </p>
+                </div>
+                <div class="card-body">
+                  <div class="info-row">
+                    <span class="label">Email:</span>
+                    <span class="value">{{ patient.email }}</span>
+                  </div>
+                  <div class="info-row" *ngIf="patient.phoneNumber">
+                    <span class="label">Telefon:</span>
+                    <span class="value">{{ patient.phoneNumber }}</span>
+                  </div>
+                  
+                  <div class="patient-actions">
+                    <button class="btn-action btn-allergies" (click)="viewPatientAllergies(patient)">
+                      <i class="material-icons">warning</i>
+                      Alergije
+                    </button>
+                    <button class="btn-action btn-details" (click)="viewPatientDetails(patient)">
+                      <i class="material-icons">description</i>
+                      Pregledi i terapije
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div *ngIf="(scheduledAppointments | filterByDate:selectedScheduledDate).length > 0" class="appointments-list">
-            <!-- Blok termin (npr. operacija) -->
-            <div *ngFor="let apt of scheduledAppointments | filterByDate:selectedScheduledDate" class="appointment-item">
+
+          <!-- Termini Tab -->
+          <div *ngIf="activeTab === 'termini'" class="termini-tab tab-content">
+            <h3 class="karton-heading">Termini i Zakazivanja</h3>
+            
+            <!-- Header with button -->
+            <div class="termini-header">
+              <button class="btn-create-block" (click)="openBlockAppointmentModal()">
+                <i class="material-icons">event</i>
+                Kreiraj Blok Termin
+              </button>
+            </div>
+            
+            <!-- Filteri -->
+            <div class="filters-container">
+              <div class="filter-item">
+                <label for="dateFromFilter">Datum od:</label>
+                <input 
+                  id="dateFromFilter" 
+                  type="date" 
+                  [(ngModel)]="appointmentDateFromFilter"
+                  (ngModelChange)="appointmentDateFrom = $event">
+              </div>
               
-              <!-- Blok termin -->
-              <div *ngIf="apt.isBlock" class="appointment-row">
-                <div class="appointment-info">
-                  <span class="patient-name">{{ apt.patient?.firstName }} {{ apt.patient?.lastName }}</span>
-                  <span class="appointment-time">{{ apt.startTime }} - {{ apt.endTime }}</span>
-                  <span class="appointment-date">{{ apt.date }}</span>
-                  <span class="appointment-status" [class.status-completed]="apt.status === 'Completed'" [class.status-approved]="apt.status === 'Approved'">
-                    {{ apt.status === 'Approved' ? 'Zakazan' : apt.status === 'Completed' ? 'Završen' : apt.status }}
-                  </span>
-                  <span class="appointment-reason">{{ apt.reason }}</span>
-                </div>
-                <div class="appointment-actions">
-                  <button class="btn-cancel" *ngIf="apt.status === 'Approved'" (click)="cancelAppointment(apt.id)">Otkaži</button>
-                  <button class="btn-complete" *ngIf="apt.status === 'Approved'" (click)="finishAppointment(apt.id)">Završi</button>
-                  
-                  <button class="btn-therapy" *ngIf="apt.status === 'Completed'" (click)="openTherapyModal(apt)">Dodaj terapiju</button>
-                  <button class="btn-follow-up" (click)="openFollowUpModal(apt)">Kontrolni pregled</button>
-                </div>
+              <div class="filter-item">
+                <label for="dateToFilter">Datum do:</label>
+                <input 
+                  id="dateToFilter" 
+                  type="date" 
+                  [(ngModel)]="appointmentDateToFilter"
+                  (ngModelChange)="appointmentDateTo = $event">
               </div>
-
-              <!-- Obični termin -->
-              <div *ngIf="!apt.isBlock" class="appointment-row">
-                <div class="appointment-info">
-                  <span class="patient-name">{{ apt.patient?.firstName }} {{ apt.patient?.lastName }}</span>
-                  <span class="appointment-time">{{ apt.timeSlot }}</span>
-                  <span class="appointment-date">{{ apt.date }}</span>
-                  <span class="appointment-status" [class.status-completed]="apt.status === 'Completed'" [class.status-approved]="apt.status === 'Approved'">
-                    {{ apt.status === 'Approved' ? 'Zakazan' : apt.status === 'Completed' ? 'Završen' : apt.status }}
-                  </span>
-                </div>
-                <div class="appointment-actions">
-                  <button class="btn-cancel" *ngIf="apt.status === 'Approved'" (click)="cancelAppointment(apt.id)">Otkaži</button>
-                  <button class="btn-complete" *ngIf="apt.status === 'Approved'" (click)="finishAppointment(apt.id)">Završi</button>
-                  
-                  <button class="btn-therapy" *ngIf="apt.status === 'Completed'" (click)="openTherapyModal(apt)">Dodaj terapiju</button>
-                  <button class="btn-follow-up" (click)="openFollowUpModal(apt)">Kontrolni pregled</button>
-                </div>
+              
+              <div class="filter-item">
+                <label for="statusFilter">Status:</label>
+                <select 
+                  id="statusFilter" 
+                  [(ngModel)]="appointmentStatusFilter"
+                  (ngModelChange)="appointmentStatus = $event">
+                  <option value="">Svi</option>
+                  <option value="Pending">Na čekanju</option>
+                  <option value="Approved">Odobren</option>
+                  <option value="Completed">Završen</option>
+                  <option value="Cancelled">Otkazan</option>
+                  <option value="Rejected">Odbijen</option>
+                </select>
               </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-
-    <!-- Smene Tab -->
-    <div *ngIf="activeTab === 'smene'" class="tab-content">
-      <h3>Moje Smene</h3>
-      
-      <app-schedule-calendar
-        [schedules]="mySchedules"
-        [loading]="isLoadingSchedules"
-        [selectedMonth]="selectedMonth"
-        (monthChange)="onMonthChange($event)">
-      </app-schedule-calendar>
-    </div>
-  </div>
-
-  <!-- Therapy Modal -->
-  <div *ngIf="showTherapyModal" class="modal-overlay" (click)="closeTherapyModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Dodaj terapiju</h3>
-        <button class="btn-close" (click)="closeTherapyModal()">✕</button>
-      </div>
-      <div class="modal-body">
-        <form [formGroup]="therapyForm">
-          <div class="form-group">
-            <label for="diagnosis">Dijagnoza *</label>
-            <textarea 
-              id="diagnosis" 
-              formControlName="diagnosis" 
-              rows="3" 
-              placeholder="Unesite dijagnozu..."></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="notes">Napomene</label>
-            <textarea 
-              id="notes" 
-              formControlName="notes" 
-              rows="2" 
-              placeholder="Dodatne napomene (opcionalno)..."></textarea>
-          </div>
-
-          <div class="form-group">
-            <label>Lekovi *</label>
-            <div formArrayName="drugs">
-              <div *ngFor="let drug of drugsArray.controls; let i = index" [formGroupName]="i" class="drug-row">
-                <select formControlName="drugId" class="drug-select">
-                  <option value="">Izaberi lek...</option>
-                  <option *ngFor="let d of allDrugs$ | async" [value]="d.id" [class.allergic-drug]="isPatientAllergicToDrug(d.id)">
-                    <span *ngIf="isPatientAllergicToDrug(d.id)">⚠️ </span>{{ d.name }} ({{ d.dosage }})
+              
+              <div class="filter-item">
+                <label for="patientFilter">Pacijent:</label>
+                <select 
+                  id="patientFilter" 
+                  [(ngModel)]="appointmentPatientFilter"
+                  (ngModelChange)="appointmentPatient = $event">
+                  <option value="">Svi</option>
+                  <option *ngFor="let patient of myPatients" [value]="patient.id">
+                    {{ patient.firstName }} {{ patient.lastName }}
                   </option>
                 </select>
-                <div class="input-with-label">
-                  <input type="number" formControlName="timesPerDay" placeholder="Puta dnevno" min="1" />
-                  <span class="input-suffix">x dnevno</span>
+              </div>
+              
+              <button class="btn-reset-filters" (click)="resetAppointmentFilters()">
+                <i class="material-icons">refresh</i>
+                Resetuj filtere
+              </button>
+            </div>
+            
+            <div *ngIf="isLoadingAppointments" class="loading">Učitavanje termina...</div>
+            
+            <!-- Prikaz filtriranih termina -->
+            <div *ngIf="!isLoadingAppointments && (filteredAppointments$ | async) as appointments">
+              <div *ngIf="appointments.length === 0" class="empty-state">
+                Nema termina koji odgovaraju filterima.
+              </div>
+              
+              <div *ngIf="appointments.length > 0" class="appointments-cards-list">
+                <div *ngFor="let apt of appointments" class="card appointment-card" [class.block-appointment-card]="apt.isBlockAppointment">
+                  <div class="card-header card-header-info" [ngClass]="{
+                    'header-operation': apt.isBlockAppointment,
+                    'header-pending': apt.status === 'Pending',
+                    'header-approved': apt.status === 'Approved',
+                    'header-completed': apt.status === 'Completed',
+                    'header-cancelled': apt.status === 'Cancelled',
+                    'header-rejected': apt.status === 'Rejected'
+                  }">
+                    <h4 class="card-title">
+                      <i class="material-icons">person</i>
+                      {{ apt.patient?.firstName }} {{ apt.patient?.lastName }}
+                      <span *ngIf="!apt.patientId" class="no-patient-badge">(Bez pacijenta)</span>
+                    </h4>
+                    <p class="card-category">
+                      {{ apt.date }} • {{ apt.startTime }}<span *ngIf="apt.isBlockAppointment"> - {{ apt.endTime }}</span>
+                      <span *ngIf="apt.appointmentType?.name"> • Tip: {{ apt.appointmentType.name }}</span>
+                    </p>
+                  </div>
+                  <div class="card-body">
+                    <div class="appointment-details">
+                      <!-- Tip pregleda -->
+                      <div class="info-row" *ngIf="apt.appointmentType">
+                        <span class="label">Tip pregleda:</span>
+                        <span class="value">{{ apt.appointmentType.name }} ({{ apt.appointmentType.price }} RSD, {{ apt.appointmentType.durationMinutes }} min)</span>
+                      </div>
+                      
+                      <!-- Status -->
+                      <div class="info-row">
+                        <span class="label">Status:</span>
+                        <span class="appointment-status-badge" 
+                              [class.status-pending]="apt.status === 'Pending'"
+                              [class.status-approved]="apt.status === 'Approved'"
+                              [class.status-completed]="apt.status === 'Completed'"
+                              [class.status-cancelled]="apt.status === 'Cancelled'"
+                              [class.status-rejected]="apt.status === 'Rejected'">
+                          {{ apt.status === 'Pending' ? 'Na čekanju' : 
+                            apt.status === 'Approved' ? 'Odobren' : 
+                            apt.status === 'Completed' ? 'Završen' : 
+                            apt.status === 'Cancelled' ? 'Otkazan' : 
+                            apt.status === 'Rejected' ? 'Odbijen' : apt.status }}
+                        </span>
+                      </div>
+                      
+                      <!-- Razlog -->
+                      <div class="info-row" *ngIf="apt.reason">
+                        <span class="label">Razlog:</span>
+                        <span class="value reason-text">{{ apt.reason }}</span>
+                      </div>
+                    </div>
+                    
+                    <div class="appointment-card-actions">
+                      <!-- Pending termine možeš samo odobriti ili odbiti -->
+                      <button class="btn-action btn-approve" *ngIf="apt.status === 'Pending'" (click)="approveAppointment(apt.id)">
+                        <i class="material-icons">check_circle</i>
+                        Odobri
+                      </button>
+                      <button class="btn-action btn-reject" *ngIf="apt.status === 'Pending'" (click)="rejectAppointment(apt.id)">
+                        <i class="material-icons">cancel</i>
+                        Odbij
+                      </button>
+                      
+                      <!-- Approved termine možeš otkazati ili završiti -->
+                      <button class="btn-action btn-cancel" *ngIf="apt.status === 'Approved'" (click)="cancelAppointment(apt.id)">
+                        <i class="material-icons">close</i>
+                        Otkaži
+                      </button>
+                      <button class="btn-action btn-complete" *ngIf="apt.status === 'Approved'" (click)="finishAppointment(apt.id)">
+                        <i class="material-icons">done</i>
+                        Završi
+                      </button>
+                      
+                      <!-- Completed termine - samo terapija -->
+                      <button class="btn-action btn-therapy" *ngIf="apt.status === 'Completed'" (click)="openTherapyModal(apt)">
+                        <i class="material-icons">medication</i>
+                        Dodaj terapiju
+                      </button>
+                      <button class="btn-action btn-follow-up" *ngIf="apt.status === 'Completed'" (click)="openFollowUpModal(apt)">
+                        <i class="material-icons">event_available</i>
+                        Kontrolni pregled
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div class="input-with-label">
-                  <input type="number" formControlName="durationDays" placeholder="Broj dana" min="1" />
-                  <span class="input-suffix">dana</span>
+              </div>
+            </div>
+            
+            <!-- Stari prikaz - može se obrisati -->
+            <div *ngIf="false">
+              <!-- Zahtevi za termine -->
+              <section>
+                <h4>Zahtevi za termine</h4>
+                <div *ngIf="pendingAppointments.length === 0" class="empty">Nema zahteva za termine.</div>
+                <div *ngIf="pendingAppointments.length > 0" class="appointments-list">
+                  <div *ngFor="let apt of pendingAppointments" class="appointment-item">
+                    <div class="appointment-row">
+                      <div class="appointment-info">
+                        <span class="patient-name">{{ apt.patient?.firstName }} {{ apt.patient?.lastName }}</span>
+                        <span class="appointment-time">{{ apt.timeSlot }}</span>
+                        <span class="appointment-date">{{ apt.date }}</span>
+                        <span class="appointment-status status-pending">Na čekanju</span>
+                      </div>
+                      <div class="appointment-actions">
+                        <button class="btn-approve" (click)="approveAppointment(apt.id)">Odobri</button>
+                        <button class="btn-reject" (click)="rejectAppointment(apt.id)">Odbij</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <input type="text" formControlName="instructions" placeholder="Instrukcije (opcionalno)" />
-                <button type="button" class="btn-remove-drug" (click)="removeDrugRow(i)" *ngIf="drugsArray.length > 1">✕</button>
-              </div>
+              </section>
+              <hr />
+              <!-- Zakazani termini -->
+              <section>
+                <h4>Zakazani termini</h4>
+                <label for="scheduled-date-picker">Izaberi datum:</label>
+                <input id="scheduled-date-picker" type="date" (change)="onScheduledDateChange($event)" [value]="selectedScheduledDate" />
+                <button *ngIf="selectedScheduledDate" (click)="selectedScheduledDate = ''">Prikaži sve</button>
+                <div *ngIf="(scheduledAppointments | filterByDate:selectedScheduledDate).length === 0" class="empty">
+                  Nema zakazanih termina.
+                </div>
+                <div *ngIf="(scheduledAppointments | filterByDate:selectedScheduledDate).length > 0" class="appointments-list">
+                  <!-- Blok termin (npr. operacija) -->
+                  <div *ngFor="let apt of scheduledAppointments | filterByDate:selectedScheduledDate" class="appointment-item">
+                    
+                    <!-- Blok termin -->
+                    <div *ngIf="apt.isBlock" class="appointment-row">
+                      <div class="appointment-info">
+                        <span class="patient-name">{{ apt.patient?.firstName }} {{ apt.patient?.lastName }}</span>
+                        <span class="appointment-time">{{ apt.startTime }} - {{ apt.endTime }}</span>
+                        <span class="appointment-date">{{ apt.date }}</span>
+                        <span class="appointment-status" [class.status-completed]="apt.status === 'Completed'" [class.status-approved]="apt.status === 'Approved'">
+                          {{ apt.status === 'Approved' ? 'Zakazan' : apt.status === 'Completed' ? 'Završen' : apt.status }}
+                        </span>
+                        <span class="appointment-reason">{{ apt.reason }}</span>
+                      </div>
+                      <div class="appointment-actions">
+                        <button class="btn-cancel" *ngIf="apt.status === 'Approved'" (click)="cancelAppointment(apt.id)">Otkaži</button>
+                        <button class="btn-complete" *ngIf="apt.status === 'Approved'" (click)="finishAppointment(apt.id)">Završi</button>
+                        
+                        <button class="btn-therapy" *ngIf="apt.status === 'Completed'" (click)="openTherapyModal(apt)">Dodaj terapiju</button>
+                        <button class="btn-follow-up" (click)="openFollowUpModal(apt)">Kontrolni pregled</button>
+                      </div>
+                    </div>
+
+                    <!-- Obični termin -->
+                    <div *ngIf="!apt.isBlock" class="appointment-row">
+                      <div class="appointment-info">
+                        <span class="patient-name">{{ apt.patient?.firstName }} {{ apt.patient?.lastName }}</span>
+                        <span class="appointment-time">{{ apt.timeSlot }}</span>
+                        <span class="appointment-date">{{ apt.date }}</span>
+                        <span class="appointment-status" [class.status-completed]="apt.status === 'Completed'" [class.status-approved]="apt.status === 'Approved'">
+                          {{ apt.status === 'Approved' ? 'Zakazan' : apt.status === 'Completed' ? 'Završen' : apt.status }}
+                        </span>
+                      </div>
+                      <div class="appointment-actions">
+                        <button class="btn-cancel" *ngIf="apt.status === 'Approved'" (click)="cancelAppointment(apt.id)">Otkaži</button>
+                        <button class="btn-complete" *ngIf="apt.status === 'Approved'" (click)="finishAppointment(apt.id)">Završi</button>
+                        
+                        <button class="btn-therapy" *ngIf="apt.status === 'Completed'" (click)="openTherapyModal(apt)">Dodaj terapiju</button>
+                        <button class="btn-follow-up" (click)="openFollowUpModal(apt)">Kontrolni pregled</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
             </div>
-            <button type="button" class="btn-add-drug" (click)="addDrugRow()">+ Dodaj lek</button>
           </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-cancel-modal" (click)="closeTherapyModal()">Otkaži</button>
-        <button class="btn-submit-therapy" (click)="submitTherapy()" [disabled]="isSubmittingTherapy || therapyForm.invalid">
-          {{ isSubmittingTherapy ? 'Čuvanje...' : 'Sačuvaj terapiju' }}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Patient Details Modal -->
-<div class="modal-overlay" *ngIf="showPatientDetailsModal" (click)="closePatientDetailsModal()">
-  <div class="modal-box patient-details-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>{{ selectedPatient?.firstName }} {{ selectedPatient?.lastName }} - Pregledi i terapije</h3>
-      <button class="modal-close" (click)="closePatientDetailsModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <!-- Loading -->
-      <div *ngIf="isLoadingPatientDetails" class="loading">
-        Učitavanje...
-      </div>
-
-      <!-- Combined Appointments & Therapies View -->
-      <div *ngIf="!isLoadingPatientDetails">
-        <div *ngIf="patientAppointmentsWithTherapies.length === 0" class="empty-state">
-          <p>Pacijent nema završenih pregleda.</p>
-        </div>
-        
-        <div *ngIf="patientAppointmentsWithTherapies.length > 0" class="appointments-therapies-list">
-          <div *ngFor="let appointment of patientAppointmentsWithTherapies" class="appointment-therapy-card">
-            <!-- Pregled Info -->
-            <div class="appointment-section">
-              <div class="appointment-header">
-                <h5>Pregled</h5>
-                <span class="appointment-date">{{ appointment.date }} | {{ appointment.timeSlot }}</span>
-              </div>
-              <p *ngIf="appointment.reason">
-                <strong>Razlog:</strong> {{ appointment.reason }}
-              </p>
-              <p *ngIf="appointment.notes">
-                <strong>Napomene:</strong> {{ appointment.notes }}
-              </p>
-            </div>
-
-            <!-- Therapy Info (ako postoji) -->
-            <div *ngIf="appointment.therapy" class="therapy-section">
-              <div class="therapy-header">
-                <h6>Propisana terapija</h6>
-                <span class="therapy-date">{{ appointment.therapy.prescribedAt | date:'dd.MM.yyyy HH:mm' }}</span>
-              </div>
-              <p class="therapy-diagnosis">
-                <strong>Dijagnoza:</strong> {{ appointment.therapy.diagnosis }}
-              </p>
-              <p *ngIf="appointment.therapy.notes" class="therapy-notes">
-                <strong>Napomene:</strong> {{ appointment.therapy.notes }}
-              </p>
-              <div class="therapy-drugs" *ngIf="appointment.therapy.therapyDrugs && appointment.therapy.therapyDrugs.length > 0">
-                <strong>Lekovi:</strong>
-                <ul>
-                  <li *ngFor="let td of appointment.therapy.therapyDrugs">
-                    <strong>{{ td.drug?.name }}</strong> ({{ td.drug?.dosage }}) - 
-                    {{ td.timesPerDay }}x dnevno, {{ td.durationDays }} dana
-                    <span *ngIf="td.instructions"> - <em>{{ td.instructions }}</em></span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <!-- No therapy indicator -->
-            <div *ngIf="!appointment.therapy" class="no-therapy">
-              <p><em>Nije propisana terapija za ovaj pregled.</em></p>
+          <!-- Smene Tab -->
+          <div *ngIf="activeTab === 'smene'" class="tab-content smene-tab">
+            <div class="smene-calendar-container">
+              <app-schedule-calendar
+                [schedules]="mySchedules"
+                [selectedMonth]="selectedMonth"
+                (monthChange)="onMonthChange($event)">
+              </app-schedule-calendar>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel-modal" (click)="closePatientDetailsModal()">Zatvori</button>
-    </div>
-  </div>
-</div>
 
-<!-- Follow-up Appointment Modal -->
-<div class="modal-overlay" *ngIf="showFollowUpModal" (click)="closeFollowUpModal()">
-  <div class="modal-box follow-up-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Zakaži kontrolni pregled</h3>
-      <button class="modal-close" (click)="closeFollowUpModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="patient-info-box">
-        <p><strong>Pacijent:</strong> {{ selectedAppointmentForFollowUp?.patient?.firstName }} {{ selectedAppointmentForFollowUp?.patient?.lastName }}</p>
-        <p><strong>Originalni pregled:</strong> {{ selectedAppointmentForFollowUp?.date }} u {{ selectedAppointmentForFollowUp?.timeSlot }}</p>
-      </div>
-      
-      <form [formGroup]="followUpForm">
-        <div class="form-group">
-          <label for="followup-date">Datum kontrolnog pregleda *</label>
-          <input 
-            type="date" 
-            id="followup-date" 
-            formControlName="date"
-            [min]="minFollowUpDate"
-            (change)="onFollowUpDateChange($event)">
-          <div class="error" *ngIf="followUpForm.get('date')?.invalid && followUpForm.get('date')?.touched">
-            Datum je obavezan
+         <!-- Therapy Modal -->
+        <div *ngIf="showTherapyModal" class="modal-overlay" (click)="closeTherapyModal()">
+          <div class="modal-box therapy-modal" (click)="$event.stopPropagation()">
+            <div class="card therapy-card">
+              <div class="card-header card-header-info therapy-card-header">
+                <h4 class="card-title klasapadding">
+                  Dodaj terapiju
+                </h4>
+                <button class="btn-close" (click)="closeTherapyModal()">✕</button>
+              </div>
+              <div class="card-body therapy-card-body">
+                <form [formGroup]="therapyForm" class="compact-form ultra-compact-form">
+                <div class="form-group">
+                  <label for="diagnosis">Dijagnoza *</label>
+                  <textarea 
+                    id="diagnosis" 
+                    formControlName="diagnosis" 
+                    rows="3" 
+                    placeholder="Unesite dijagnozu..."></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="notes">Napomene</label>
+                  <textarea 
+                    id="notes" 
+                    formControlName="notes" 
+                    rows="2" 
+                    placeholder="Dodatne napomene (opcionalno)..."></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label>Lekovi *</label>
+                  <div formArrayName="drugs">
+                    <div *ngFor="let drug of drugsArray.controls; let i = index" [formGroupName]="i" class="drug-row">
+                      <div class="drug-main-row">
+                        <select formControlName="drugId" class="drug-select">
+                          <option value="">Izaberi lek...</option>
+                          <option *ngFor="let d of allDrugs$ | async" [value]="d.id" [class.allergic-drug]="isPatientAllergicToDrug(d.id)">
+                            <span *ngIf="isPatientAllergicToDrug(d.id)">⚠️ </span>{{ d.name }} ({{ d.dosage }})
+                          </option>
+                        </select>
+                        <div class="input-with-label">
+                          <input type="number" formControlName="timesPerDay" placeholder="Puta dnevno" min="1" />
+                          <span class="input-suffix">x dnevno</span>
+                        </div>
+                        <div class="input-with-label">
+                          <input type="number" formControlName="durationDays" placeholder="Broj dana" min="1" />
+                          <span class="input-suffix">dana</span>
+                        </div>
+                        <button type="button" class="btn-remove-drug" (click)="removeDrugRow(i)" *ngIf="drugsArray.length > 1">✕</button>
+                      </div>
+                      <input type="text" formControlName="instructions" placeholder="Instrukcije (opcionalno)" class="drug-instructions" />
+                    </div>
+                  </div>
+                  <button type="button" class="btn-add-drug" (click)="addDrugRow()">+ Dodaj lek</button>
+                </div><!-- Close Lekovi form-group properly before closing form -->
+                </form>
+              </div>
+              <div class="modal-footer therapy-footer">
+                <button class="btn-cancel-modal" (click)="closeTherapyModal()">Otkaži</button>
+                <button class="btn-submit-therapy" (click)="submitTherapy()" [disabled]="isSubmittingTherapy || therapyForm.invalid">
+                  {{ isSubmittingTherapy ? 'Čuvanje...' : 'Sačuvaj terapiju' }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="followup-time">Termin *</label>
-          <div *ngIf="isLoadingTimeSlots" class="loading-slots">
-            Učitavanje slobodnih termina...
-          </div>
-          <select 
-            *ngIf="!isLoadingTimeSlots" 
-            id="followup-time" 
-            formControlName="timeSlot"
-            [disabled]="availableTimeSlots.length === 0">
-            <option value="">Izaberi termin...</option>
-            <option *ngIf="availableTimeSlots.length === 0" value="" disabled>
-              Nema slobodnih termina za izabrani datum
-            </option>
-            <option *ngFor="let slot of availableTimeSlots" [value]="slot">
-              {{ slot.replace('_', ':') }}
-            </option>
-          </select>
-          <div class="error" *ngIf="followUpForm.get('timeSlot')?.invalid && followUpForm.get('timeSlot')?.touched">
-            Termin je obavezan
-          </div>
-          <div class="info" *ngIf="!isLoadingTimeSlots && availableTimeSlots.length === 0">
-            Nema slobodnih termina za izabrani datum. Izaberite drugi datum ili kreirajte novu smenu.
-          </div>
-        </div>
+          <!-- Modals -->
+        <!-- Patient Details Modal -->
+        <div class="modal-overlay" *ngIf="showPatientDetailsModal" (click)="closePatientDetailsModal()">
+          <div class="modal-box patient-details-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h3>{{ selectedPatient?.firstName }} {{ selectedPatient?.lastName }} - Pregledi i terapije</h3>
+              <button class="modal-close" (click)="closePatientDetailsModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              <!-- Loading -->
+              <div *ngIf="isLoadingPatientDetails" class="loading">
+                Učitavanje...
+              </div>
 
-        <div class="form-group">
-          <label for="followup-reason">Razlog kontrolnog pregleda</label>
-          <textarea 
-            id="followup-reason" 
-            formControlName="reason"
-            placeholder="Npr: Kontrola terapije, pregled rezultata..."
-            rows="3"></textarea>
-        </div>
+              <!-- Combined Appointments & Therapies View -->
+              <div *ngIf="!isLoadingPatientDetails">
+                <div *ngIf="patientAppointmentsWithTherapies.length === 0" class="empty-state">
+                  <p>Pacijent nema završenih pregleda.</p>
+                </div>
+                
+                <div *ngIf="patientAppointmentsWithTherapies.length > 0" class="appointments-therapies-list">
+                  <div *ngFor="let appointment of patientAppointmentsWithTherapies" class="appointment-therapy-card">
+                    <!-- Pregled Info -->
+                    <div class="appointment-section">
+                      <div class="appointment-header">
+                        <h5>Pregled</h5>
+                        <span class="appointment-date">{{ appointment.date }} | {{ appointment.timeSlot }}</span>
+                      </div>
+                      <p *ngIf="appointment.reason">
+                        <strong>Razlog:</strong> {{ appointment.reason }}
+                      </p>
+                      <p *ngIf="appointment.notes">
+                        <strong>Napomene:</strong> {{ appointment.notes }}
+                      </p>
+                    </div>
 
-        <div class="form-group">
-          <label for="followup-notes">Napomene</label>
-          <textarea 
-            id="followup-notes" 
-            formControlName="notes"
-            placeholder="Dodatne napomene..."
-            rows="2"></textarea>
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel-modal" (click)="closeFollowUpModal()">Otkaži</button>
-      <button class="btn-submit-therapy" (click)="submitFollowUp()" [disabled]="isSubmittingFollowUp || followUpForm.invalid">
-        {{ isSubmittingFollowUp ? 'Zakazivanje...' : 'Zakaži pregled' }}
-      </button>
-    </div>
-  </div>
-</div>
+                    <!-- Therapy Info (ako postoji) -->
+                    <div *ngIf="appointment.therapy" class="therapy-section">
+                      <div class="therapy-header">
+                        <h6>Propisana terapija</h6>
+                      </div>
+                      <p class="therapy-diagnosis">
+                        <strong>Dijagnoza:</strong> {{ appointment.therapy.diagnosis }}
+                      </p>
+                      <p *ngIf="appointment.therapy.notes" class="therapy-notes">
+                        <strong>Napomene:</strong> {{ appointment.therapy.notes }}
+                      </p>
+                      <div class="therapy-drugs" *ngIf="appointment.therapy.therapyDrugs && appointment.therapy.therapyDrugs.length > 0">
+                        <strong>Lekovi:</strong>
+                        <ul>
+                          <li *ngFor="let td of appointment.therapy.therapyDrugs">
+                            <strong>{{ td.drug?.name }}</strong> ({{ td.drug?.dosage }}) - 
+                            {{ td.timesPerDay }}x dnevno, {{ td.durationDays }} dana
+                            <span *ngIf="td.instructions"> - <em>{{ td.instructions }}</em></span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
 
-<!-- Blok Termin Modal -->
-<div *ngIf="showBlockAppointmentModal" class="modal-overlay" (click)="closeBlockAppointmentModal()">
-  <div class="modal-content block-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>🏥 Kreiraj Blok Termin</h3>
-      <button class="btn-close" (click)="closeBlockAppointmentModal()">✕</button>
-    </div>
-    
-    <form [formGroup]="blockAppointmentForm" (ngSubmit)="submitBlockAppointment()" class="modal-body">
-      <!-- Patient Selection (Required) -->
-      <div class="form-group">
-        <label for="blockPatientId">Pacijent *</label>
-        <select id="blockPatientId" formControlName="patientId">
-          <option value="">-- Izaberi pacijenta --</option>
-          <option *ngFor="let patient of allPatients" [value]="patient.id">
-            {{ patient.firstName }} {{ patient.lastName }}
-          </option>
-        </select>
-        <div class="error" *ngIf="blockAppointmentForm.get('patientId')?.invalid && blockAppointmentForm.get('patientId')?.touched">
-          Pacijent je obavezan za blok termin
-        </div>
-        <small class="field-hint">Svi pacijenti u sistemu su dostupni za izbor (operacije mogu uključivati više doktora)</small>
-      </div>
-
-      <!-- Date -->
-      <div class="form-group">
-        <label for="blockDate">Datum *</label>
-        <input type="date" id="blockDate" formControlName="date" required>
-      </div>
-
-      <!-- Start Time -->
-      <div class="form-group">
-        <label for="blockStartTime">Početno vreme *</label>
-        <div *ngIf="isLoadingStartTimes" class="loading-slots">
-          ⏳ Učitavanje slobodnih slotova...
-        </div>
-        <select 
-          *ngIf="!isLoadingStartTimes" 
-          id="blockStartTime" 
-          formControlName="startTime" 
-          required>
-          <option value="">-- Izaberi početno vreme --</option>
-          <option *ngFor="let slot of availableStartTimes" [value]="slot">
-            {{ slot }}
-          </option>
-        </select>
-        <small class="field-hint" *ngIf="availableStartTimes.length > 0">
-          Prvi slot blok termina - dostupno {{ availableStartTimes.length }} slobodnih slotova
-        </small>
-        <small class="field-hint field-warning" *ngIf="availableStartTimes.length === 0 && !isLoadingStartTimes && blockAppointmentForm.get('date')?.value">
-          ⚠️ Nema slobodnih slotova za izabrani datum
-        </small>
-      </div>
-
-      <!-- Number of Slots -->
-      <div class="form-group">
-        <label for="blockSlots">Broj slotova *</label>
-        <input 
-          type="number" 
-          id="blockSlots" 
-          formControlName="numberOfSlots" 
-          min="1" 
-          max="16" 
-          required>
-        <small class="field-hint">
-          1 slot = 30 minuta | Ukupno trajanje: {{ blockAppointmentForm.get('numberOfSlots')?.value * 0.5 || 0 }}h
-        </small>
-      </div>
-
-      <!-- Reason -->
-      <div class="form-group">
-        <label for="blockReason">Razlog/Tip zahvata *</label>
-        <input 
-          type="text" 
-          id="blockReason" 
-          formControlName="reason" 
-          placeholder="npr. OPERACIJA, HIRURGIJA, PREGLED..."
-          required>
-      </div>
-
-      <!-- Notes -->
-      <div class="form-group">
-        <label for="blockNotes">Napomena</label>
-        <textarea 
-          id="blockNotes" 
-          formControlName="notes" 
-          rows="3" 
-          placeholder="Dodatne napomene o blok terminu..."></textarea>
-      </div>
-
-      <!-- Submit -->
-      <div class="form-actions">
-        <button 
-          type="button" 
-          class="btn-cancel" 
-          (click)="closeBlockAppointmentModal()"
-          [disabled]="isSubmittingBlockAppointment">
-          Otkaži
-        </button>
-        <button 
-          type="submit" 
-          class="btn-submit" 
-          [disabled]="blockAppointmentForm.invalid || isSubmittingBlockAppointment">
-          <span *ngIf="!isSubmittingBlockAppointment">📅 Kreiraj Blok Termin</span>
-          <span *ngIf="isSubmittingBlockAppointment">⏳ Kreiranje...</span>
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal za Alergije Pacijenta -->
-<div class="modal-overlay" *ngIf="showPatientAllergiesModal" (click)="closePatientAllergiesModal()">
-  <div class="modal-content allergies-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Alergije pacijenta: {{ selectedPatientForAllergies?.firstName }} {{ selectedPatientForAllergies?.lastName }}</h3>
-      <button class="close-btn" (click)="closePatientAllergiesModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <div *ngIf="isLoadingPatientAllergies" class="loading">Učitavanje...</div>
-      <div *ngIf="!isLoadingPatientAllergies && patientAllergiesList.length === 0" class="empty-modal">
-        ⚠️ Ovaj pacijent nema evidentirane alergije.
-      </div>
-      <div *ngIf="!isLoadingPatientAllergies && patientAllergiesList.length > 0" class="allergies-list">
-        <div *ngFor="let pa of patientAllergiesList" class="allergy-item">
-          <div class="allergy-icon">⚠️</div>
-          <div class="allergy-info">
-            <span class="allergy-name">{{ pa.allergy?.name }}</span>
-            <span class="diagnosed-date" *ngIf="pa.diagnosedDate">
-              Dijagnostikovano: {{ pa.diagnosedDate | date:'dd.MM.yyyy' }}
-            </span>
+                    <!-- No therapy indicator -->
+                    <div *ngIf="!appointment.therapy" class="no-therapy">
+                      <p><em>Nije propisana terapija za ovaj pregled.</em></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn-cancel-modal" (click)="closePatientDetailsModal()">Zatvori</button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Chat Component -->
-<app-chat></app-chat>
+          <!-- Follow-up Appointment Modal -->
+        <div class="modal-overlay" *ngIf="showFollowUpModal" (click)="closeFollowUpModal()">
+          <div class="modal-box follow-up-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h3>Zakaži kontrolni pregled</h3>
+              <button class="modal-close" (click)="closeFollowUpModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              <div class="patient-info-box">
+                <p><strong>Pacijent:</strong> {{ selectedAppointmentForFollowUp?.patient?.firstName }} {{ selectedAppointmentForFollowUp?.patient?.lastName }}</p>
+                <p><strong>Originalni pregled:</strong> {{ selectedAppointmentForFollowUp?.date }} u {{ selectedAppointmentForFollowUp?.timeSlot }}</p>
+              </div>
+              
+              <form [formGroup]="followUpForm" class="compact-form ultra-compact-form">
+                <div class="form-group">
+                  <label for="followup-date">Datum kontrolnog pregleda *</label>
+                  <input 
+                    type="date" 
+                    id="followup-date" 
+                    formControlName="date"
+                    [min]="minFollowUpDate"
+                    (change)="onFollowUpDateChange($event)">
+                  <div class="error" *ngIf="followUpForm.get('date')?.invalid && followUpForm.get('date')?.touched">
+                    Datum je obavezan
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="followup-time">Termin *</label>
+                  <div *ngIf="isLoadingTimeSlots" class="loading-slots">
+                    Učitavanje slobodnih termina...
+                  </div>
+                  <select 
+                    *ngIf="!isLoadingTimeSlots" 
+                    id="followup-time" 
+                    formControlName="timeSlot"
+                    [disabled]="availableTimeSlots.length === 0">
+                    <option value="">Izaberi termin...</option>
+                    <option *ngIf="availableTimeSlots.length === 0" value="" disabled>
+                      Nema slobodnih termina za izabrani datum
+                    </option>
+                    <option *ngFor="let slot of availableTimeSlots" [value]="slot">
+                      {{ slot.replace('_', ':') }}
+                    </option>
+                  </select>
+                  <div class="error" *ngIf="followUpForm.get('timeSlot')?.invalid && followUpForm.get('timeSlot')?.touched">
+                    Termin je obavezan
+                  </div>
+                  <div class="info" *ngIf="!isLoadingTimeSlots && availableTimeSlots.length === 0">
+                    Nema slobodnih termina za izabrani datum. Izaberite drugi datum ili kreirajte novu smenu.
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="followup-reason">Razlog</label>
+                  <input 
+                    type="text"
+                    id="followup-reason" 
+                    formControlName="reason"
+                    placeholder="Npr: Kontrola terapije, pregled rezultata..." />
+                </div>
+
+                <div class="form-group">
+                  <label for="followup-notes">Napomene</label>
+                  <input 
+                    type="text"
+                    id="followup-notes" 
+                    formControlName="notes"
+                    placeholder="Dodatne napomene..." />
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button class="btn-cancel-modal" (click)="closeFollowUpModal()">Otkaži</button>
+              <button class="btn-submit-therapy" (click)="submitFollowUp()" [disabled]="isSubmittingFollowUp || followUpForm.invalid">
+                {{ isSubmittingFollowUp ? 'Zakazivanje...' : 'Zakaži pregled' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+            <!-- Blok Termin Modal -->
+        <div *ngIf="showBlockAppointmentModal" class="modal-overlay" (click)="closeBlockAppointmentModal()">
+          <div class="modal-content block-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header" [ngStyle]="{ 'background': 'linear-gradient(60deg, #26c6da, #00acc1)', 'color': '#fff', 'border-bottom': 'none', 'position': 'relative' }">
+              <h3 style="margin:0; color:#fff">Kreiranje blok termina</h3>
+              <button class="btn-close" (click)="closeBlockAppointmentModal()" style="color:#fff; position:absolute; right:1.2rem; top:50%; transform: translateY(-50%); line-height:1; background:none; border:none; font-size:1.5rem; cursor:pointer">✕</button>
+            </div>
+            
+            <form [formGroup]="blockAppointmentForm" (ngSubmit)="submitBlockAppointment()" class="modal-body compact-form ultra-compact-form">
+              <!-- Red 1: Pacijent i Razlog -->
+              <div class="form-row klasagap">
+                <div class="form-group">
+                  <label for="blockPatientId">Pacijent *</label>
+                  <select id="blockPatientId" formControlName="patientId">
+                    <option value="">Izaberi pacijenta...</option>
+                    <option *ngFor="let patient of allPatients" [value]="patient.id">
+                      {{ patient.firstName }} {{ patient.lastName }}
+                    </option>
+                  </select>
+                  <div class="error" *ngIf="blockAppointmentForm.get('patientId')?.invalid && blockAppointmentForm.get('patientId')?.touched">
+                    Pacijent je obavezan
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="blockReason">Razlog *</label>
+                  <input 
+                    type="text" 
+                    id="blockReason" 
+                    formControlName="reason" 
+                    placeholder="Npr. OPERACIJA, HIRURGIJA..."
+                    required>
+                </div>
+              </div>
+
+              <!-- Red 2: Datum, Termin, Broj slotova -->
+              <div class="form-row klasagap">
+                <div class="form-group">
+                  <label for="blockDate">Datum *</label>
+                  <input type="date" id="blockDate" formControlName="date" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="blockStartTime">Termin *</label>
+                  <div *ngIf="isLoadingStartTimes" class="loading-slots">
+                    Učitavanje...
+                  </div>
+                  <select 
+                    *ngIf="!isLoadingStartTimes" 
+                    id="blockStartTime" 
+                    formControlName="startTime" 
+                    required>
+                    <option value="">Izaberi termin...</option>
+                    <option *ngFor="let slot of availableStartTimes" [value]="slot">
+                      {{ slot }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="blockSlots">Broj slotova *</label>
+                  <input 
+                    type="number" 
+                    id="blockSlots" 
+                    formControlName="numberOfSlots" 
+                    min="1" 
+                    max="16" 
+                    required>
+                  <small class="field-hint">
+                    Trajanje: {{ blockAppointmentForm.get('numberOfSlots')?.value * 0.5 || 0 }}h
+                  </small>
+                </div>
+              </div>
+
+              <!-- Red 3: Napomena (cela širina) -->
+              <div class="form-group">
+                <label for="blockNotes">Napomena</label>
+                <input 
+                  type="text"
+                  id="blockNotes" 
+                  formControlName="notes" 
+                  placeholder="Dodatne napomene..." />
+              </div>
+
+              <!-- Submit -->
+              <div class="form-actions klasadugme">
+                <button 
+                  type="button" 
+                  class="btn-cancel" 
+                  (click)="closeBlockAppointmentModal()"
+                  [disabled]="isSubmittingBlockAppointment">
+                  Otkaži
+                </button>
+                <button 
+                  type="submit" 
+                  class="btn-submit" 
+                  [disabled]="blockAppointmentForm.invalid || isSubmittingBlockAppointment"
+                  [ngStyle]="{ 'background': 'linear-gradient(60deg, #26c6da, #00acc1)', 'color': '#fff', 'border': 'none' }">
+                  {{ isSubmittingBlockAppointment ? 'Kreiranje...' : 'Kreiraj' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+          <!-- Modal za Alergije Pacijenta -->
+              <div class="modal-overlay" *ngIf="showPatientAllergiesModal" (click)="closePatientAllergiesModal()">
+                <div class="modal-content allergies-modal" (click)="$event.stopPropagation()">
+                  <div class="modal-header">
+                    <h3>Alergije pacijenta: {{ selectedPatientForAllergies?.firstName }} {{ selectedPatientForAllergies?.lastName }}</h3>
+                    <button class="close-btn" (click)="closePatientAllergiesModal()">×</button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="allergies-actions">
+                      <button class="btn-add-allergy" (click)="openAddAllergyToPatientModal()">
+                        <i class="material-icons">add</i>
+                        Dodaj Alergiju
+                      </button>
+                    </div>
+
+                    <div *ngIf="isLoadingPatientAllergies" class="loading">Učitavanje...</div>
+                    <div *ngIf="!isLoadingPatientAllergies && patientAllergiesList.length === 0" class="empty-modal">
+                      ⚠️ Ovaj pacijent nema evidentirane alergije.
+                    </div>
+                    <div *ngIf="!isLoadingPatientAllergies && patientAllergiesList.length > 0" class="allergies-list">
+                      <div *ngFor="let pa of patientAllergiesList" class="allergy-item">
+                        <div class="allergy-icon">⚠️</div>
+                        <div class="allergy-info">
+                          <span class="allergy-name">{{ pa.allergy?.name }}</span>
+                          <span class="diagnosed-date" *ngIf="pa.diagnosedDate">
+                            Dijagnostikovano: {{ pa.diagnosedDate | date:'dd.MM.yyyy' }}
+                          </span>
+                        </div>
+                        <button class="btn-remove-allergy" (click)="removePatientAllergy(pa.id, pa.allergy?.name)">
+                          <i class="material-icons">delete</i>
+                          Ukloni
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn-cancel" (click)="closePatientAllergiesModal()">Zatvori</button>
+                  </div>
+                </div>
+              </div>
+
+          <!-- Modal za Dodavanje Alergije Pacijentu -->
+          <div class="modal-overlay" *ngIf="showAddAllergyToPatientModal" (click)="closeAddAllergyToPatientModal()">
+            <div class="modal-content add-allergy-modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>Dodaj Alergiju Pacijentu</h3>
+                <button class="close-btn" (click)="closeAddAllergyToPatientModal()">×</button>
+              </div>
+              <form [formGroup]="addAllergyForm" (ngSubmit)="submitAddAllergyToPatient()">
+                <div class="modal-body">
+                  <div class="form-group">
+                    <label for="allergySelect">Alergija *</label>
+                    <select class="form-control" id="allergySelect" formControlName="allergyId">
+                      <option value="">-- Izaberi alergiju --</option>
+                      <option *ngFor="let allergy of availableAllergies$ | async" [value]="allergy.id">
+                        {{ allergy.name }}
+                      </option>
+                    </select>
+                    <div class="error" *ngIf="addAllergyForm.get('allergyId')?.invalid && addAllergyForm.get('allergyId')?.touched">
+                      Alergija je obavezna
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="diagnosedDate">Datum Dijagnoze</label>
+                    <input type="date" class="form-control" id="diagnosedDate" formControlName="diagnosedDate">
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn-cancel" (click)="closeAddAllergyToPatientModal()">
+                    Otkaži
+                  </button>
+                  <button type="submit" class="btn-submit" [disabled]="addAllergyForm.invalid || isAddingAllergy">
+                    {{ isAddingAllergy ? 'Dodavanje...' : 'Dodaj' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Modal za Izmenu Profila -->
+          <div class="modal-overlay" *ngIf="isEditMode" (click)="cancelEdit()">
+            <div class="modal-content edit-profile-modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>Izmeni Profil</h3>
+                <button class="btn-close" (click)="cancelEdit()">×</button>
+              </div>
+              <form [formGroup]="editProfileForm" (ngSubmit)="saveProfile()">
+                <div class="modal-body">
+                  <div class="form-group">
+                    <label>Ime *</label>
+                    <input type="text" formControlName="firstName" class="form-control">
+                    <div class="error" *ngIf="editProfileForm.get('firstName')?.invalid && editProfileForm.get('firstName')?.touched">
+                      Ime je obavezno
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Prezime *</label>
+                    <input type="text" formControlName="lastName" class="form-control">
+                    <div class="error" *ngIf="editProfileForm.get('lastName')?.invalid && editProfileForm.get('lastName')?.touched">
+                      Prezime je obavezno
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Telefon</label>
+                    <input type="text" formControlName="phoneNumber" class="form-control">
+                  </div>
+
+                  <div class="form-group">
+                    <label>Datum rođenja</label>
+                    <input type="date" formControlName="dateOfBirth" class="form-control">
+                  </div>
+
+                  <div class="form-group">
+                    <label>Pol</label>
+                    <select formControlName="gender" class="form-control">
+                      <option value="">Izaberi pol</option>
+                      <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Specijalizacija</label>
+                    <input type="text" formControlName="specialization" class="form-control" placeholder="npr. Kardiologija">
+                    <small class="info-message">Za promenu specijalizacije obratite se administratoru</small>
+                  </div>
+                </div>
+                
+                <div class="modal-footer">
+                  <button type="button" class="btn-cancel-modal" (click)="cancelEdit()">
+                    Otkaži
+                  </button>
+                  <button type="submit" class="btn-submit-therapy" [disabled]="editProfileForm.invalid || (isUpdating$ | async)">
+                    {{ (isUpdating$ | async) ? 'Čuvanje...' : 'Sačuvaj' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+  <!-- </div> -->
+  
+  <!-- Chat Component -->
+  <app-chat></app-chat>
+</app-doctor-layout>

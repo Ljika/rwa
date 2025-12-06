@@ -1,49 +1,91 @@
 <div class="manufacturers-header">
-  <h3>Proizvođači</h3>
-  <button class="btn-add" (click)="showForm = true; editManufacturer = null">Dodaj proizvođača</button>
+  <h3 class="page-title">Proizvođači</h3>
+  <button class="btn btn-primary btn-add" (click)="openAddModal()">
+    <i class="material-icons">add</i>
+    Dodaj Proizvođača
+  </button>
 </div>
-<form *ngIf="showForm" class="manufacturer-form" (ngSubmit)="submitForm()" [formGroup]="manufacturerForm">
-  <h4>{{ editManufacturer ? 'Izmeni proizvođača' : 'Dodaj novog proizvođača' }}</h4>
-  
-  <div class="form-group">
-    <label>Naziv proizvođača *</label>
-    <input type="text" formControlName="name" placeholder="Naziv proizvođača" required />
-  </div>
 
-  <div class="form-group">
-    <label>Država *</label>
-    <input type="text" formControlName="country" placeholder="Država" required />
+<div class="card">
+  <div class="card-header card-header-primary">
+    <h4 class="card-title">Svi Proizvođači</h4>
+    <p class="card-category">Kompletna lista proizvođača u sistemu</p>
   </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead class="text-primary">
+          <tr>
+            <th>Naziv</th>
+            <th>Država</th>
+            <th>Email</th>
+            <th class="text-right">Akcije</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of manufacturers">
+            <td><strong>{{ m.name }}</strong></td>
+            <td>{{ m.country }}</td>
+            <td>{{ m.contactEmail }}</td>
+            <td class="td-actions text-right">
+              <button type="button" class="btn btn-info btn-sm" (click)="startEdit(m)">
+                <i class="material-icons">edit</i>
+                Izmeni
+              </button>
+              <button type="button" class="btn btn-danger btn-sm" (click)="deleteManufacturer(m)">
+                <i class="material-icons">close</i>
+                Obriši
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="manufacturers.length === 0" class="empty-state">
+      <i class="material-icons">business</i>
+      <p>Nema proizvođača za prikaz.</p>
+    </div>
+  </div>
+</div>
 
-  <div class="form-group">
-    <label>Kontakt email *</label>
-    <input type="email" formControlName="contactEmail" placeholder="Kontakt email" required />
-  </div>
+<!-- Modal za dodavanje/izmenu proizvođača -->
+<div class="modal-overlay" *ngIf="showForm" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="material-icons">business</i>
+        {{ editManufacturer ? 'Izmeni Proizvođača' : 'Dodaj Novog Proizvođača' }}
+      </h3>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form class="manufacturer-form" (ngSubmit)="submitForm()" [formGroup]="manufacturerForm">
+        <div class="form-group">
+          <label>Naziv proizvođača *</label>
+          <input type="text" class="form-control" formControlName="name" placeholder="Naziv proizvođača" required />
+        </div>
 
-  <div class="form-actions">
-    <button type="submit" class="btn-submit">{{ editManufacturer ? 'Sačuvaj izmene' : 'Dodaj' }}</button>
-    <button type="button" class="btn-cancel" (click)="cancelForm()">Otkaži</button>
+        <div class="form-group">
+          <label>Država *</label>
+          <input type="text" class="form-control" formControlName="country" placeholder="Država" required />
+        </div>
+
+        <div class="form-group">
+          <label>Kontakt email *</label>
+          <input type="email" class="form-control" formControlName="contactEmail" placeholder="Kontakt email" required />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-default" (click)="closeModal()">
+            <i class="material-icons">close</i>
+            Otkaži
+          </button>
+          <button type="submit" class="btn btn-success" [disabled]="manufacturerForm.invalid">
+            <i class="material-icons">save</i>
+            {{ editManufacturer ? 'Sačuvaj Izmene' : 'Dodaj' }}
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
-</form>
-<table class="manufacturers-table">
-  <thead>
-    <tr>
-      <th>Naziv</th>
-      <th>Država</th>
-      <th>Email</th>
-      <th>Akcije</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let m of manufacturers">
-      <td>{{ m.name }}</td>
-      <td>{{ m.country }}</td>
-      <td>{{ m.contactEmail }}</td>
-      <td>
-        <button class="btn-edit" (click)="startEdit(m)">Izmeni</button>
-        <button class="btn-delete" (click)="deleteManufacturer(m)">Obriši</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<div *ngIf="manufacturers.length === 0" class="empty">Nema proizvođača za prikaz.</div>
+</div>

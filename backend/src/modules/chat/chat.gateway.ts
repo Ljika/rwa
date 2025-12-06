@@ -12,7 +12,7 @@ import { MessagesService } from '../messages/messages.service';
 
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:4200',
+    origin: ['http://localhost:4200', 'http://localhost:4201'],
     credentials: true,
   },
 })

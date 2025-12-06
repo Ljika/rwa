@@ -35,6 +35,8 @@ import { AddScheduleFormComponent, CreateScheduleDto } from '../../../shared/com
 import { EditUserModalComponent, UpdateUserDto } from '../../../shared/components/edit-user-modal/edit-user-modal.component';
 import { DrugsAdminComponent } from '../drugs-admin/drugs-admin.component';
 import { ManufacturersAdminComponent } from '../manufacturers-admin/manufacturers-admin.component';
+import { AdminLayoutComponent } from '../../../shared/layouts/admin-layout/admin-layout.component';
+import { ScheduleCalendarComponent } from '../../../shared/components/schedule-calendar/schedule-calendar.component';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -51,7 +53,9 @@ import { ManufacturersAdminComponent } from '../manufacturers-admin/manufacturer
     AddScheduleFormComponent,
     EditUserModalComponent,
     DrugsAdminComponent,
-    ManufacturersAdminComponent
+    ManufacturersAdminComponent,
+    AdminLayoutComponent,
+    ScheduleCalendarComponent
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss'
@@ -139,9 +143,12 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   genders = Object.values(Gender);
   isUpdating$: Observable<boolean>;
   
-  // Form visibility flags (child components handle their own forms)
-  showAddDoctorForm: boolean = false;
-  showAddAdminForm: boolean = false;
+  // Modal visibility flags
+  showAddDoctorModal: boolean = false;
+  showAddAdminModal: boolean = false;
+  showAddScheduleModal: boolean = false;
+  showDoctorPatientsModal: boolean = false;
+  showDoctorScheduleModal: boolean = false;
   
   // Edit User Modal
   showEditModal: boolean = false;
@@ -155,7 +162,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   loadingDoctorPatients: boolean = false;
   doctorSchedules: any[] = [];
   loadingDoctorSchedules: boolean = false;
-  selectedMonth: string = '';
+  selectedMonth: string = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
   selectedYear: number = new Date().getFullYear();
   
   // Observables iz Store-a 
@@ -511,6 +518,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   this.store.dispatch(AllergiesActions.loadAllergies());
   this.store.dispatch(AppointmentTypesActions.loadAppointmentTypes());
   
+  // Učitaj sve alergije pacijenata
+  this.loadAllPatientAllergies();
+  
   zip(
     this.store.select(UsersSelectors.selectAllUsers).pipe(take(1)),
     this.manufacturersService.getAll().pipe(take(1))
@@ -629,6 +639,32 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       });
   }
 
+  openAddPatientAllergyModal() {
+    this.showPatientAllergyModal = true;
+    this.patientAllergyForm.reset();
+  }
+
+  closePatientAllergyModal() {
+    this.showPatientAllergyModal = false;
+    this.patientAllergyForm.reset();
+  }
+
+  loadAllPatientAllergies() {
+    this.isLoadingAllPatientAllergies = true;
+    this.patientAllergiesService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (allergies: PatientAllergy[]) => {
+          this.allPatientAllergies = allergies;
+          this.isLoadingAllPatientAllergies = false;
+        },
+        error: (err: any) => {
+          console.error('Greška pri učitavanju svih alergija pacijenata:', err);
+          this.isLoadingAllPatientAllergies = false;
+        }
+      });
+  }
+
   addPatientAllergy() {
     if (this.patientAllergyForm.invalid) {
       this.patientAllergyForm.markAllAsTouched();
@@ -647,8 +683,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           alert('Alergija uspešno dodata pacijentu!');
-          this.patientAllergyForm.patchValue({ allergyId: '', diagnosedDate: '' });
-          this.loadPatientAllergies(data.patientId);
+          this.closePatientAllergyModal();
+          this.loadAllPatientAllergies();
           this.isAddingPatientAllergy = false;
         },
         error: (err) => {
@@ -667,7 +703,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           alert('Alergija uspešno uklonjena!');
-          this.loadPatientAllergies(this.selectedPatientId);
+          this.loadAllPatientAllergies();
         },
         error: (err) => {
           console.error('Greška pri uklanjanju alergije:', err);
@@ -989,6 +1025,12 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
+    console.log('Attempting to assign:');
+    console.log('Doctor ID:', this.selectedDoctor.id);
+    console.log('Patient ID:', this.selectedPatient.id);
+    console.log('Doctor:', this.selectedDoctor);
+    console.log('Patient:', this.selectedPatient);
+
     this.doctorPatientService
       .assignPatientToDoctor(this.selectedDoctor.id, this.selectedPatient.id)
       .pipe(takeUntil(this.destroy$))
@@ -1001,7 +1043,19 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error assigning doctor to patient:', error);
-          alert(error.error?.message || 'Greška pri dodeli lekara pacijentu');
+          console.error('Error details:', error.error);
+          console.error('Error message:', error.error?.message);
+          console.error('Error validation:', error.error?.message);
+          
+          let errorMessage = 'Greška pri dodeli lekara pacijentu';
+          if (error.error?.message) {
+            if (Array.isArray(error.error.message)) {
+              errorMessage = error.error.message.join(', ');
+            } else {
+              errorMessage = error.error.message;
+            }
+          }
+          alert(errorMessage);
         }
       });
   }
@@ -1037,13 +1091,45 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Toggle methods za forme
-  toggleAddDoctorForm() {
-    this.showAddDoctorForm = !this.showAddDoctorForm;
+  // Modal methods
+  openAddDoctorModal() {
+    this.showAddDoctorModal = true;
   }
 
-  toggleAddAdminForm() {
-    this.showAddAdminForm = !this.showAddAdminForm;
+  closeAddDoctorModal() {
+    this.showAddDoctorModal = false;
+  }
+
+  openAddAdminModal() {
+    this.showAddAdminModal = true;
+  }
+
+  closeAddAdminModal() {
+    this.showAddAdminModal = false;
+  }
+
+  openAddScheduleModal() {
+    this.showAddScheduleModal = true;
+  }
+
+  closeAddScheduleModal() {
+    this.showAddScheduleModal = false;
+  }
+
+  openDoctorPatientsModal() {
+    this.showDoctorPatientsModal = true;
+  }
+
+  closeDoctorPatientsModal() {
+    this.showDoctorPatientsModal = false;
+  }
+
+  openDoctorScheduleModal() {
+    this.showDoctorScheduleModal = true;
+  }
+
+  closeDoctorScheduleModal() {
+    this.showDoctorScheduleModal = false;
   }
 
   // Helper methods za modal
@@ -1075,9 +1161,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   viewDoctorPatients(doctorId: string) {
-    this.selectedDoctorAction = 'patients';
     this.selectedDoctorId = doctorId;
     this.loadingDoctorPatients = true;
+    this.openDoctorPatientsModal();
 
     this.doctorPatientService.getDoctorPatients(doctorId)
       .pipe(takeUntil(this.destroy$))
@@ -1097,28 +1183,23 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   // Helper methods za schedule form i doctor expansion
   openAddScheduleForm(doctorId: string) {
-    this.selectedDoctorAction = 'add-schedule';
     this.selectedDoctorId = doctorId;
     this.scheduleSuccessMessage = '';
     this.scheduleErrorMessage = '';
+    this.openAddScheduleModal();
   }
 
   closeScheduleForm() {
     this.scheduleSuccessMessage = '';
     this.scheduleErrorMessage = '';
+    this.closeAddScheduleModal();
   }
 
   viewDoctorSchedule(doctorId: string) {
-    this.selectedDoctorAction = 'schedule';
     this.selectedDoctorId = doctorId;
     this.loadingDoctorSchedules = true;
     
-    // Default to current month if not selected
-    if (!this.selectedMonth) {
-      const now = new Date();
-      this.selectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    }
-    
+    this.openDoctorScheduleModal();
     this.loadDoctorSchedulesForMonth(doctorId, this.selectedMonth);
   }
   
@@ -1151,6 +1232,19 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     if (this.selectedDoctorId) {
       this.loadDoctorSchedulesForMonth(this.selectedDoctorId, yearMonth);
     }
+  }
+
+  getSelectedDoctorName(): string {
+    if (!this.selectedDoctorId) return '';
+    
+    let doctorName = '';
+    this.doctors$.pipe(take(1)).subscribe(doctors => {
+      const doctor = doctors.find(d => d.id === this.selectedDoctorId);
+      if (doctor) {
+        doctorName = `${doctor.firstName} ${doctor.lastName}`;
+      }
+    });
+    return doctorName;
   }
 
   // ========== CHILD COMPONENT EVENT HANDLERS ==========
@@ -1253,7 +1347,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           alert(`Uspešno kreiran doktor: ${doctorData.firstName} ${doctorData.lastName}`);
-          this.showAddDoctorForm = false;
+          this.closeAddDoctorModal();
           this.store.dispatch(UsersActions.loadUsers());
         },
         error: (error: any) => {
@@ -1264,7 +1358,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   handleCancelDoctorForm() {
-    this.showAddDoctorForm = false;
+    this.closeAddDoctorModal();
   }
 
   // AddAdminFormComponent handlers
@@ -1287,7 +1381,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           alert(`Uspešno kreiran administrator: ${adminData.firstName} ${adminData.lastName}`);
-          this.showAddAdminForm = false;
+          this.closeAddAdminModal();
           this.store.dispatch(UsersActions.loadUsers());
         },
         error: (error: any) => {
@@ -1298,7 +1392,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   handleCancelAdminForm() {
-    this.showAddAdminForm = false;
+    this.closeAddAdminModal();
   }
 
   // AddScheduleFormComponent handlers  
@@ -1369,6 +1463,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   availableStartTimes: string[] = [];
   isLoadingStartTimes: boolean = false;
 
+  // Statistics Modal
+  showStatsModal: boolean = false;
+
   // Alergije - CRUD i Patient Allergies
   allergies$!: Observable<Allergy[]>;
   isLoadingAllergies$!: Observable<boolean>;
@@ -1386,6 +1483,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   selectedPatientName: string = '';
   selectedPatientAllergies: PatientAllergy[] = [];
   isLoadingPatientAllergies: boolean = false;
+  showPatientAllergyModal: boolean = false;
+  allPatientAllergies: PatientAllergy[] = [];
+  isLoadingAllPatientAllergies: boolean = false;
 
   // Appointment Types - CRUD
   appointmentTypes$!: Observable<AppointmentType[]>;
@@ -1397,6 +1497,14 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   selectedAppointmentTypeForEdit: AppointmentType | null = null;
   isSubmittingAppointmentType: boolean = false;
   specializations = Object.values(Specialization);
+
+  openStatsModal() {
+    this.showStatsModal = true;
+  }
+
+  closeStatsModal() {
+    this.showStatsModal = false;
+  }
 
   openBlockAppointmentModal() {
     this.showBlockAppointmentModal = true;

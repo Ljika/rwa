@@ -102,6 +102,15 @@
     font-size: 1.75rem;
   }
 
+  &.smene-tab {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    .smene-calendar-container {
+      margin-top: 50px;
+    }
+  }
+
   .placeholder {
     color: #64748b;
     font-style: italic;
@@ -314,105 +323,125 @@
   }
 }
 
-/* Patients Grid */
-.patients-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-
-.patient-card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-  .patient-icon {
-    font-size: 2.5rem;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 50%;
-  }
-
-  .patient-info {
-    flex: 1;
-
-    h5 {
-      margin: 0 0 0.75rem 0;
-      color: #1e293b;
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-
-    .patient-detail {
-      margin: 0.4rem 0;
-      color: #64748b;
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-  }
-
-  .patient-actions {
-    display: flex;
-    gap: 0.75rem;
+/* Patients Tab - Material Dashboard Style */
+.patients-tab {
+  .patients-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
     margin-top: 1rem;
+  }
 
-    button {
-      flex: 1;
-      padding: 0.7rem 1rem;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
+  .patient-card-item {
+    transition: all 0.3s ease;
 
-      &:hover {
-        opacity: 0.85;
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-header {
+      .card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .material-icons {
+          font-size: 24px;
+        }
+      }
+
+      .card-category {
+        font-size: 14px;
+        line-height: 1.4;
+        font-weight: 600;
+        color: white;
+        opacity: 1;
+      }
+    }
+
+    .card-body {
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 14px;
+
+        &:last-of-type {
+          border-bottom: none;
+        }
+
+        .label {
+          font-weight: 600;
+          color: #555;
+          min-width: 80px;
+        }
+
+        .value {
+          color: #333;
+          font-weight: 500;
+          flex: 1;
+          text-align: right;
+        }
+      }
+
+      .patient-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 2px solid #f0f0f0;
+
+        .btn-action {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.4rem;
+          padding: 0.7rem 1rem;
+          border: none;
+          border-radius: 8px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          .material-icons {
+            font-size: 18px;
+          }
+
+          &:hover {
+            transform: translateY(-2px);
+          }
+        }
+
+        .btn-allergies {
+          background: linear-gradient(60deg, #ef5350, #e53935);
+          color: white;
+          box-shadow: 0 2px 8px rgba(239, 83, 80, 0.3);
+
+          &:hover {
+            background: linear-gradient(60deg, #e53935, #c62828);
+            box-shadow: 0 4px 16px rgba(239, 83, 80, 0.4);
+          }
+        }
+
+        .btn-details {
+          background: linear-gradient(60deg, #42a5f5, #1e88e5);
+          color: white;
+          box-shadow: 0 2px 8px rgba(30, 136, 229, 0.3);
+
+          &:hover {
+            background: linear-gradient(60deg, #1e88e5, #1565c0);
+            box-shadow: 0 4px 16px rgba(30, 136, 229, 0.4);
+          }
+        }
       }
     }
   }
 }
-
-    .btn-allergies {
-      background: #ef4444;
-      color: white;
-      padding: 0.6rem 1.2rem;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: 0.5rem;
-
-      &:hover {
-        background: #dc2626;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-      }
-    }
-
-    .btn-view-details {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-
-      &:hover {
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-      }
-    }
   
 
 .loading {
@@ -445,6 +474,110 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Heading above karton columns */
+.karton-heading {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 14px 0 18px 16px;
+  color: #1e293b;
+  letter-spacing: .5px;
+}
+
+/* Card header accent overrides */
+.card-header-primary,
+.card-header-danger,
+.card-header-info { 
+  background: linear-gradient(60deg,#42a5f5,#1e88e5); 
+  color:#fff;
+  padding:15px 20px;
+}
+
+.card-header-primary .card-title,
+.card-header-danger .card-title,
+.card-header-info .card-title { 
+  margin:0; 
+  font-size:19px; 
+  font-weight:600; 
+}
+
+.card-category { 
+  margin:0; 
+  font-size:12px; 
+  opacity:.85; 
+}
+
+// Profile Tab - Patient Style
+.profile-tab {
+  max-width: 800px;
+  margin: 0 auto;
+
+  .profile-card {
+    .card-body {
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 16px;
+
+        &:last-of-type {
+          border-bottom: none;
+        }
+
+        .label {
+          font-weight: 600;
+          color: #555;
+          min-width: 160px;
+        }
+
+        .value {
+          color: #333;
+          font-weight: 500;
+          flex: 1;
+          text-align: right;
+        }
+
+        .active-status {
+          color: #10b981;
+          font-weight: 600;
+        }
+      }
+
+      .profile-actions {
+        padding: 24px 20px 10px;
+        text-align: center;
+
+        .btn-edit {
+          background: linear-gradient(60deg, #26c6da, #00acc1);
+          color: white;
+          border: none;
+          padding: 12px 32px;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          box-shadow: 0 2px 8px rgba(38, 198, 218, 0.3);
+
+          &:hover {
+            background: linear-gradient(60deg, #00acc1, #0097a7);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(38, 198, 218, 0.4);
+          }
+
+          .material-icons {
+            font-size: 20px;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -490,6 +623,44 @@
       width: 100%;
     }
   }
+
+  .patients-tab .patients-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .patients-tab .patient-card-item .card-body .patient-actions {
+    flex-direction: column;
+
+    .btn-action {
+      width: 100%;
+    }
+  }
+
+  .filters-container {
+    grid-template-columns: 1fr;
+    
+    .filter-item {
+      width: 100%;
+    }
+
+    .btn-reset-filters {
+      justify-content: center;
+      width: 100%;
+    }
+  }
+
+  .appointments-cards-list {
+    grid-template-columns: 1fr;
+  }
+
+  .appointment-card .card-body .appointment-card-actions {
+    flex-direction: column;
+
+    .btn-action {
+      width: 100%;
+      min-width: auto;
+    }
+  }
 }
 
 /* Therapy Modal */
@@ -514,6 +685,260 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Therapy Modal & Follow-up Modal redesign */
+.therapy-modal, .follow-up-modal {
+  background: #ffffff;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+}
+
+/* Narrow width for therapy modal box to show card clearly */
+.therapy-modal {
+  max-width: 560px;
+  width: 560px;
+}
+
+.therapy-modal .modal-header,
+.follow-up-modal .modal-header {
+  background: linear-gradient(60deg, #26c6da, #00acc1);
+  color: #fff;
+  border-radius: 12px 12px 0 0;
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-height: 60px;
+  
+  h3 { 
+    margin: 0; 
+    font-size: 1.2rem; 
+    font-weight: 600;
+    color: #fff;
+  }
+  
+  .btn-close, .modal-close { 
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.9);
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.follow-up-modal .modal-header { /* differentiate follow-up slightly */
+  background: linear-gradient(60deg, #26c6da, #00acc1);
+}
+
+.therapy-modal .modal-body,
+.follow-up-modal .modal-body {
+  padding: 0.8rem 1.2rem 0.5rem;
+  background: #fff;
+  max-height: calc(80vh - 140px);
+  overflow-y: auto;
+}
+
+.compact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem; /* reduced spacing between fields */
+
+  .form-group {
+    margin: 0; /* remove large bottom margins */
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    label {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #374151;
+      margin: 0;
+    }
+
+    textarea, input, select {
+      width: 100%;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid #d7dce2;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      background: #fafbfd;
+      transition: border-color .25s, box-shadow .25s;
+      &:focus {
+        outline: none;
+        border-color: #26c6da;
+        box-shadow: 0 0 0 3px rgba(38,198,218,0.15);
+        background: #fff;
+      }
+    }
+  }
+}
+
+/* Ultra compact variant for therapy form */
+.ultra-compact-form {
+  gap: 0.5rem;
+  .form-group { gap: 0.25rem; }
+  textarea, input, select { padding: 0.5rem 0.65rem; }
+}
+
+/* Therapy card specific adjustments */
+.therapy-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.therapy-card-header {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 1.3rem 1.5rem !important;
+  position: relative;
+  min-height: 64px;
+  
+  .card-title { 
+    margin: 0 !important;
+    line-height: 1.3;
+    font-size: 1.1rem !important;
+    color: #fff;
+  }
+  
+  .btn-close {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1;
+    padding: 0;
+    
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.therapy-card-body {
+  padding: 0.9rem 1.1rem 1rem;
+}
+
+.therapy-footer {
+  padding: 0.75rem 1.1rem 1rem;
+  border-top: 1px solid #e5e9ed;
+}
+
+.therapy-card-body .drug-row {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+}
+
+.therapy-card-body .btn-add-drug {
+  margin-top: 0.2rem;
+}
+
+.therapy-modal .drug-row {
+  background: #fafbfd;
+  padding: 0.6rem;
+  border: 1px solid #e0e6eb;
+  border-radius: 8px;
+  margin-bottom: 0.6rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+
+  .drug-main-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    align-items: start;
+  }
+
+  .drug-select {
+    width: 100%;
+    
+    // Stil za lekove na koje je pacijent alergičan
+    option.allergic-drug {
+      color: #dc2626;
+      font-weight: 600;
+      background-color: #fee2e2;
+    }
+  }
+
+  .drug-instructions {
+    width: 100%;
+    margin-top: 0;
+  }
+}
+
+.therapy-modal .btn-add-drug {
+  margin-top: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+}
+
+.therapy-modal .modal-footer,
+.follow-up-modal .modal-footer {
+  padding: 0.8rem 1.2rem;
+  background: #fff;
+  border-top: 1px solid #e5e9ed;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+}
+
+.therapy-modal .modal-footer .btn-cancel-modal,
+.follow-up-modal .modal-footer .btn-cancel-modal {
+  background: #eef2f5;
+  color: #475569;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  &:hover { background:#e2e8f0; }
+}
+
+.therapy-modal .modal-footer .btn-submit-therapy,
+.follow-up-modal .modal-footer .btn-submit-therapy {
+  background: linear-gradient(60deg, #26c6da, #00acc1);
+  color: #fff;
+  padding: 0.55rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 6px;
+  &:hover:not(:disabled) { background: linear-gradient(60deg,#00acc1,#0097a7); }
+}
+
+.follow-up-modal .patient-info-box {
+  margin-bottom: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  background: #f0f9ff;
+  border: 1px solid #d3ecfa;
+  border-radius: 8px;
+  p { margin: 0.15rem 0; font-size: 0.85rem; }
+}
+
+@media (max-width: 768px) {
+  .therapy-modal .modal-body,
+  .follow-up-modal .modal-body { padding: 0.9rem 1rem 1rem; }
+  .compact-form { gap: 0.5rem; }
+  .compact-form .form-group textarea,
+  .compact-form .form-group input,
+  .compact-form .form-group select { font-size: 0.8rem; }
 }
 
 .modal-header {
@@ -573,11 +998,15 @@
   }
 
   .drug-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 2fr auto;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    align-items: center;
+    margin-bottom: 1rem;
+
+    .drug-main-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      align-items: center;
+    }
 
     .drug-select {
       width: 100%;
@@ -616,6 +1045,11 @@
         color: #666;
         pointer-events: none;
       }
+    }
+
+    .drug-instructions {
+      width: 100%;
+      margin-top: 0;
     }
 
     .btn-remove-drug {
@@ -691,13 +1125,31 @@
 
 // Patient Details Modal
 .patient-details-modal {
-  max-width: 800px;
-  max-height: 80vh;
+  max-width: 900px;
+  max-height: 85vh;
   overflow-y: auto;
   background: white !important;
 
+  .modal-header {
+    background: linear-gradient(60deg, #26c6da, #00acc1);
+    color: white;
+    border-radius: 12px 12px 0 0;
+
+    h3 {
+      color: white;
+    }
+
+    .modal-close {
+      color: white;
+      opacity: 0.9;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
   .modal-body {
-    background: white;
     padding: 1.5rem;
   }
 
@@ -705,54 +1157,45 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    margin-top: 1rem;
   }
 
   .appointment-therapy-card {
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
+    background: white;
     border-radius: 12px;
-    padding: 1.5rem;
-    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
 
-    &:hover {
-      border-color: #cbd5e1;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    // Appointment section
+    // Appointment section - Card with tirkiz header
     .appointment-section {
-      padding-bottom: 1rem;
-      border-bottom: 2px solid #e2e8f0;
-
       .appointment-header {
+        background: linear-gradient(60deg, #26c6da, #00acc1);
+        color: white;
+        padding: 1rem 1.5rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1rem;
 
         h5 {
           margin: 0;
-          color: #1e293b;
           font-size: 1.1rem;
-          font-weight: 700;
+          font-weight: 600;
         }
 
         .appointment-date {
-          color: #667eea;
-          font-size: 0.95rem;
-          font-weight: 600;
-          background: #ede9fe;
-          padding: 0.4rem 0.8rem;
-          border-radius: 6px;
+          font-size: 0.9rem;
+          font-weight: 500;
+          opacity: 0.95;
         }
       }
 
+      padding: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+
       p {
-        margin: 0.5rem 0;
+        margin: 0.6rem 0;
         color: #475569;
         font-size: 0.95rem;
-        line-height: 1.5;
+        line-height: 1.6;
 
         strong {
           color: #1e293b;
@@ -761,23 +1204,22 @@
       }
     }
 
-    // Therapy section (if exists)
+    // Therapy section (if exists) - Simple list
     .therapy-section {
-      margin-top: 1rem;
-      padding: 1.25rem;
-      background: white;
-      border-radius: 8px;
-      border-left: 4px solid #10b981;
+      padding: 1.5rem;
+      background: #f8fafc;
 
       .therapy-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #26c6da;
 
         h6 {
           margin: 0;
-          color: #10b981;
+          color: #26c6da;
           font-size: 1rem;
           font-weight: 700;
         }
@@ -785,27 +1227,30 @@
         .therapy-date {
           color: #64748b;
           font-size: 0.85rem;
+          font-weight: 500;
         }
       }
 
       .therapy-diagnosis {
-        margin: 0.75rem 0;
+        margin: 1rem 0;
         padding: 0.75rem;
-        background: #f0fdf4;
+        background: white;
         border-radius: 6px;
         font-size: 0.95rem;
         
         strong {
-          color: #065f46;
+          color: #26c6da;
           font-weight: 600;
         }
       }
 
       .therapy-notes {
-        margin: 0.75rem 0;
+        margin: 1rem 0;
+        padding: 0.75rem;
+        background: white;
+        border-radius: 6px;
         color: #475569;
         font-size: 0.9rem;
-        font-style: italic;
         
         strong {
           color: #1e293b;
@@ -817,33 +1262,33 @@
         margin-top: 1rem;
 
         strong {
-          color: #1e293b;
+          color: #26c6da;
           font-weight: 600;
           font-size: 0.95rem;
+          display: block;
+          margin-bottom: 0.75rem;
         }
 
         ul {
           list-style: none;
           padding: 0;
-          margin: 0.75rem 0 0 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
 
           li {
             padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: white;
             border-radius: 6px;
             color: #475569;
             font-size: 0.9rem;
             line-height: 1.6;
 
-            &:last-child {
-              margin-bottom: 0;
-            }
-
             strong {
               color: #1e293b;
               font-size: 0.95rem;
+              display: inline;
             }
 
             em {
@@ -859,40 +1304,38 @@
 
     // No therapy indicator
     .no-therapy {
-      margin-top: 1rem;
-      padding: 1rem;
-      background: #fef3c7;
-      border-left: 4px solid #f59e0b;
-      border-radius: 6px;
+      padding: 1.5rem;
+      background: #f8fafc;
+      border-left: 3px solid #94a3b8;
 
       p {
         margin: 0;
-        color: #92400e;
+        color: #64748b;
         font-size: 0.9rem;
-        
-        em {
-          font-style: italic;
-        }
+        font-style: italic;
       }
     }
   }
 
   .empty-state {
     text-align: center;
-    padding: 2rem;
+    padding: 3rem;
     color: #64748b;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 2px dashed #cbd5e1;
     
     p {
       margin: 0;
-      font-size: 0.95rem;
+      font-size: 1.1rem;
     }
   }
 
   .loading {
     text-align: center;
-    padding: 2rem;
-    color: #667eea;
-    font-size: 1rem;
+    padding: 3rem;
+    color: #26c6da;
+    font-size: 1.1rem;
   }
 }
 
@@ -924,13 +1367,13 @@
     background: #f0f9ff;
     border: 1px solid #bae6fd;
     border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.6rem;
 
     p {
-      margin: 0.25rem 0;
+      margin: 0.15rem 0;
       color: #0c4a6e;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
 
       strong {
         color: #075985;
@@ -938,12 +1381,25 @@
     }
   }
 
-  .form-group {
-    margin-bottom: 1.5rem;
+  // Override with ultra-compact spacing
+  .ultra-compact-form .form-group {
+    margin-bottom: 0.5rem !important;
 
     label {
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.3rem !important;
+      color: #1e293b;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 0.8rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.4rem;
       color: #1e293b;
       font-weight: 500;
       font-size: 0.95rem;
@@ -995,118 +1451,247 @@
   }
 }
 
-.appointment-item {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 1rem 1.5rem;
-  margin-bottom: 1rem;
-}
+  // Appointments Cards List
+  .appointments-cards-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+  }
 
-.appointment-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 2rem;
+  .appointment-card {
+    transition: all 0.3s ease;
 
-  .appointment-info {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    flex: 1;
-
-    .patient-name {
-      color: #1e293b;
-      font-size: 1.05rem;
-      font-weight: 600;
-      min-width: 180px;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
     }
 
-    .appointment-time {
-      color: #475569;
-      font-size: 1rem;
-      min-width: 100px;
+    &.block-appointment-card {
+      border-left: 4px solid #42a5f5;
     }
 
-    .appointment-date {
-      color: #475569;
-      font-size: 1rem;
-      min-width: 110px;
+    /* Rejected header handled via .card-header.header-rejected */
+
+    /* Header color accents by type/status */
+    .card-header {
+      &.header-operation {
+        background: linear-gradient(60deg, #e57373, #ef5350);
+        color: #fff;
+      }
+      &.header-pending {
+        background: linear-gradient(60deg, #f6c453, #f4b400); /* soft amber/yellow */
+        color: #fff;
+      }
+      &.header-approved {
+        background: linear-gradient(60deg, #64b5f6, #42a5f5);
+        color: #fff;
+      }
+      &.header-completed {
+        background: linear-gradient(60deg, #81c784, #66bb6a);
+        color: #fff;
+      }
+      &.header-cancelled {
+        background: linear-gradient(60deg, #b0bec5, #90a4ae);
+        color: #fff;
+      }
+      &.header-rejected {
+        background: linear-gradient(60deg, #ef5350, #e53935);
+        color: #fff;
+      }
     }
 
-    .appointment-reason {
-      color: #dc2626;
-      font-size: 1rem;
-      font-weight: 500;
-      flex: 1;
-    }
+    .card-header {
+      .card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
 
-    .appointment-type {
-      color: #059669;
-      font-size: 0.9rem;
-      font-weight: 500;
-      background: #d1fae5;
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      border: 1px solid #34d399;
-      display: inline-block;
-      white-space: nowrap;
-    }
+        .material-icons {
+          font-size: 22px;
+        }
 
-    .appointment-type-missing {
-      color: #6b7280;
-      font-size: 0.85rem;
-      font-style: italic;
-      opacity: 0.7;
-    }
-
-    .appointment-status {
-      padding: 0.4rem 1rem;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      border: 1px solid transparent;
-
-      &.status-pending {
-        background: #fef3c7;
-        color: #92400e;
-        border-color: #fbbf24;
+        .no-patient-badge {
+          font-size: 0.8rem;
+          opacity: 0.8;
+          font-weight: 400;
+        }
       }
 
-      &.status-approved {
-        background: #dbeafe;
-        color: #1e40af;
-        border-color: #60a5fa;
+      .card-category {
+        font-size: 14px;
+        font-weight: 600;
+        color: white;
+        opacity: 1;
+      }
+    }
+
+    .card-body {
+      .appointment-details {
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          padding: 10px 0;
+          border-bottom: 1px solid #e0e0e0;
+          font-size: 14px;
+
+          &:last-of-type {
+            border-bottom: none;
+          }
+
+          .label {
+            font-weight: 600;
+            color: #555;
+            min-width: 100px;
+          }
+
+          .value {
+            color: #333;
+            flex: 1;
+            text-align: right;
+          }
+
+          .reason-text {
+            color: #ef5350;
+            font-weight: 500;
+          }
+
+          .appointment-status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+
+            &.status-pending {
+              background: #fff3cd;
+              color: #856404;
+            }
+
+            &.status-approved {
+              background: #d1ecf1;
+              color: #0c5460;
+            }
+
+            &.status-completed {
+              background: #d4edda;
+              color: #155724;
+            }
+
+            &.status-cancelled {
+              background: #f8d7da;
+              color: #721c24;
+            }
+
+            &.status-rejected {
+              background: #f5c6cb;
+              color: #721c24;
+            }
+          }
+        }
       }
 
-      &.status-completed {
-        background: #d1fae5;
-        color: #065f46;
-        border-color: #34d399;
+      .appointment-card-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid #f0f0f0;
+
+        .btn-action {
+          flex: 1;
+          min-width: 140px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.3rem;
+          padding: 0.6rem 0.8rem;
+          border: none;
+          border-radius: 6px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          .material-icons {
+            font-size: 16px;
+          }
+
+          &:hover {
+            transform: translateY(-1px);
+          }
+        }
+
+        .btn-approve {
+          background: linear-gradient(60deg, #66bb6a, #43a047);
+          color: white;
+          box-shadow: 0 2px 6px rgba(67, 160, 71, 0.3);
+
+          &:hover {
+            background: linear-gradient(60deg, #43a047, #2e7d32);
+            box-shadow: 0 4px 12px rgba(67, 160, 71, 0.4);
+          }
+        }
+
+        .btn-reject {
+          background: linear-gradient(60deg, #ef5350, #e53935);
+          color: white;
+          box-shadow: 0 2px 6px rgba(239, 83, 80, 0.3);
+
+          &:hover {
+            background: linear-gradient(60deg, #e53935, #c62828);
+            box-shadow: 0 4px 12px rgba(239, 83, 80, 0.4);
+          }
+        }
+
+        .btn-cancel {
+          background: linear-gradient(60deg, #ef5350, #e53935);
+          color: white;
+          box-shadow: 0 2px 6px rgba(229, 57, 53, 0.3);
+
+          &:hover {
+            background: linear-gradient(60deg, #e53935, #c62828);
+            box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+          }
+        }
+
+        .btn-complete {
+          background: linear-gradient(60deg, #66bb6a, #43a047);
+          color: white;
+          box-shadow: 0 2px 6px rgba(67, 160, 71, 0.3);
+
+          &:hover {
+            background: linear-gradient(60deg, #43a047, #2e7d32);
+            box-shadow: 0 4px 12px rgba(67, 160, 71, 0.4);
+          }
+        }
+
+        .btn-therapy {
+          background: linear-gradient(60deg, #b0bec5, #90a4ae);
+          color: white;
+          box-shadow: 0 2px 6px rgba(144, 164, 174, 0.3);
+
+          &:hover {
+            background: linear-gradient(60deg, #90a4ae, #78909c);
+            box-shadow: 0 4px 12px rgba(144, 164, 174, 0.4);
+          }
+        }
+
+        .btn-follow-up {
+          background: linear-gradient(60deg, #26c6da, #00acc1);
+          color: white;
+          box-shadow: 0 2px 6px rgba(38, 198, 218, 0.3);
+
+          &:hover {
+            background: linear-gradient(60deg, #00acc1, #0097a7);
+            box-shadow: 0 4px 12px rgba(38, 198, 218, 0.4);
+          }
+        }
       }
     }
   }
-
-  .appointment-actions {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-
-    button {
-      padding: 0.6rem 1.2rem;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: opacity 0.2s ease;
-
-      &:hover {
-        opacity: 0.85;
-      }
-    }
-  }
-}
 
 // Sekcije u Termini tabu
 .tab-content {
@@ -1163,65 +1748,81 @@
     font-size: 0.95rem;
   }
   
-  // Filteri
-  .filters-row {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  // Filters Card
+  .filters-card {
     margin-bottom: 1.5rem;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr) auto;
-    gap: 1rem;
-    align-items: end;
-  }
 
-  .filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    .card-body {
+      .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1rem;
 
-    label {
-      font-weight: 600;
-      color: #334155;
-      font-size: 0.9rem;
-    }
+        .filter-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
 
-    input, select {
-      padding: 0.75rem;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
+          label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+          }
 
-      &:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+          input, select {
+            padding: 0.6rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+
+            &:focus {
+              outline: none;
+              border-color: #26c6da;
+              box-shadow: 0 0 0 3px rgba(38, 198, 218, 0.1);
+            }
+          }
+
+          select {
+            cursor: pointer;
+            background: white;
+          }
+        }
       }
-    }
 
-    select {
-      cursor: pointer;
-      background: white;
-    }
-  }
+      .filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 1rem;
+        border-top: 1px solid #e0e0e0;
 
-  .btn-reset {
-    padding: 0.75rem 1rem;
-    background: #f1f5f9;
-    color: #475569;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    align-self: end;
+        .btn-reset-filters {
+          background: linear-gradient(60deg, #66bb6a, #43a047);
+          color: white;
+          border: none;
+          padding: 0.6rem 1.2rem;
+          border-radius: 6px;
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 0.9rem;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 6px rgba(67, 160, 71, 0.3);
 
-    &:hover {
-      background: #e2e8f0;
-      transform: translateY(-2px);
+          .material-icons {
+            font-size: 18px;
+          }
+
+          &:hover {
+            background: linear-gradient(60deg, #43a047, #2e7d32);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 160, 71, 0.4);
+          }
+        }
+      }
     }
   }
   
@@ -1251,41 +1852,111 @@
     color: #9f1239;
   }
 
-  // Tab Header with Block Appointment Button
-  .tab-header {
+  // Termini Tab Styles
+  .termini-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: flex-end;
     margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e5e7eb;
-
-    h3 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: #1f2937;
-    }
   }
 
-  .btn-add-block {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  .btn-create-block {
+    background: linear-gradient(60deg, #26c6da, #00acc1);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: 0.95rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 2px 8px rgba(38, 198, 218, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .material-icons {
+      font-size: 20px;
+    }
 
     &:hover {
+      background: linear-gradient(60deg, #00acc1, #0097a7);
       transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 4px 16px rgba(38, 198, 218, 0.4);
     }
 
     &:active {
       transform: translateY(0);
+    }
+  }
+
+  // Filters Container
+  .filters-container {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr) auto;
+    gap: 1rem;
+    align-items: end;
+
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      label {
+        font-weight: 600;
+        color: #555;
+        font-size: 0.9rem;
+      }
+
+      input, select {
+        padding: 0.6rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: #26c6da;
+          box-shadow: 0 0 0 3px rgba(38, 198, 218, 0.1);
+        }
+      }
+
+      select {
+        cursor: pointer;
+        background: white;
+      }
+    }
+
+    .btn-reset-filters {
+      background: linear-gradient(60deg, #66bb6a, #43a047);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 6px rgba(67, 160, 71, 0.3);
+      white-space: nowrap;
+
+      .material-icons {
+        font-size: 18px;
+      }
+
+      &:hover {
+        background: linear-gradient(60deg, #43a047, #2e7d32);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(67, 160, 71, 0.4);
+      }
     }
   }
 
@@ -1326,29 +1997,89 @@
   }
 
   .block-modal {
-    max-width: 600px;
+    max-width: 700px;
+
+    .modal-header {
+      background: linear-gradient(60deg, #26c6da, #00acc1);
+      color: #fff;
+      border-radius: 12px 12px 0 0;
+      padding: 1rem 1.4rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      min-height: 60px;
+      
+      h3 { 
+        margin: 0; 
+        font-size: 1.1rem; 
+        font-weight: 600;
+        color: #fff;
+      }
+      
+      .btn-close { 
+        position: absolute;
+        right: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.9);
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0;
+        
+        &:hover {
+          color: #fff;
+        }
+      }
+    }
+
+    // Stronger specificity to override any generic .modal-header rules
+    .modal-content.block-modal > .modal-header,
+    :host ::ng-deep .modal-content.block-modal > .modal-header {
+      background: linear-gradient(60deg, #26c6da, #00acc1) !important;
+      color: #fff !important;
+      border-bottom: none !important;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+      margin-bottom: 1.2rem;
+
+      &:has(.form-group:nth-child(3)) {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1.2rem;
+      }
+    }
 
     .form-group {
-      margin-bottom: 1.25rem;
+      margin-bottom: 0;
 
       label {
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 500;
         color: #374151;
+        font-size: 0.9rem;
       }
 
       input, select, textarea {
         width: 100%;
-        padding: 0.625rem;
+        padding: 0.6rem;
         border: 1px solid #d1d5db;
         border-radius: 6px;
-        font-size: 1rem;
+        font-size: 0.9rem;
+        margin: 0 0.5rem;
 
         &:focus {
           outline: none;
-          border-color: #667eea;
-          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+          border-color: #26c6da;
+          box-shadow: 0 0 0 3px rgba(38, 198, 218, 0.1);
         }
       }
 
@@ -1360,8 +2091,8 @@
 
     .field-hint {
       display: block;
-      margin-top: 0.375rem;
-      font-size: 0.875rem;
+      margin-top: 0.2rem;
+      font-size: 0.75rem;
       color: #6b7280;
     }
 
@@ -1371,18 +2102,19 @@
     }
 
     .loading-slots {
-      padding: 0.75rem;
+      padding: 0.5rem;
       background: #fef3c7;
       border-radius: 6px;
       color: #92400e;
       text-align: center;
+      font-size: 0.85rem;
     }
 
     .form-actions {
       display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-      margin-top: 2rem;
+      gap: 2rem;
+      justify-content: center;
+      margin-top: 1.2rem;
 
       .btn-cancel {
         padding: 0.625rem 1.25rem;
@@ -1400,7 +2132,7 @@
 
       .btn-submit {
         padding: 0.625rem 1.5rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(60deg, #26c6da, #00acc1) !important;
         color: white;
         border: none;
         border-radius: 6px;
@@ -1409,13 +2141,16 @@
         font-weight: 500;
 
         &:hover:not(:disabled) {
+          background: linear-gradient(60deg, #00acc1, #0097a7) !important;
           transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+          box-shadow: 0 4px 8px rgba(38, 198, 218, 0.3);
         }
 
         &:disabled {
           opacity: 0.6;
           cursor: not-allowed;
+          background: linear-gradient(60deg, #26c6da, #00acc1) !important;
+          color: #fff !important;
         }
       }
     }
@@ -1424,9 +2159,61 @@
 
 // ===== MODAL ZA ALERGIJE PACIJENTA =====
 .allergies-modal {
-  max-width: 600px;
+  max-width: 650px;
+
+  .modal-header {
+    background: linear-gradient(60deg, #ef5350, #e53935);
+    color: white;
+    border-radius: 12px 12px 0 0;
+
+    h3 {
+      color: white;
+    }
+
+    .close-btn {
+      color: white;
+      opacity: 0.9;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
 
   .modal-body {
+    padding: 1.5rem;
+
+    .allergies-actions {
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+
+      .btn-add-allergy {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(60deg, #26a69a, #00897b);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(38, 166, 154, 0.3);
+
+        i {
+          font-size: 1.2rem;
+        }
+
+        &:hover {
+          background: linear-gradient(60deg, #00897b, #00695c);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(38, 166, 154, 0.4);
+        }
+      }
+    }
+
     .loading {
       text-align: center;
       padding: 2rem;
@@ -1438,59 +2225,324 @@
       padding: 2.5rem;
       color: #64748b;
       font-size: 1.1rem;
-      background: #f8fafc;
+      background: #fef2f2;
+      border: 2px dashed #fca5a5;
       border-radius: 8px;
     }
 
     .allergies-list {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 1rem;
 
       .allergy-item {
         display: flex;
         align-items: center;
         gap: 1rem;
-        padding: 1rem;
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        border: 2px solid #fca5a5;
-        border-radius: 10px;
+        padding: 1.2rem;
+        background: white;
+        border: 2px solid #ef5350;
+        border-radius: 12px;
         transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(239, 83, 80, 0.1);
 
         &:hover {
-          transform: translateX(4px);
-          box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(239, 83, 80, 0.2);
+          border-color: #e53935;
         }
 
         .allergy-icon {
-          font-size: 1.8rem;
-          width: 45px;
-          height: 45px;
+          font-size: 2rem;
+          width: 50px;
+          height: 50px;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: white;
+          background: linear-gradient(60deg, #ef5350, #e53935);
+          color: white;
           border-radius: 50%;
           flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(239, 83, 80, 0.3);
         }
 
         .allergy-info {
           flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 0.3rem;
+          gap: 0.4rem;
 
           .allergy-name {
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: #991b1b;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.3;
           }
 
           .diagnosed-date {
             font-size: 0.85rem;
-            color: #dc2626;
+            color: #64748b;
+            font-weight: 500;
           }
         }
+
+        .btn-remove-allergy {
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          padding: 0.6rem 1rem;
+          background: linear-gradient(60deg, #ef5350, #e53935);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 6px rgba(239, 83, 80, 0.3);
+
+          i {
+            font-size: 1.1rem;
+          }
+
+          &:hover {
+            background: linear-gradient(60deg, #e53935, #c62828);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(239, 83, 80, 0.4);
+          }
+        }
+      }
+    }
+  }
+
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+
+    .btn-cancel {
+      padding: 0.75rem 1.5rem;
+      background: #e5e7eb;
+      color: #475569;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #cbd5e1;
+      }
+    }
+  }
+}
+
+// ===== MODAL ZA IZMENU PROFILA =====
+.edit-profile-modal {
+  max-width: 600px;
+
+  .modal-body {
+    .form-group {
+      margin-bottom: 1.25rem;
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.95rem;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: #26c6da;
+          box-shadow: 0 0 0 3px rgba(38, 198, 218, 0.1);
+        }
+      }
+
+      select.form-control {
+        height: auto;
+        min-height: 45px;
+        padding: 0.75rem;
+      }
+
+      .error {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
+
+      .info-message {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        font-style: italic;
+      }
+    }
+  }
+
+  .modal-footer {
+    .btn-cancel-modal {
+      background: linear-gradient(60deg, #64748b, #475569);
+      color: white;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
+      }
+    }
+
+    .btn-submit-therapy {
+      background: linear-gradient(60deg, #26c6da, #00acc1);
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(38, 198, 218, 0.4);
+      }
+    }
+  }
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #999;
+  
+  &:hover {
+    color: #333;
+  }
+}
+.klasapadding{
+  padding-top: 15px;
+}
+.klasagap{
+  gap: 20px;
+}
+.klasadugme{
+  display: flex;
+  padding: 20px;
+}
+
+// ===== ADD ALLERGY TO PATIENT MODAL =====
+.add-allergy-modal {
+  max-width: 550px;
+
+  .modal-header {
+    background: linear-gradient(60deg, #26a69a, #00897b);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+      color: white;
+      margin: 0;
+      font-size: 1.3rem;
+    }
+
+    .close-btn {
+      color: white;
+      opacity: 0.9;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+
+    .form-group {
+      margin-bottom: 1.25rem;
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.95rem;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 5px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: #26a69a;
+          box-shadow: 0 0 0 3px rgba(38, 166, 154, 0.1);
+        }
+      }
+
+      .error {
+        margin-top: 0.5rem;
+        color: #ef5350;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+
+    .btn-cancel {
+      padding: 0.75rem 1.5rem;
+      background: #e5e7eb;
+      color: #475569;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #cbd5e1;
+      }
+    }
+
+    .btn-submit {
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(60deg, #26a69a, #00897b);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(38, 166, 154, 0.3);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(60deg, #00897b, #00695c);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(38, 166, 154, 0.4);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
     }
   }

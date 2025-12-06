@@ -1,130 +1,201 @@
-<div class="register-container">
-  <div class="register-card">
-    <div class="register-header">
-      <h1>MediSync</h1>
-      <p>Kreirajte novi nalog</p>
-    </div>
+<!-- Hero Section for Register -->
+<div class="page-header-register">
+  <div class="page-header-image" style="background-image: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=2070&auto=format&fit=crop');"></div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 ml-auto mr-auto">
+        <div class="card card-signup">
+          <div class="card-header card-header-primary text-center">
+            <h4 class="card-title">
+              <i class="material-icons">how_to_reg</i>
+              Registracija
+            </h4>
+            <div class="social-line">
+              <a href="/" class="btn btn-link btn-white">
+                <i class="material-icons">home</i>
+                Nazad na početnu
+              </a>
+            </div>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="form">
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <!-- First Name -->
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <i class="material-icons">person</i>
+                      </span>
+                    </div>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      placeholder="Ime *" 
+                      formControlName="firstName"
+                      [class.is-invalid]="firstName?.invalid && firstName?.touched"
+                    />
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="firstName?.invalid && firstName?.touched">
+                    <span *ngIf="firstName?.errors?.['required']">Ime je obavezno</span>
+                    <span *ngIf="firstName?.errors?.['minlength']">Ime mora imati najmanje 2 karaktera</span>
+                  </div>
+                </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
-      
-      <!-- First Name -->
-      <div class="form-group">
-        <label for="firstName">Ime *</label>
-        <input 
-          type="text" 
-          id="firstName" 
-          formControlName="firstName"
-          class="form-control"
-          [class.error]="firstName?.invalid && firstName?.touched"
-        />
-        <div class="error-message" *ngIf="firstName?.invalid && firstName?.touched">
-          <span *ngIf="firstName?.errors?.['required']">Ime je obavezno</span>
-          <span *ngIf="firstName?.errors?.['minlength']">Ime mora imati najmanje 2 karaktera</span>
-        </div>
-      </div>
+                <div class="col-md-6">
+                  <!-- Last Name -->
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <i class="material-icons">person_outline</i>
+                      </span>
+                    </div>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      placeholder="Prezime *" 
+                      formControlName="lastName"
+                      [class.is-invalid]="lastName?.invalid && lastName?.touched"
+                    />
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="lastName?.invalid && lastName?.touched">
+                    <span *ngIf="lastName?.errors?.['required']">Prezime je obavezno</span>
+                    <span *ngIf="lastName?.errors?.['minlength']">Prezime mora imati najmanje 2 karaktera</span>
+                  </div>
+                </div>
+              </div>
 
-      <!-- Last Name -->
-      <div class="form-group">
-        <label for="lastName">Prezime *</label>
-        <input 
-          type="text" 
-          id="lastName" 
-          formControlName="lastName"
-          class="form-control"
-          [class.error]="lastName?.invalid && lastName?.touched"
-        />
-        <div class="error-message" *ngIf="lastName?.invalid && lastName?.touched">
-          <span *ngIf="lastName?.errors?.['required']">Prezime je obavezno</span>
-          <span *ngIf="lastName?.errors?.['minlength']">Prezime mora imati najmanje 2 karaktera</span>
-        </div>
-      </div>
+              <!-- Email -->
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">
+                    <i class="material-icons">email</i>
+                  </span>
+                </div>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  placeholder="Email *" 
+                  formControlName="email"
+                  [class.is-invalid]="email?.invalid && email?.touched"
+                />
+              </div>
+              <div class="invalid-feedback d-block" *ngIf="email?.invalid && email?.touched">
+                <span *ngIf="email?.errors?.['required']">Email je obavezan</span>
+                <span *ngIf="email?.errors?.['email']">Unesite validnu email adresu</span>
+              </div>
 
-      <!-- Email -->
-      <div class="form-group">
-        <label for="email">Email adresa *</label>
-        <input 
-          type="email" 
-          id="email" 
-          formControlName="email"
-          class="form-control"
-          [class.error]="email?.invalid && email?.touched"
-        />
-        <div class="error-message" *ngIf="email?.invalid && email?.touched">
-          <span *ngIf="email?.errors?.['required']">Email je obavezan</span>
-          <span *ngIf="email?.errors?.['email']">Unesite validnu email adresu</span>
-        </div>
-      </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <!-- Password -->
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <i class="material-icons">lock_outline</i>
+                      </span>
+                    </div>
+                    <input 
+                      type="password" 
+                      class="form-control" 
+                      placeholder="Lozinka *" 
+                      formControlName="password"
+                      [class.is-invalid]="password?.invalid && password?.touched"
+                    />
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="password?.invalid && password?.touched">
+                    <span *ngIf="password?.errors?.['required']">Lozinka je obavezna</span>
+                    <span *ngIf="password?.errors?.['minlength']">Lozinka mora imati najmanje 6 karaktera</span>
+                  </div>
+                </div>
 
-      <!-- Password -->
-      <div class="form-group">
-        <label for="password">Lozinka *</label>
-        <input 
-          type="password" 
-          id="password" 
-          formControlName="password"
-          class="form-control"
-          [class.error]="password?.invalid && password?.touched"
-        />
-        <div class="error-message" *ngIf="password?.invalid && password?.touched">
-          <span *ngIf="password?.errors?.['required']">Lozinka je obavezna</span>
-          <span *ngIf="password?.errors?.['minlength']">Lozinka mora imati najmanje 6 karaktera</span>
-        </div>
-      </div>
+                <div class="col-md-6">
+                  <!-- Confirm Password -->
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <i class="material-icons">lock</i>
+                      </span>
+                    </div>
+                    <input 
+                      type="password" 
+                      class="form-control" 
+                      placeholder="Potvrda lozinke *" 
+                      formControlName="confirmPassword"
+                      [class.is-invalid]="confirmPassword?.invalid && confirmPassword?.touched"
+                    />
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="confirmPassword?.invalid && confirmPassword?.touched">
+                    <span *ngIf="confirmPassword?.errors?.['required']">Potvrdite lozinku</span>
+                    <span *ngIf="confirmPassword?.errors?.['passwordMismatch']">Lozinke se ne poklapaju</span>
+                  </div>
+                </div>
+              </div>
 
-      <!-- Confirm Password -->
-      <div class="form-group">
-        <label for="confirmPassword">Potvrda lozinke *</label>
-        <input 
-          type="password" 
-          id="confirmPassword" 
-          formControlName="confirmPassword"
-          class="form-control"
-          [class.error]="confirmPassword?.invalid && confirmPassword?.touched"
-        />
-        <div class="error-message" *ngIf="confirmPassword?.invalid && confirmPassword?.touched">
-          <span *ngIf="confirmPassword?.errors?.['required']">Potvrdite lozinku</span>
-          <span *ngIf="confirmPassword?.errors?.['passwordMismatch']">Lozinke se ne poklapaju</span>
-        </div>
-      </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <!-- Gender -->
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <i class="material-icons">wc</i>
+                      </span>
+                    </div>
+                    <select 
+                      class="form-control" 
+                      formControlName="gender"
+                      [class.is-invalid]="gender?.invalid && gender?.touched"
+                    >
+                      <option value="" disabled selected>Pol *</option>
+                      <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
+                    </select>
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="gender?.invalid && gender?.touched">
+                    <span *ngIf="gender?.errors?.['required']">Pol je obavezan</span>
+                  </div>
+                </div>
 
-      <!-- Gender -->
-      <div class="form-group">
-        <label for="gender">Pol *</label>
-        <select id="gender" formControlName="gender" class="form-control">
-          <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
-        </select>
-      </div>
+                <div class="col-md-6">
+                  <!-- Date of Birth -->
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <i class="material-icons">calendar_today</i>
+                      </span>
+                    </div>
+                    <input 
+                      type="date" 
+                      class="form-control" 
+                      placeholder="Datum rođenja *" 
+                      formControlName="dateOfBirth"
+                      [class.is-invalid]="dateOfBirth?.invalid && dateOfBirth?.touched"
+                    />
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="dateOfBirth?.invalid && dateOfBirth?.touched">
+                    <span *ngIf="dateOfBirth?.errors?.['required']">Datum rođenja je obavezan</span>
+                  </div>
+                </div>
+              </div>
 
-      <!-- Date of Birth -->
-      <div class="form-group">
-        <label for="dateOfBirth">Datum rođenja *</label>
-        <input 
-          type="date" 
-          id="dateOfBirth" 
-          formControlName="dateOfBirth"
-          class="form-control"
-          [class.error]="dateOfBirth?.invalid && dateOfBirth?.touched"
-        />
-        <div class="error-message" *ngIf="dateOfBirth?.invalid && dateOfBirth?.touched">
-          <span *ngIf="dateOfBirth?.errors?.['required']">Datum rođenja je obavezan</span>
-        </div>
-      </div>
-
-      <!-- Phone Number -->
-      <div class="form-group">
-        <label for="phoneNumber">Telefon *</label>
-        <input 
-          type="tel" 
-          id="phoneNumber" 
-          formControlName="phoneNumber"
-          class="form-control"
-          [class.error]="phoneNumber?.invalid && phoneNumber?.touched"
-        />
-        <div class="error-message" *ngIf="phoneNumber?.invalid && phoneNumber?.touched">
-          <span *ngIf="phoneNumber?.errors?.['required']">Telefon je obavezan</span>
-          <span *ngIf="phoneNumber?.errors?.['pattern']">Unesite validan broj telefona</span>
-        </div>
-      </div>
+              <!-- Phone Number -->
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">
+                    <i class="material-icons">phone</i>
+                  </span>
+                </div>
+                <input 
+                  type="tel" 
+                  class="form-control" 
+                  placeholder="Telefon *" 
+                  formControlName="phoneNumber"
+                  [class.is-invalid]="phoneNumber?.invalid && phoneNumber?.touched"
+                />
+              </div>
+              <div class="invalid-feedback d-block" *ngIf="phoneNumber?.invalid && phoneNumber?.touched">
+                <span *ngIf="phoneNumber?.errors?.['required']">Telefon je obavezan</span>
+                <span *ngIf="phoneNumber?.errors?.['pattern']">Unesite validan broj telefona</span>
+              </div>
 
       <!-- Error Message - koristi async pipe -->
       <div class="alert alert-error" *ngIf="error$ | async as error">
@@ -141,10 +212,14 @@
         <span *ngIf="isLoading$ | async">Učitavanje...</span>
       </button>
 
-      <!-- Login Link -->
-      <div class="form-footer">
-        <p>Već imate nalog? <a routerLink="/login">Prijavite se</a></p>
+              <!-- Login Link -->
+              <div class="form-footer text-center">
+                <p>Već imate nalog? <a href="/" class="link">Prijavite se na početnoj strani</a></p>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
-    </form>
+    </div>
   </div>
 </div>

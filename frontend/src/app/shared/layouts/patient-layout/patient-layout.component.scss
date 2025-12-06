@@ -1,0 +1,83 @@
+/* Patient layout sidebar overrides */
+.sidebar .nav {
+	padding-left: 0;
+	margin: 0;
+}
+
+.sidebar .nav li.nav-item {
+	list-style: none;
+}
+
+.sidebar .nav li > a.nav-link {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 14px 20px;
+	font-size: 15px;
+	line-height: 20px;
+	font-weight: 500;
+	color: #37474f;
+	transition: background .25s ease, box-shadow .25s ease, color .25s ease;
+	border-radius: 8px;
+}
+
+.sidebar .nav li > a.nav-link i.material-icons {
+	font-size: 20px;
+	width: 24px;
+	text-align: center;
+	color: #607d8b;
+}
+
+/* Active state (blue) */
+.sidebar .nav li.active > a.nav-link,
+.sidebar .nav li > a.nav-link:hover {
+	background: linear-gradient(60deg, #26c6da, #00acc1);
+	color: #fff;
+	box-shadow: 0 6px 14px -2px rgba(30,136,229,0.35);
+}
+
+.sidebar .nav li.active > a.nav-link i.material-icons,
+.sidebar .nav li > a.nav-link:hover i.material-icons {
+	color: #fff;
+}
+
+/* Text container (<p>) ensure no overlap */
+.sidebar .nav li > a.nav-link p {
+	margin: 0;
+	padding: 0;
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: .3px;
+	flex: 1;
+}
+
+/* Logo styling */
+.logo .logo-normal {
+	font-weight: 600;
+	font-size: 18px;
+	letter-spacing: .5px;
+}
+
+/* Reduce sidebar width on very small screens */
+@media (max-width: 991.98px) {
+	.sidebar .nav li > a.nav-link p {
+		font-size: 14px;
+	}
+}
+
+
+
+/* Wider sidebar and adjusted main panel */
+/* Revert width to original (Material Dashboard default ~260px) */
+.sidebar { width: 260px; }
+.wrapper .main-panel { width: calc(100% - 260px); margin-left: 260px; }
+
+@media (max-width: 1199.98px) {
+  .sidebar { width: 260px; }
+  .wrapper .main-panel { width: calc(100% - 260px); margin-left: 260px; }
+}
+@media (max-width: 991.98px) {
+	.sidebar { width: 100%; }
+	.wrapper .main-panel { width: 100%; margin-left: 0; }
+}
+

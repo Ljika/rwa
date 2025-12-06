@@ -1,0 +1,290 @@
+<app-patient-layout [activeTab]="activeTab" (tabChanged)="selectTab($event)">
+  <div *ngIf="currentUser$ | async as currentUser">
+    <!-- Karton Tab -->
+    <div *ngIf="activeTab === 'karton'" class="tab-content">
+      <!-- Loading state -->
+      <div *ngIf="isLoadingKarton" class="loading">
+        <p>Učitavanje...</p>
+      </div>
+
+      <!-- Patient Info -->
+      <div *ngIf="!isLoadingKarton" class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header card-header-primary">
+              <h4 class="card-title">Lični podaci</h4>
+              <p class="card-category">Osnovne informacije o pacijentu</p>
+            </div>
+            <div class="card-body">
+              <div class="patient-details">
+          <div class="detail-item">
+            <span class="detail-label">Ime i prezime:</span>
+            <span class="detail-value">{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Email:</span>
+            <span class="detail-value">{{ currentUser.email }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Telefon:</span>
+            <span class="detail-value">{{ currentUser.phoneNumber || 'Nije uneto' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Datum rođenja:</span>
+            <span class="detail-value">{{ currentUser.dateOfBirth || 'Nije uneto' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Pol:</span>
+            <span class="detail-value">{{ currentUser.gender || 'Nije uneto' }}</span>
+          </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Allergies Section -->
+      <div *ngIf="!isLoadingKarton" class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header card-header-danger">
+              <h4 class="card-title">Alergije</h4>
+              <p class="card-category">Evidentirane alergije</p>
+            </div>
+            <div class="card-body">
+        <div *ngIf="myAllergies.length === 0" class="empty-state">
+          <p>Nemate evidentirane alergije.</p>
+        </div>
+        <div *ngIf="myAllergies.length > 0" class="allergies-grid">
+          <div *ngFor="let pa of myAllergies" class="allergy-card">
+            <div class="allergy-icon">⚠️</div>
+            <div class="allergy-info">
+              <h5>{{ pa.allergy?.name }}</h5>
+              <p class="diagnosed-date" *ngIf="pa.diagnosedDate">
+                Dijagnostikovano: {{ pa.diagnosedDate | date:'dd.MM.yyyy' }}
+              </p>
+            </div>
+          </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Doctors Section -->
+      <div *ngIf="!isLoadingKarton" class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header card-header-info">
+              <h4 class="card-title">Moji Lekari</h4>
+              <p class="card-category">Lista dodeljenih lekara</p>
+            </div>
+            <div class="card-body">
+        <div *ngIf="myDoctors.length === 0" class="empty-state">
+          <p>Nemate dodeljenih lekara.</p>
+        </div>
+        <div *ngIf="myDoctors.length > 0" class="doctors-grid">
+          <div *ngFor="let doctor of myDoctors" class="doctor-card">
+            <div class="doctor-icon"></div>
+            <div class="doctor-info">
+              <h5>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</h5>
+              <p class="specialization">{{ doctor.specialization }}</p>
+              <p class="contact">Email: {{ doctor.email }}</p>
+              <p class="contact" *ngIf="doctor.phoneNumber">Telefon: {{ doctor.phoneNumber }}</p>
+            </div>
+          </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terapije Tab -->
+    <div *ngIf="activeTab === 'terapije'" class="tab-content">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header card-header-success">
+              <h4 class="card-title">Moje Terapije</h4>
+              <p class="card-category">Lista propisanih terapija</p>
+            </div>
+            <div class="card-body">
+              <!-- Error state -->
+              <div *ngIf="therapiesError$ | async as error" class="error-message">
+                <p>Greška: {{ error }}</p>
+              </div>
+              
+              <!-- Loading state -->
+              <div *ngIf="isLoadingTherapies$ | async" class="loading">
+                <p>Učitavanje terapija...</p>
+              </div>
+
+              <!-- Empty state -->
+              <div *ngIf="!(isLoadingTherapies$ | async) && !(therapiesError$ | async) && (myTherapies$ | async)?.length === 0" class="empty-state">
+                <p>Nemate propisanih terapija.</p>
+              </div>
+
+              <!-- Therapies List -->
+              <div *ngIf="!(isLoadingTherapies$ | async) && (myTherapies$ | async)?.length! > 0" class="therapies-list">
+        <div *ngFor="let therapy of myTherapies$ | async" class="therapy-card">
+          <div class="therapy-header">
+            <h4>Dijagnoza: {{ therapy.diagnosis }}</h4>
+            <span class="therapy-date">Propisano: {{ therapy.prescribedAt | date:'dd.MM.yyyy' }}</span>
+          </div>
+          
+          <div class="therapy-info">
+            <p>
+              <strong>Lekar:</strong> Dr. {{ therapy.doctor?.firstName }} {{ therapy.doctor?.lastName }}
+              <span *ngIf="therapy.doctor?.specialization"> ({{ therapy.doctor.specialization }})</span>
+            </p>
+            <p *ngIf="therapy.notes">
+              <strong>Napomene:</strong> {{ therapy.notes }}
+            </p>
+          </div>
+
+          <div class="therapy-drugs">
+            <h5>Lekovi:</h5>
+            <div *ngIf="therapy.therapyDrugs && therapy.therapyDrugs.length > 0" class="drugs-list">
+              <div *ngFor="let td of therapy.therapyDrugs" class="drug-item">
+                {{ td.drug?.name }}<span *ngIf="td.drug?.dosage"> ({{ td.drug?.dosage }})</span>, {{ td.timesPerDay }}x dnevno, {{ td.durationDays }} dana<span *ngIf="td.instructions"> - {{ td.instructions }}</span>
+              </div>
+            </div>
+            <div *ngIf="!therapy.therapyDrugs || therapy.therapyDrugs.length === 0" class="no-drugs">
+              Nema propisanih lekova.
+            </div>
+          </div>
+        </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zakaži Termin Tab -->
+    <div *ngIf="activeTab === 'zakazi'" class="tab-content">
+      <app-book-appointment></app-book-appointment>
+    </div>
+
+    <!-- Termini Tab -->
+    <div *ngIf="activeTab === 'termini'" class="tab-content">
+      <app-my-appointments></app-my-appointments>
+    </div>
+
+    <!-- Profil Tab -->
+    <div *ngIf="activeTab === 'profil'" class="tab-content">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header card-header-primary">
+              <h4 class="card-title">Moj Profil</h4>
+              <p class="card-category">Lični podaci i podešavanja</p>
+            </div>
+            <div class="card-body">
+              <div class="profile-actions" style="text-align: right; margin-bottom: 15px;">
+                <button 
+                  *ngIf="!isEditMode" 
+                  class="btn btn-primary btn-sm" 
+                  (click)="toggleEditMode()">
+                  <i class="material-icons">edit</i> Izmeni Profil
+                </button>
+              </div>
+
+      <!-- View Mode -->
+      <div *ngIf="!isEditMode" class="profile-info">
+        <div class="info-section">
+          <h5>Lični podaci</h5>
+          <div class="info-row">
+            <span class="label">Ime:</span>
+            <span class="value">{{ currentUser.firstName }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Prezime:</span>
+            <span class="value">{{ currentUser.lastName }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ currentUser.email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Telefon:</span>
+            <span class="value">{{ currentUser.phoneNumber || 'Nije uneto' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Datum rođenja:</span>
+            <span class="value">{{ currentUser.dateOfBirth || 'Nije uneto' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Pol:</span>
+            <span class="value">{{ currentUser.gender || 'Nije uneto' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Mode -->
+      <div *ngIf="isEditMode" class="edit-profile-form">
+        <form [formGroup]="editProfileForm" (ngSubmit)="saveProfile()">
+          <div class="form-section">
+            <h5>Lični podaci</h5>
+            
+            <div class="form-group">
+              <label>Ime:</label>
+              <input type="text" formControlName="firstName" class="form-control">
+              <div class="error" *ngIf="editProfileForm.get('firstName')?.invalid && editProfileForm.get('firstName')?.touched">
+                Ime je obavezno
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Prezime:</label>
+              <input type="text" formControlName="lastName" class="form-control">
+              <div class="error" *ngIf="editProfileForm.get('lastName')?.invalid && editProfileForm.get('lastName')?.touched">
+                Prezime je obavezno
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Telefon:</label>
+              <input type="text" formControlName="phoneNumber" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label>Datum rođenja:</label>
+              <input type="date" formControlName="dateOfBirth" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label>Pol:</label>
+              <select formControlName="gender" class="form-control">
+                <option value="">Izaberi pol</option>
+                <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              class="btn-save" 
+              [disabled]="editProfileForm.invalid || (isUpdating$ | async)">
+              {{ (isUpdating$ | async) ? 'Čuvanje...' : 'Sačuvaj' }}
+            </button>
+            <button 
+              type="button" 
+              class="btn-cancel" 
+              (click)="cancelEdit()"
+              [disabled]="isUpdating$ | async">
+              Otkaži
+            </button>
+          </div>
+        </form>
+      </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Chat Component -->
+  <app-chat></app-chat>
+</app-patient-layout>

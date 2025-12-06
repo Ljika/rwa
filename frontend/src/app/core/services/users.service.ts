@@ -74,4 +74,18 @@ export class UsersService {
     
     return this.http.get<User[]>(`${this.apiUrl}/all-patients`, { headers });
   }
+
+  getAllDoctors(): Observable<User[]> {
+    // Public endpoint - ne treba autentifikacija za prikaz na landing page
+    return this.http.get<User[]>(`${this.apiUrl}/all-doctors`);
+  }
+
+  getAllDoctorsAuthenticated(): Observable<User[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    
+    return this.http.get<User[]>(`${this.apiUrl}/all-doctors`, { headers });
+  }
 }

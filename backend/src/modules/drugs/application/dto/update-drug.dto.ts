@@ -24,7 +24,7 @@ export class UpdateDrugDto {
   description?: string;
 
   @ApiPropertyOptional({ example: 'uuid-proizvođača', description: 'ID proizvođača leka' })
-  @IsUUID('4')
+  @IsUUID('all')
   @IsOptional()
   manufacturerId?: string;
 }

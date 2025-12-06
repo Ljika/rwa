@@ -14,6 +14,13 @@ import { UserRole } from '../../../common/enums/user-role.enum';
 export class PatientAllergiesController {
   constructor(private readonly patientAllergiesService: PatientAllergiesService) {}
 
+  @Get()
+  @ApiOperation({ summary: 'Sve alergije svih pacijenata' })
+  @ApiResponse({ status: 200, description: 'Lista svih alergija pacijenata' })
+  findAll() {
+    return this.patientAllergiesService.findAll();
+  }
+
   @Post()
   @Roles(UserRole.Admin, UserRole.Doctor)
   @ApiOperation({ summary: 'Dodavanje alergije pacijentu (Admin/Doctor)' })
